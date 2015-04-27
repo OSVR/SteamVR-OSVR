@@ -1,0 +1,40 @@
+/** @file
+    @brief Header
+
+    @date 2015
+
+    @author
+    Sensics, Inc.
+    <http://sensics.com>
+
+*/
+
+// Copyright 2015 Sensics, Inc.
+//
+// All rights reserved.
+//
+// (Final version intended to be licensed under
+// the Apache License, Version 2.0)
+
+#ifndef INCLUDED_cxx_feature_override_h_GUID_2E7FD67D_278C_4894_8B47_8C1A57CB0951
+#define INCLUDED_cxx_feature_override_h_GUID_2E7FD67D_278C_4894_8B47_8C1A57CB0951
+
+// Internal Includes
+// - none
+
+// Library/third-party includes
+// - none
+
+// Standard includes
+// - none
+
+#cmakedefine OSVR_OVERRIDE
+
+#ifdef OSVR_HAVE_CXX_OVERRIDE_KEYWORD
+#define OSVR_OVERRIDE override
+#else
+#define OSVR_OVERRIDE
+#endif
+
+#endif // INCLUDED_cxx_feature_override_h_GUID_2E7FD67D_278C_4894_8B47_8C1A57CB0951
+
