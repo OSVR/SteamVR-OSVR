@@ -103,10 +103,10 @@ void hmdTrackerCallback(void* /*userdata*/, const OSVR_TimeValue* /*timestamp*/,
 
 vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDriverInstallDir)
 {
-	context_ = new osvr::clientkit::Context("com.osvr.SteamVR");
-	osvr::clientkit::Interface display = context->getInterface("/display");
+	context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
+	osvr::clientkit::Interface display = context_->getInterface("/display");
 	display.registerCallback(&hmdTrackerCallback, NULL);
-	context->update(); // FIXME move elsewhere and loop
+	context_->update(); // FIXME move elsewhere and loop
 
 	return vr::HmdError_None;
 }

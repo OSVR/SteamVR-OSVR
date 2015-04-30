@@ -23,6 +23,7 @@
 #include "osvr_compiler_detection.h"
 #include "osvr_display_configuration.h"
 #include "make_unique.h"
+#include "hmdmatrix_setidentity.h"
 
 // Library/third-party includes
 #include <steamvr.h>
@@ -280,7 +281,7 @@ vr::HmdMatrix44_t OSVRHmd::GetEyeMatrix(vr::Hmd_Eye eEye)
 {
 	// KMG: FIXME
 	vr::HmdMatrix44_t mat;
-	vr::HmdMatrix_SetIdentity( &mat );
+	HmdMatrix_SetIdentity( &mat );
 	if( eEye == vr::Eye_Left )
 		mat.m[0][3] = -m_DisplayConfiguration->getIPDMeters() / 2.0;
 	else
@@ -297,6 +298,7 @@ vr::HmdMatrix44_t OSVRHmd::GetEyeMatrix(vr::Hmd_Eye eEye)
 vr::DistortionCoordinates_t OSVRHmd::ComputeDistortion(vr::Hmd_Eye eEye, float fU, float fV)
 {
 	// FIXME
+	/*
 	OVR::Util::Render::DistortionConfig distConfig = m_stereoConfig.GetDistortionConfig();
 	OVR::Util::Render::Viewport vp = m_stereoConfig.GetFullViewport();
 
@@ -368,7 +370,9 @@ vr::DistortionCoordinates_t OSVRHmd::ComputeDistortion(vr::Hmd_Eye eEye, float f
 	//{
 	//	memset( &coords, 0, sizeof(coords) );
 	//}
+	*/
 
+	vr::DistortionCoordinates_t coords;
 	return coords;
 }
 
@@ -383,7 +387,8 @@ vr::DistortionCoordinates_t OSVRHmd::ComputeDistortion(vr::Hmd_Eye eEye, float f
 const char* OSVRHmd::GetModelNumber()
 {
 	// FIXME
-	return m_hmdInfo.ProductName;
+	//return m_hmdInfo.ProductName;
+	return "";
 }
 
 
@@ -393,14 +398,16 @@ const char* OSVRHmd::GetModelNumber()
 const char* OSVRHmd::GetSerialNumber()
 {
 	// FIXME
-	return m_sensorInfo.SerialNumber;
+	//return m_sensorInfo.SerialNumber;
+	return "";
 }
 
-void OSVRHmd::HmdTrackerCallback(void*, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report) {
+void OSVRHmd::HmdTrackerCallback(void*, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
 {
 	if (!m_PoseListener)
 		return;
 
+#if 0
 	std::cout << "Got POSE report: Position = ("
 		<< report->pose.translation.data[0] << ", "
 		<< report->pose.translation.data[1] << ", "
@@ -472,9 +479,8 @@ void OSVRHmd::HmdTrackerCallback(void*, const OSVR_TimeValue* timestamp, const O
 		pose.result = TrackingResult_Running_OK;
 	}
 	m_PoseListener->PoseUpdated( this, pose );
+#endif
 }
-
-
 
 
 #endif // INCLUDED_osvr_hmd_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
