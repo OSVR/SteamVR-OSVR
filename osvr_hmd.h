@@ -21,16 +21,22 @@
 
 // Internal Includes
 #include "osvr_compiler_detection.h"
+#include "osvr_display_configuration.h"
+#include "make_unique.h"
 
 // Library/third-party includes
 #include <steamvr.h>
 #include <ihmddriver.h>
+
+#include <osvr/ClientKit/Context.h>
 
 // Standard includes
 // - none
 
 class OSVRHmd : public vr::IHmdDriver {
 public:
+    OSVRHmd(osvr::clientkit::ClientContext* context);
+
     // ------------------------------------
     // Management Methods
     // ------------------------------------
@@ -114,7 +120,19 @@ public:
      */
     virtual const char* GetSerialNumber() OSVR_OVERRIDE;
 
+protected:
+    osvr::clientkit::ClientContext* m_Context;
+    std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
+    vr::IPoseListener* m_PoseListener;
+
+    void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 };
+
+OSVRHmd::OSVRHmd(osvr::clientkit::ClientContext* context) : m_Context(context), m_DisplayConfiguration(nullptr)
+{
+    if (!m_Context)
+        throw std::runtime_error("OSVRHmd requires non-NULL ClientContext.");
+}
 
 // ------------------------------------
 // Management Methods
@@ -128,18 +146,17 @@ public:
  */
 vr::HmdError OSVRHmd::Activate(vr::IPoseListener* pPoseListener)
 {
-	//m_pPoseListener = pPoseListener;
+	//m_PoseListener = pPoseListener;
 
 	// Retrieve display parameters
-	osvr::clientkit::ClientContext context("com.osvr.SteamVR");
-	const std::string display_description = context.getStringParameter("/display");
-	m_DisplayConfiguration = OSVRDisplayConfiguration(display_description);
+	const std::string display_description = m_Context->getStringParameter("/display");
+	m_DisplayConfiguration = std::make_unique<OSVRDisplayConfiguration>(display_description);
 
 	// Register tracker callback
-	const std::string tracker_interface = context.getInterface("/me/head");
-	tracker_interface.registerCallback(&OSVRHmd::HmdTrackerCallback, NULL);
+	osvr::clientkit::Interface tracker_interface = m_Context->getInterface("/me/head");
+	//tracker_interface.registerCallback(&OSVRHmd::HmdTrackerCallback, NULL);
 
-	return HmdError_None;
+	return vr::HmdError_None;
 }
 
 /**
@@ -149,7 +166,7 @@ vr::HmdError OSVRHmd::Activate(vr::IPoseListener* pPoseListener)
  */
 void OSVRHmd::Deactivate()
 {
-	m_pPoseListener = NULL;
+	m_PoseListener = NULL;
 }
 
 
@@ -160,7 +177,7 @@ void OSVRHmd::Deactivate()
  */
 const char* OSVRHmd::GetId()
 {
-	return m_sensorInfo.SerialNumber; // FIXME
+    return ""; // FIXME
 }
 
 
@@ -174,10 +191,10 @@ const char* OSVRHmd::GetId()
 void OSVRHmd::GetWindowBounds(int32_t* pnX, int32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight)
 {
 	// KMG: DONE!
-	*pnX = m_DisplayConfiguration.getDisplayLeft();
-	*pnY = m_DisplayConfiguration.getDisplayTop();
-	*pnWidth = m_DisplayConfiguration.getDisplayWidth();
-	*pnHeight = m_DisplayConfiguration.getDisplayHeight();
+	*pnX = m_DisplayConfiguration->getDisplayLeft();
+	*pnY = m_DisplayConfiguration->getDisplayTop();
+	*pnWidth = m_DisplayConfiguration->getDisplayWidth();
+	*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 }
 
 
@@ -188,8 +205,8 @@ void OSVRHmd::GetWindowBounds(int32_t* pnX, int32_t* pnY, uint32_t* pnWidth, uin
 void OSVRHmd::GetRecommendedRenderTargetSize(uint32_t* pnWidth, uint32_t* pnHeight)
 {
 	// KMG: DONE!
-	*pnWidth = m_DisplayConfiguration.getDisplayWidth();
-	*pnHeight = m_DisplayConfiguration.getDisplayHeight();
+	*pnWidth = m_DisplayConfiguration->getDisplayWidth();
+	*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 }
 
 
@@ -200,31 +217,31 @@ void OSVRHmd::GetRecommendedRenderTargetSize(uint32_t* pnWidth, uint32_t* pnHeig
 void OSVRHmd::GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight)
 {
 	// KMG: DONE!
-	switch (m_DisplayMode) {
-	case HORIZONTAL_SIDE_BY_SIDE:
-		*pnWidth = m_DisplayConfiguration.getDisplayWidth() / 2;
-		*pnHeight = m_DisplayConfiguration.getDisplayHeight();
+	switch (m_DisplayConfiguration->getDisplayMode()) {
+    case OSVRDisplayConfiguration::HORIZONTAL_SIDE_BY_SIDE:
+		*pnWidth = m_DisplayConfiguration->getDisplayWidth() / 2;
+		*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 		*pnX = (vr::Eye_Left == eEye) ? 0 : *pnWidth;
 		*pnY = 0;
 		break;
-	case VERTICAL_SIDE_BY_SIDE:
-		*pnWidth = m_DisplayConfiguration.getDisplayWidth();
-		*pnHeight = m_DisplayConfiguration.getDisplayHeight() / 2;
+    case OSVRDisplayConfiguration::VERTICAL_SIDE_BY_SIDE:
+		*pnWidth = m_DisplayConfiguration->getDisplayWidth();
+		*pnHeight = m_DisplayConfiguration->getDisplayHeight() / 2;
 		*pnX = 0;
 		*pnY = (vr::Eye_Left == eEye) ? 0 : *pnHeight;
 		break;
-	case FULL_SCREEN:
-		*pnWidth = m_DisplayConfiguration.getDisplayWidth();
-		*pnHeight = m_DisplayConfiguration.getDisplayHeight();
+    case OSVRDisplayConfiguration::FULL_SCREEN:
+		*pnWidth = m_DisplayConfiguration->getDisplayWidth();
+		*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 		*pnX = 0;
 		*pnY = 0;
 		break;
 	default:
-		*pnWidth = m_DisplayConfiguration.getDisplayWidth();
-		*pnHeight = m_DisplayConfiguration.getDisplayHeight();
+		*pnWidth = m_DisplayConfiguration->getDisplayWidth();
+		*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 		*pnX = 0;
 		*pnY = 0;
-		std::cerr << "ERROR: Unexpected display mode type: " << m_DisplayMode << ".\n";
+		std::cerr << "ERROR: Unexpected display mode type: " << m_DisplayConfiguration->getDisplayMode() << ".\n";
 	}
 }
 
@@ -235,7 +252,8 @@ void OSVRHmd::GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pn
  */
 void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, float* pfTop, float* pfBottom)
 {
-	// FIXME ?
+	// FIXME
+    /*
 	const float (*p)[4] = mat.M;
 
 	float dx  = 2.0f / p[0][0];
@@ -247,6 +265,7 @@ void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, 
 	float sy   = p[1][2] * dy;
 	*pfBottom  = (sy + dy) * 0.5f;
 	*pfTop     = sy - *pfBottom;
+    */
 }
 
 
@@ -259,13 +278,13 @@ void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, 
  */
 vr::HmdMatrix44_t OSVRHmd::GetEyeMatrix(vr::Hmd_Eye eEye)
 {
-	// KMG: DONE!
-	HmdMatrix44_t mat;
-	HmdMatrix_SetIdentity( &mat );
+	// KMG: FIXME
+	vr::HmdMatrix44_t mat;
+	vr::HmdMatrix_SetIdentity( &mat );
 	if( eEye == vr::Eye_Left )
-		mat.m[0][3] = -m_DisplayConfiguration.getIPDMeters() / 2.0;
+		mat.m[0][3] = -m_DisplayConfiguration->getIPDMeters() / 2.0;
 	else
-		mat.m[0][3] = m_DisplayConfiguration.getIPDMeters() / 2.0;
+		mat.m[0][3] = m_DisplayConfiguration->getIPDMeters() / 2.0;
 	return mat;
 }
 
@@ -377,9 +396,9 @@ const char* OSVRHmd::GetSerialNumber()
 	return m_sensorInfo.SerialNumber;
 }
 
-void OSVRHmd::HmdTrackerCallback(void* /*userdata*/, const OSVR_TimeValue* /*timestamp*/, const OSVR_PoseReport* report) {
+void OSVRHmd::HmdTrackerCallback(void*, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report) {
 {
-	if (!m_pPoseListener)
+	if (!m_PoseListener)
 		return;
 
 	std::cout << "Got POSE report: Position = ("
@@ -393,14 +412,13 @@ void OSVRHmd::HmdTrackerCallback(void* /*userdata*/, const OSVR_TimeValue* /*tim
 
 
 	vr::DriverPose_t pose;
-	pose.poseTimeOffset = 0;
-	pose.defaultPredictionTime = 0;
+	pose.poseTimeOffset = 0; // FIXME
+	pose.defaultPredictionTime = 0; // FIXME
 
 	// Set WorldFromDriver and DriverFromHead poses to identity
-	for (int i = 0; i < 3; i++)
-	{
-		pose.vecWorldFromDriverTranslation[ i ] = 0.0;
-		pose.vecDriverFromHeadTranslation[ i ] = 0.0;
+	for (int i = 0; i < 3; i++) {
+		pose.vecWorldFromDriverTranslation[i] = 0.0;
+		pose.vecDriverFromHeadTranslation[i] = 0.0;
 	}
 
 	pose.qWorldFromDriverRotation.w = 1;
@@ -418,16 +436,14 @@ void OSVRHmd::HmdTrackerCallback(void* /*userdata*/, const OSVR_TimeValue* /*tim
 	pose.willDriftInYaw = true;
 
 	// we don't do position, so these are easy
-	for( int i=0; i < 3; i++ )
-	{
-		pose.vecPosition[ i ] = 0.0;
-		pose.vecVelocity[ i ] = 0.0;
-		pose.vecAcceleration[ i ] = 0.0;
+	for (int i = 0; i < 3; i++) {
+		pose.vecPosition[i] = 0.0;
+		pose.vecVelocity[i] = 0.0;
+		pose.vecAcceleration[i] = 0.0;
 
 		// we also don't know the angular velocity or acceleration
-		pose.vecAngularVelocity[ i ] = 0.0;
-		pose.vecAngularAcceleration[ i ] = 0.0;
-
+		pose.vecAngularVelocity[i] = 0.0;
+		pose.vecAngularAcceleration[i] = 0.0;
 	}
 
 	// now get the rotation and turn it into axis-angle format
@@ -455,7 +471,7 @@ void OSVRHmd::HmdTrackerCallback(void* /*userdata*/, const OSVR_TimeValue* /*tim
 		pose.poseIsValid = true;
 		pose.result = TrackingResult_Running_OK;
 	}
-	m_pPoseListener->PoseUpdated( this, pose );
+	m_PoseListener->PoseUpdated( this, pose );
 }
 
 

@@ -19,6 +19,7 @@ public:
 		FULL_SCREEN
 	};
 
+	OSVRDisplayConfiguration();
 	OSVRDisplayConfiguration(const std::string& display_description);
 
 	void parse(const std::string& display_description);
@@ -68,6 +69,11 @@ private:
 	double m_CenterProjY;
 
 };
+
+inline OSVRDisplayConfiguration::OSVRDisplayConfiguration()
+{
+	// do nothing
+}
 
 inline OSVRDisplayConfiguration::OSVRDisplayConfiguration(const std::string& display_description)
 {
