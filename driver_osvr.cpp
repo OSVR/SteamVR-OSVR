@@ -84,29 +84,22 @@ public:
 private:
 	std::vector<std::unique_ptr<OSVRHmd>> hmds_;
 	std::unique_ptr<osvr::clientkit::ClientContext> context_;
+	std::unique_ptr<ClientMainloopThread> client_;
 };
 
 CDriver_OSVR g_driverOSVR;
 
-void hmdTrackerCallback(void* /*userdata*/, const OSVR_TimeValue* /*timestamp*/, const OSVR_PoseReport* report) {
-	std::cout << "Got POSE report: Position = ("
-		<< report->pose.translation.data[0] << ", "
-		<< report->pose.translation.data[1] << ", "
-		<< report->pose.translation.data[2] << "), orientation = ("
-		<< osvrQuatGetW(&(report->pose.rotation)) << ", ("
-		<< osvrQuatGetX(&(report->pose.rotation)) << ", "
-		<< osvrQuatGetY(&(report->pose.rotation)) << ", "
-		<< osvrQuatGetZ(&(report->pose.rotation)) << "))" << std::endl;
-	// FIXME TODO do something useful with this data!
-}
-
-
 vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDriverInstallDir)
 {
 	context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
-	osvr::clientkit::Interface display = context_->getInterface("/display");
-	display.registerCallback(&hmdTrackerCallback, NULL);
-	context_->update(); // FIXME move elsewhere and loop
+
+	client_ = std::make_unique<ClientMainloopThread>(*context_);
+
+	const std::string display_description = context_->getStringParameter("/display");
+	osvr::clientkit::Interface head_tracker_interface = context_->getInterface("/head");
+	hmds_.push_back(std::make_unique<OSVRHmd>(display_description, &head_tracker_interface));
+
+	client_->start();
 
 	return vr::HmdError_None;
 }
@@ -132,7 +125,7 @@ vr::IHmdDriver* CDriver_OSVR::GetHmd(uint32_t index)
 vr::IHmdDriver* CDriver_OSVR::FindHmd(const char* hmd_id)
 {
 	for (auto& hmd : hmds_) {
-		if (!std::strcmp(hmd_id, hmd->GetId()))
+		if (0 == std::strcmp(hmd_id, hmd->GetId()))
 			return hmd.get();
 	}
 

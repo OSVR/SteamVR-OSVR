@@ -12,19 +12,21 @@
 #define INCLUDED_make_unique_h_GUID_C7526AAA_3549_41DF_AF95_5323788FBADE
 
 // Internal Includes
-// - none
+#include "osvr_compiler_tests.h"
 
-// Library/third-party includes
-// - none
+#ifdef OSVR_HAS_MAKE_UNIQUE
+
+#include <memory>
+
+#else // OSVR_HAS_MAKE_UNIQUE
+
+// If std::make_unique is not available, then we'll define it ourselves.
 
 // Standard includes
 #include <cstddef>
 #include <memory>
 #include <type_traits>
 #include <utility>
-
-// TODO attempt to use std::make_unique if available. Otherwise fall back on the
-// following implementation.
 
 namespace std {
 
@@ -63,6 +65,8 @@ typename _Unique_if<T>::_Known_bound
 make_unique(Args&&...) = delete;
 
 } // end namespace std
+
+#endif // OSVR_HAS_MAKE_UNIQUE
 
 #endif // INCLUDED_make_unique_h_GUID_C7526AAA_3549_41DF_AF95_5323788FBADE
 

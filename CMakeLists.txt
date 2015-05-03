@@ -19,9 +19,13 @@ include(WriteCompilerDetectionHeader)
 write_compiler_detection_header(
 	FILE "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_detection.h"
 	PREFIX OSVR
-	COMPILERS GNU
+	COMPILERS GNU Clang AppleClang MSVC
 	FEATURES cxx_override
 )
+
+include(CheckCXXSymbolExists)
+check_cxx_symbol_exists(std::make_unique memory OSVR_HAS_MAKE_UNIQUE)
+configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_tests.h")
 
 add_library(driver_osvr
 	MODULE

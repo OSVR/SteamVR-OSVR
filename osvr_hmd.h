@@ -24,214 +24,186 @@
 #include "osvr_display_configuration.h"
 #include "make_unique.h"
 #include "hmdmatrix_setidentity.h"
+#include "ClientMainloopThread.h"
 
 // Library/third-party includes
 #include <steamvr.h>
 #include <ihmddriver.h>
 
 #include <osvr/ClientKit/Context.h>
+#include <osvr/ClientKit/Interface.h>
 
 // Standard includes
 // - none
 
 class OSVRHmd : public vr::IHmdDriver {
 public:
-    OSVRHmd(osvr::clientkit::ClientContext* context);
+	OSVRHmd(const std::string& display_description, osvr::clientkit::Interface* tracker_interface);
+	~OSVRHmd();
 
-    // ------------------------------------
-    // Management Methods
-    // ------------------------------------
-    /**
-     * This is called before an HMD is returned to the application. It will
-     * always be called before any display or tracking methods. Memory and
-     * processor use by the IHmdDriver object should be kept to a minimum until
-     * it is activated.  The pose listener is guaranteed to be valid until
-     * Deactivate is called, but should not be used after that point.
-     */
-    virtual vr::HmdError Activate(vr::IPoseListener* pPoseListener) OSVR_OVERRIDE;
+	// ------------------------------------
+	// Management Methods
+	// ------------------------------------
+	/**
+	 * This is called before an HMD is returned to the application. It will
+	 * always be called before any display or tracking methods. Memory and
+	 * processor use by the IHmdDriver object should be kept to a minimum until
+	 * it is activated.  The pose listener is guaranteed to be valid until
+	 * Deactivate is called, but should not be used after that point.
+	 */
+	virtual vr::HmdError Activate(vr::IPoseListener* pPoseListener) OSVR_OVERRIDE;
 
-    /**
-     * This is called when The VR system is switching from this Hmd being the
-     * active display to another Hmd being the active display. The driver should
-     * clean whatever memory and thread use it can when it is deactivated.
-     */
-    virtual void Deactivate() OSVR_OVERRIDE;
+	/**
+	 * This is called when The VR system is switching from this Hmd being the
+	 * active display to another Hmd being the active display. The driver should
+	 * clean whatever memory and thread use it can when it is deactivated.
+	 */
+	virtual void Deactivate() OSVR_OVERRIDE;
 
-    /**
-     * returns the ID of this particular HMD. This value is opaque to the VR
-     * system itself, but should be unique within the driver because it will be
-     * passed back in via FindHmd
-     */
-    virtual const char* GetId() OSVR_OVERRIDE;
+	/**
+	 * returns the ID of this particular HMD. This value is opaque to the VR
+	 * system itself, but should be unique within the driver because it will be
+	 * passed back in via FindHmd
+	 */
+	virtual const char* GetId() OSVR_OVERRIDE;
 
-    // ------------------------------------
-    // Display Methods
-    // ------------------------------------
+	// ------------------------------------
+	// Display Methods
+	// ------------------------------------
 
-    /**
-     * Size and position that the window needs to be on the VR display.
-     */
-    virtual void GetWindowBounds(int32_t* pnX, int32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
+	/**
+	 * Size and position that the window needs to be on the VR display.
+	 */
+	virtual void GetWindowBounds(int32_t* pnX, int32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
 
-    /**
-     * Suggested size for the intermediate render target that the distortion
-     * pulls from.
-     */
-    virtual void GetRecommendedRenderTargetSize(uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
+	/**
+	 * Suggested size for the intermediate render target that the distortion
+	 * pulls from.
+	 */
+	virtual void GetRecommendedRenderTargetSize(uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
 
-    /**
-     * Gets the viewport in the frame buffer to draw the output of the disortion
-     * into
-     */
-    virtual void GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
+	/**
+	 * Gets the viewport in the frame buffer to draw the output of the disortion
+	 * into
+	 */
+	virtual void GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
 
-    /**
-     * The components necessary to build your own projection matrix in case your
-     * application is doing something fancy like infinite Z
-     */
-    virtual void GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, float* pfTop, float* pfBottom) OSVR_OVERRIDE;
+	/**
+	 * The components necessary to build your own projection matrix in case your
+	 * application is doing something fancy like infinite Z
+	 */
+	virtual void GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, float* pfTop, float* pfBottom) OSVR_OVERRIDE;
 
-    /**
-     * Returns the transform between the view space and eye space. Eye space is
-     * the per-eye flavor of view space that provides stereo disparity. Instead
-     * of Model * View * Projection the model is Model * View * Eye *
-     * Projection.  Normally View and Eye will be multiplied together and
-     * treated as View in your application. 
-     */
-    virtual vr::HmdMatrix44_t GetEyeMatrix(vr::Hmd_Eye eEye) OSVR_OVERRIDE;
+	/**
+	 * Returns the transform between the view space and eye space. Eye space is
+	 * the per-eye flavor of view space that provides stereo disparity. Instead
+	 * of Model * View * Projection the model is Model * View * Eye *
+	 * Projection.  Normally View and Eye will be multiplied together and
+	 * treated as View in your application. 
+	 */
+	virtual vr::HmdMatrix44_t GetEyeMatrix(vr::Hmd_Eye eEye) OSVR_OVERRIDE;
 
-    /**
-     * Returns the result of the distortion function for the specified eye and
-     * input UVs. UVs go from 0,0 in the upper left of that eye's viewport and
-     * 1,1 in the lower right of that eye's viewport.
-     */
-    virtual vr::DistortionCoordinates_t ComputeDistortion(vr::Hmd_Eye eEye, float fU, float fV) OSVR_OVERRIDE;
+	/**
+	 * Returns the result of the distortion function for the specified eye and
+	 * input UVs. UVs go from 0,0 in the upper left of that eye's viewport and
+	 * 1,1 in the lower right of that eye's viewport.
+	 */
+	virtual vr::DistortionCoordinates_t ComputeDistortion(vr::Hmd_Eye eEye, float fU, float fV) OSVR_OVERRIDE;
 
-    // -----------------------------------
-    // Administrative Methods
-    // -----------------------------------
+	// -----------------------------------
+	// Administrative Methods
+	// -----------------------------------
 
-    /**
-     * Returns the model number of this HMD
-     */
-    virtual const char* GetModelNumber() OSVR_OVERRIDE;
+	/**
+	 * Returns the model number of this HMD
+	 */
+	virtual const char* GetModelNumber() OSVR_OVERRIDE;
 
-    /**
-     * Returns the serial number of this HMD
-     */
-    virtual const char* GetSerialNumber() OSVR_OVERRIDE;
+	/**
+	 * Returns the serial number of this HMD
+	 */
+	virtual const char* GetSerialNumber() OSVR_OVERRIDE;
 
 protected:
-    osvr::clientkit::ClientContext* m_Context;
-    std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
-    vr::IPoseListener* m_PoseListener;
+	const std::string m_DisplayDescription;
+	osvr::clientkit::Interface* m_TrackerInterface;
+	std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
+	vr::IPoseListener* m_PoseListener;
 
-    void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 };
 
-OSVRHmd::OSVRHmd(osvr::clientkit::ClientContext* context) : m_Context(context), m_DisplayConfiguration(nullptr)
+struct CallbackData {
+	vr::IPoseListener* poseListener;
+	vr::IHmdDriver* hmdDriver;
+};
+
+void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
+
+OSVRHmd::OSVRHmd(const std::string& display_description, osvr::clientkit::Interface* tracker_interface) : m_DisplayDescription(display_description), m_TrackerInterface(tracker_interface), m_DisplayConfiguration(nullptr)
 {
-    if (!m_Context)
-        throw std::runtime_error("OSVRHmd requires non-NULL ClientContext.");
+	// do nothing
 }
 
-// ------------------------------------
-// Management Methods
-// ------------------------------------
-/**
- * This is called before an HMD is returned to the application. It will
- * always be called before any display or tracking methods. Memory and
- * processor use by the IHmdDriver object should be kept to a minimum until
- * it is activated.  The pose listener is guaranteed to be valid until
- * Deactivate is called, but should not be used after that point.
- */
+OSVRHmd::~OSVRHmd()
+{
+	// do nothing
+}
+
 vr::HmdError OSVRHmd::Activate(vr::IPoseListener* pPoseListener)
 {
-	//m_PoseListener = pPoseListener;
+	m_PoseListener = pPoseListener;
 
 	// Retrieve display parameters
-	const std::string display_description = m_Context->getStringParameter("/display");
-	m_DisplayConfiguration = std::make_unique<OSVRDisplayConfiguration>(display_description);
+	m_DisplayConfiguration = std::make_unique<OSVRDisplayConfiguration>(m_DisplayDescription);
 
 	// Register tracker callback
-	osvr::clientkit::Interface tracker_interface = m_Context->getInterface("/me/head");
-	//tracker_interface.registerCallback(&OSVRHmd::HmdTrackerCallback, NULL);
+	CallbackData callback_data { m_PoseListener, this };
+	m_TrackerInterface->registerCallback(&HmdTrackerCallback, &callback_data);
 
 	return vr::HmdError_None;
 }
 
-/**
- * This is called when The VR system is switching from this Hmd being the
- * active display to another Hmd being the active display. The driver should
- * clean whatever memory and thread use it can when it is deactivated.
- */
 void OSVRHmd::Deactivate()
 {
 	m_PoseListener = NULL;
 }
 
-
-/**
- * Returns the ID of this particular HMD. This value is opaque to the VR
- * system itself, but should be unique within the driver because it will be
- * passed back in via FindHmd
- */
 const char* OSVRHmd::GetId()
 {
-    return ""; // FIXME
+	// TODO When available, return the actual unique ID of the HMD
+	return "OSVR HMD";
 }
 
-
-// ------------------------------------
-// Display Methods
-// ------------------------------------
-
-/**
- * Size and position that the window needs to be on the VR display.
- */
 void OSVRHmd::GetWindowBounds(int32_t* pnX, int32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight)
 {
-	// KMG: DONE!
 	*pnX = m_DisplayConfiguration->getDisplayLeft();
 	*pnY = m_DisplayConfiguration->getDisplayTop();
 	*pnWidth = m_DisplayConfiguration->getDisplayWidth();
 	*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 }
 
-
-/**
- * Suggested size for the intermediate render target that the distortion
- * pulls from.
- */
 void OSVRHmd::GetRecommendedRenderTargetSize(uint32_t* pnWidth, uint32_t* pnHeight)
 {
-	// KMG: DONE!
 	*pnWidth = m_DisplayConfiguration->getDisplayWidth();
 	*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 }
 
-
-/**
- * Gets the viewport in the frame buffer to draw the output of the disortion
- * into
- */
 void OSVRHmd::GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight)
 {
-	// KMG: DONE!
 	switch (m_DisplayConfiguration->getDisplayMode()) {
-    case OSVRDisplayConfiguration::HORIZONTAL_SIDE_BY_SIDE:
+	case OSVRDisplayConfiguration::HORIZONTAL_SIDE_BY_SIDE:
 		*pnWidth = m_DisplayConfiguration->getDisplayWidth() / 2;
 		*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 		*pnX = (vr::Eye_Left == eEye) ? 0 : *pnWidth;
 		*pnY = 0;
 		break;
-    case OSVRDisplayConfiguration::VERTICAL_SIDE_BY_SIDE:
+	case OSVRDisplayConfiguration::VERTICAL_SIDE_BY_SIDE:
 		*pnWidth = m_DisplayConfiguration->getDisplayWidth();
 		*pnHeight = m_DisplayConfiguration->getDisplayHeight() / 2;
 		*pnX = 0;
 		*pnY = (vr::Eye_Left == eEye) ? 0 : *pnHeight;
 		break;
-    case OSVRDisplayConfiguration::FULL_SCREEN:
+	case OSVRDisplayConfiguration::FULL_SCREEN:
 		*pnWidth = m_DisplayConfiguration->getDisplayWidth();
 		*pnHeight = m_DisplayConfiguration->getDisplayHeight();
 		*pnX = 0;
@@ -246,7 +218,6 @@ void OSVRHmd::GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pn
 	}
 }
 
-
 /**
  * The components necessary to build your own projection matrix in case your
  * application is doing something fancy like infinite Z
@@ -254,7 +225,7 @@ void OSVRHmd::GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pn
 void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, float* pfTop, float* pfBottom)
 {
 	// FIXME
-    /*
+	/*
 	const float (*p)[4] = mat.M;
 
 	float dx  = 2.0f / p[0][0];
@@ -266,9 +237,8 @@ void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, 
 	float sy   = p[1][2] * dy;
 	*pfBottom  = (sy + dy) * 0.5f;
 	*pfTop     = sy - *pfBottom;
-    */
+	*/
 }
-
 
 /**
  * Returns the transform between the view space and eye space. Eye space is
@@ -279,16 +249,21 @@ void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, 
  */
 vr::HmdMatrix44_t OSVRHmd::GetEyeMatrix(vr::Hmd_Eye eEye)
 {
-	// KMG: FIXME
 	vr::HmdMatrix44_t mat;
-	HmdMatrix_SetIdentity( &mat );
-	if( eEye == vr::Eye_Left )
+	HmdMatrix_SetIdentity(&mat);
+
+	// Rotate per the display configuration
+	// FIXME
+
+	// Translate along x-axis by half the interpupillary distance
+	if (vr::Eye_Left == eEye) {
 		mat.m[0][3] = -m_DisplayConfiguration->getIPDMeters() / 2.0;
-	else
+	} else {
 		mat.m[0][3] = m_DisplayConfiguration->getIPDMeters() / 2.0;
+	}
+
 	return mat;
 }
-
 
 /**
  * Returns the result of the distortion function for the specified eye and
@@ -376,54 +351,29 @@ vr::DistortionCoordinates_t OSVRHmd::ComputeDistortion(vr::Hmd_Eye eEye, float f
 	return coords;
 }
 
-
-// -----------------------------------
-// Administrative Methods
-// -----------------------------------
-
-/**
- * Returns the model number of this HMD
- */
 const char* OSVRHmd::GetModelNumber()
 {
-	// FIXME
-	//return m_hmdInfo.ProductName;
-	return "";
+	// TODO When available, return the actual model number of the HMD
+	return "OSVR HMD";
 }
 
-
-/**
- * Returns the serial number of this HMD
- */
 const char* OSVRHmd::GetSerialNumber()
 {
-	// FIXME
-	//return m_sensorInfo.SerialNumber;
-	return "";
+	// TODO When available, return the actual serial number of the HMD
+	return "0";
 }
 
-void OSVRHmd::HmdTrackerCallback(void*, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
+void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
 {
-	if (!m_PoseListener)
+	CallbackData* callback_data = static_cast<CallbackData*>(userdata);
+	if (!callback_data->poseListener)
 		return;
 
-#if 0
-	std::cout << "Got POSE report: Position = ("
-		<< report->pose.translation.data[0] << ", "
-		<< report->pose.translation.data[1] << ", "
-		<< report->pose.translation.data[2] << "), orientation = ("
-		<< osvrQuatGetW(&(report->pose.rotation)) << ", ("
-		<< osvrQuatGetX(&(report->pose.rotation)) << ", "
-		<< osvrQuatGetY(&(report->pose.rotation)) << ", "
-		<< osvrQuatGetZ(&(report->pose.rotation)) << "))" << std::endl;
-
-
 	vr::DriverPose_t pose;
-	pose.poseTimeOffset = 0; // FIXME
-	pose.defaultPredictionTime = 0; // FIXME
+	pose.poseTimeOffset = 0; // close enough
+	pose.defaultPredictionTime = 0;
 
-	// Set WorldFromDriver and DriverFromHead poses to identity
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; ++i) {
 		pose.vecWorldFromDriverTranslation[i] = 0.0;
 		pose.vecDriverFromHeadTranslation[i] = 0.0;
 	}
@@ -438,50 +388,36 @@ void OSVRHmd::HmdTrackerCallback(void*, const OSVR_TimeValue* timestamp, const O
 	pose.qDriverFromHeadRotation.y = 0;
 	pose.qDriverFromHeadRotation.z = 0;
 
-	// some things are always true
-	pose.shouldApplyHeadModel = true;
-	pose.willDriftInYaw = true;
+	// Position
+	for (int i = 0; i < 3; ++i) {
+		pose.vecPosition[i] = report->pose.translation.data[0];
+	}
 
-	// we don't do position, so these are easy
-	for (int i = 0; i < 3; i++) {
-		pose.vecPosition[i] = 0.0;
+	// Position velocity and acceleration are not currently consistently provided
+	for (int i = 0; i < 3; ++i) {
 		pose.vecVelocity[i] = 0.0;
 		pose.vecAcceleration[i] = 0.0;
+	}
 
-		// we also don't know the angular velocity or acceleration
+	// Orientation
+	pose.qRotation.w = osvrQuatGetW(&(report->pose.rotation));
+	pose.qRotation.x = osvrQuatGetX(&(report->pose.rotation));
+	pose.qRotation.y = osvrQuatGetY(&(report->pose.rotation));
+	pose.qRotation.z = osvrQuatGetZ(&(report->pose.rotation));
+
+	// Angular velocity and acceleration are not currently consistently provided
+	for (int i = 0; i < 3; ++i) {
 		pose.vecAngularVelocity[i] = 0.0;
 		pose.vecAngularAcceleration[i] = 0.0;
 	}
 
-	// now get the rotation and turn it into axis-angle format
-	OVR::Quatf qOculus = m_sensorFusion.GetPredictedOrientation();
-	if( qOculus.w == 0 && qOculus.x == 0 && qOculus.y == 0 && qOculus.z == 0 )
-	{
-		pose.qRotation.w = 1;
-		pose.qRotation.x = 0;
-		pose.qRotation.y = 0;
-		pose.qRotation.z = 0;
-		pose.poseIsValid = false;
-		pose.result = TrackingResult_Uninitialized;
-	}
-	else
-	{
-		pose.qRotation.w = qOculus.w;
-		pose.qRotation.x = qOculus.x;
-		pose.qRotation.y = qOculus.y;
-		pose.qRotation.z = qOculus.z;
+	pose.result = vr::TrackingResult_Running_OK;
+	pose.poseIsValid = true;
+	pose.willDriftInYaw = true;
+	pose.shouldApplyHeadModel = true;
 
-		//TODO: Fold in msgBodyFrame.RotationRate for vecAngularVelocity
-		//NOTE: If you do this in order to perform prediction in vrclient,
-		// then use GetOrientation above instead of GetPredictedOrientation.
-
-		pose.poseIsValid = true;
-		pose.result = TrackingResult_Running_OK;
-	}
-	m_PoseListener->PoseUpdated( this, pose );
-#endif
+	callback_data->poseListener->PoseUpdated(callback_data->hmdDriver, pose);
 }
-
 
 #endif // INCLUDED_osvr_hmd_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
 
