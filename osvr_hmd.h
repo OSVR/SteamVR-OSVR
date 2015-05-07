@@ -25,6 +25,8 @@
 #include "make_unique.h"
 #include "hmdmatrix_setidentity.h"
 #include "ClientMainloopThread.h"
+#include "matrix_cast.h"
+#include "projection_matrix.h"
 
 // Library/third-party includes
 #include <steamvr.h>
@@ -33,13 +35,14 @@
 #include <osvr/ClientKit/Context.h>
 #include <osvr/ClientKit/Interface.h>
 
+#include <Eigen/Geometry>
+
 // Standard includes
 // - none
 
 class OSVRHmd : public vr::IHmdDriver {
 public:
 	OSVRHmd(const std::string& display_description, osvr::clientkit::Interface* tracker_interface);
-	~OSVRHmd();
 
 	// ------------------------------------
 	// Management Methods
@@ -129,7 +132,6 @@ protected:
 	osvr::clientkit::Interface* m_TrackerInterface;
 	std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
 	vr::IPoseListener* m_PoseListener;
-
 };
 
 struct CallbackData {
@@ -140,11 +142,6 @@ struct CallbackData {
 void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 
 OSVRHmd::OSVRHmd(const std::string& display_description, osvr::clientkit::Interface* tracker_interface) : m_DisplayDescription(display_description), m_TrackerInterface(tracker_interface), m_DisplayConfiguration(nullptr)
-{
-	// do nothing
-}
-
-OSVRHmd::~OSVRHmd()
 {
 	// do nothing
 }
@@ -218,136 +215,64 @@ void OSVRHmd::GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pn
 	}
 }
 
-/**
- * The components necessary to build your own projection matrix in case your
- * application is doing something fancy like infinite Z
- */
 void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, float* pfTop, float* pfBottom)
 {
-	// FIXME
-	/*
-	const float (*p)[4] = mat.M;
+	// Projection matrix centered between the eyes
+	const double z_near = 0.1;
+	const double z_far = 100.0;
+	const Eigen::Matrix4d center = make_projection_matrix(m_DisplayConfiguration->getHorizontalFOVRadians(), m_DisplayConfiguration->getFOVAspectRatio(), z_near, z_far);
 
-	float dx  = 2.0f / p[0][0];
-	float sx  = p[0][2] * dx;
-	*pfRight  = (sx + dx) * 0.5f;
-	*pfLeft   = sx - *pfRight;
+	// Translate projection matrix to left or right eye
+	double eye_translation = m_DisplayConfiguration->getIPDMeters() / 2.0;
+	if (vr::Eye_Left == eEye) {
+		eye_translation *= -1.0;
+	}
+	const Eigen::Affine3d translation(Eigen::Translation3d(Eigen::Vector3d(eye_translation, 0.0, 0.0)));
 
-	float dy   = 2.0f / p[1][1];
-	float sy   = p[1][2] * dy;
-	*pfBottom  = (sy + dy) * 0.5f;
-	*pfTop     = sy - *pfBottom;
-	*/
+	const Eigen::Matrix4d eye_matrix = translation * center;
+
+	const double near = eye_matrix(2, 3) / (eye_matrix(2, 2) - 1.0);
+	const double far  = eye_matrix(2, 3) / (eye_matrix(3, 3) + 1.0);
+	*pfBottom = near * (eye_matrix(1, 2) - 1.0) / eye_matrix(1, 1);
+	*pfTop    = near * (eye_matrix(1, 2) + 1.0) / eye_matrix(1, 1);
+	*pfLeft   = near * (eye_matrix(0, 2) - 1.0) / eye_matrix(0, 0);
+	*pfRight  = near * (eye_matrix(0, 2) + 1.0) / eye_matrix(0, 0);
 }
 
-/**
- * Returns the transform between the view space and eye space. Eye space is
- * the per-eye flavor of view space that provides stereo disparity. Instead
- * of Model * View * Projection the model is Model * View * Eye *
- * Projection.  Normally View and Eye will be multiplied together and
- * treated as View in your application. 
- */
 vr::HmdMatrix44_t OSVRHmd::GetEyeMatrix(vr::Hmd_Eye eEye)
 {
-	vr::HmdMatrix44_t mat;
-	HmdMatrix_SetIdentity(&mat);
-
 	// Rotate per the display configuration
-	// FIXME
+	const double horiz_fov = m_DisplayConfiguration->getHorizontalFOVRadians();
+	const double overlap = m_DisplayConfiguration->getOverlapPercent() * horiz_fov;
+	double angle = (horiz_fov - overlap) / 2.0;
+	if (vr::Eye_Right == eEye) {
+		angle *= -1.0;
+	}
+	const Eigen::Affine3d rotation = Eigen::Affine3d(Eigen::AngleAxisd(angle, Eigen::Vector3d(0, 1, 0)));
 
 	// Translate along x-axis by half the interpupillary distance
+	double eye_translation = m_DisplayConfiguration->getIPDMeters() / 2.0;
 	if (vr::Eye_Left == eEye) {
-		mat.m[0][3] = -m_DisplayConfiguration->getIPDMeters() / 2.0;
-	} else {
-		mat.m[0][3] = m_DisplayConfiguration->getIPDMeters() / 2.0;
+		eye_translation *= -1.0;
 	}
+	const Eigen::Affine3d translation(Eigen::Translation3d(Eigen::Vector3d(eye_translation, 0.0, 0.0)));
 
-	return mat;
+	// Eye matrix
+	const Eigen::Matrix4d mat = (translation * rotation).matrix();
+
+	return cast<vr::HmdMatrix44_t>(mat);
 }
 
-/**
- * Returns the result of the distortion function for the specified eye and
- * input UVs. UVs go from 0,0 in the upper left of that eye's viewport and
- * 1,1 in the lower right of that eye's viewport.
- */
 vr::DistortionCoordinates_t OSVRHmd::ComputeDistortion(vr::Hmd_Eye eEye, float fU, float fV)
 {
-	// FIXME
-	/*
-	OVR::Util::Render::DistortionConfig distConfig = m_stereoConfig.GetDistortionConfig();
-	OVR::Util::Render::Viewport vp = m_stereoConfig.GetFullViewport();
-
-	vp.w = m_hmdInfo.HResolution/2;
-
-	float fXCenterOffset = distConfig.XCenterOffset;
-	float fUOutOffset = 0;
-	if( eEye == vr::Eye_Right )
-	{
-		fXCenterOffset = -fXCenterOffset;
-
-		vp.x = m_hmdInfo.HResolution/2;
-		fUOutOffset = -0.5f;
-	}
-
-	float x = (float)vp.x / (float)m_hmdInfo.HResolution;
-	float y = (float)vp.y / (float)m_hmdInfo.VResolution;
-	float w = (float)vp.w / (float)m_hmdInfo.HResolution;
-	float h = (float)vp.h / (float)m_hmdInfo.VResolution;
-
-	// pre-munge the UVs the way that Oculus does in their vertex shader
-	float fMungedU = fU * w + x;
-	float fMungedV = fV * h + y;
-
-	float as = (float)vp.w / (float)vp.h;
-
-	float fLensCenterX = x + (w + fXCenterOffset * 0.5f)*0.5f;
-	float fLensCenterY = y + h *0.5f;
-
-	float scaleFactor = 1.0f / distConfig.Scale;
-
-	float scaleU = (w/2)*scaleFactor; 
-	float scaleV = (h/2)*scaleFactor * as;
-
-	float scaleInU = 2/w;
-	float scaleInV = (2/h)/as;
-
-	DistortionCoordinates_t coords;
-	float thetaU = ( fMungedU - fLensCenterX ) *scaleInU; // Scales to [-1, 1]
-	float thetaV = ( fMungedV - fLensCenterY ) * scaleInV; // Scales to [-1, 1]
-
-	float  rSq= thetaU * thetaU + thetaV * thetaV;
-	float theta1U = thetaU * (distConfig.K[0]+ distConfig.K[1] * rSq +
-		distConfig.K[2] * rSq * rSq + distConfig.K[3] * rSq * rSq * rSq);
-	float theta1V = thetaV * (distConfig.K[0]+ distConfig.K[1] * rSq +
-		distConfig.K[2] * rSq * rSq + distConfig.K[3] * rSq * rSq * rSq);
-
-	// The x2 on U scale of the output coords is because the input texture in the VR API is 
-	// single eye instead of two-eye like is standard in the Rift samples.
-
-	// Do blue scale and lookup
-	float thetaBlueU = theta1U * (distConfig.ChromaticAberration[2] + distConfig.ChromaticAberration[3] * rSq);
-	float thetaBlueV = theta1V * (distConfig.ChromaticAberration[2] + distConfig.ChromaticAberration[3] * rSq);
-	coords.rfBlue[0] = 2.f * (fLensCenterX + scaleU * thetaBlueU + fUOutOffset );
-	coords.rfBlue[1] = fLensCenterY + scaleV * thetaBlueV;
-
-	// Do green lookup (no scaling).
-	coords.rfGreen[0] = 2.f * (fLensCenterX + scaleU * theta1U + fUOutOffset);
-	coords.rfGreen[1] = fLensCenterY + scaleV * theta1V;
-
-	// Do red scale and lookup.
-	float thetaRedU = theta1U * (distConfig.ChromaticAberration[0] + distConfig.ChromaticAberration[1] * rSq);
-	float thetaRedV = theta1V * (distConfig.ChromaticAberration[0] + distConfig.ChromaticAberration[1] * rSq);
-	coords.rfRed[0] = 2.f * (fLensCenterX + scaleU * thetaRedU + fUOutOffset);
-	coords.rfRed[1] = fLensCenterY + scaleV * thetaRedV;
-
-	//float r = sqrtf( rSq );
-	//if( r > 0.19f && r < 0.2f )
-	//{
-	//	memset( &coords, 0, sizeof(coords) );
-	//}
-	*/
-
+	// FIXME Compute distortion using display configuration data
 	vr::DistortionCoordinates_t coords;
+	coords.rfRed[0] = 0.0;
+	coords.rfRed[1] = 0.0;
+	coords.rfBlue[0] = 0.0;
+	coords.rfBlue[1] = 0.0;
+	coords.rfGreen[0] = 0.0;
+	coords.rfGreen[1] = 0.0;
 	return coords;
 }
 

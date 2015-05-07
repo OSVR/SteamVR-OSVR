@@ -37,6 +37,7 @@ public:
 	double getHorizontalFOV() const;
 	double getHorizontalFOVRadians() const;
 	double getFOVAspectRatio() const;
+	double getOverlapPercent() const;
 
 	double getIPDMeters() const;
 
@@ -89,7 +90,7 @@ inline void OSVRDisplayConfiguration::parse(const std::string& display_descripti
 	// Field of view
 	m_MonocularHorizontalFOV = root["hmd"]["field_of_view"]["monocular_horizontal"].asDouble();
 	m_MonocularVerticalFOV = root["hmd"]["field_of_view"]["monocular_vertical"].asDouble();
-	m_OverlapPercent = root["hmd"]["field_of_view"]["overlap_percent"].asDouble();
+	m_OverlapPercent = root["hmd"]["field_of_view"]["overlap_percent"].asDouble() / 100.0;
 	m_PitchTilt = root["hmd"]["field_of_view"]["pitch_tilt"].asDouble();
 
 	// Since SteamVR only supports outputting to a single window, we will
@@ -228,6 +229,11 @@ inline double OSVRDisplayConfiguration::getHorizontalFOVRadians() const
 inline double OSVRDisplayConfiguration::getFOVAspectRatio() const
 {
 	return m_MonocularVerticalFOV / m_MonocularHorizontalFOV;
+}
+
+inline double OSVRDisplayConfiguration::getOverlapPercent() const
+{
+	return m_OverlapPercent;
 }
 
 inline double OSVRDisplayConfiguration::getIPDMeters() const

@@ -34,6 +34,11 @@ check_cxx_symbol_exists(std::make_unique memory OSVR_HAS_MAKE_UNIQUE)
 configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_tests.h")
 
 #
+# Third-party libraries
+#
+add_subdirectory(vendor)
+
+#
 # SteamVR driver
 #
 add_library(driver_osvr
@@ -44,7 +49,7 @@ add_library(driver_osvr
 	stringhasprefix.h
 	cxx_feature_override.h
 	)
-target_link_libraries(driver_osvr osvr::osvrClientKit)
+target_link_libraries(driver_osvr osvr::osvrClientKit eigen-headers)
 target_include_directories(driver_osvr PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
@@ -61,7 +66,7 @@ install(TARGETS driver_osvr
 add_executable(test_hmd_driver
 	test_hmd_driver.cpp
 	)
-target_link_libraries(test_hmd_driver osvr::osvrClientKit jsoncpp_lib ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+target_link_libraries(test_hmd_driver osvr::osvrClientKit jsoncpp_lib ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} eigen-headers)
 target_include_directories(test_hmd_driver PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
 target_compile_features(test_hmd_driver PRIVATE cxx_override)
