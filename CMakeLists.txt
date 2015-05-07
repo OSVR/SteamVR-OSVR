@@ -6,6 +6,9 @@ project(steamvr_osvr)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 #
 # Dependencies
 #
@@ -23,14 +26,15 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #
 include(WriteCompilerDetectionHeader)
 write_compiler_detection_header(
-	FILE "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_detection.h"
+	FILE "osvr_compiler_detection.h"
 	PREFIX OSVR
 	COMPILERS GNU Clang AppleClang MSVC
 	FEATURES cxx_override
 )
 
-include(CheckCXXSymbolExists)
-check_cxx_symbol_exists(std::make_unique memory OSVR_HAS_MAKE_UNIQUE)
+include(CheckCXXSourceCompiles)
+set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX11_STANDARD_COMPILE_OPTION})
+check_cxx_source_compiles("#include <memory>\nint main(int, char**) { std::unique_ptr<int> i = std::make_unique<int>(0); }" HAVE_STD_MAKE_UNIQUE)
 configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_tests.h")
 
 #
