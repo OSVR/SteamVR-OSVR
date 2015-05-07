@@ -44,10 +44,6 @@ add_subdirectory(vendor)
 add_library(driver_osvr
 	MODULE
 	driver_osvr.cpp
-	export.h
-	hmdmatrix_setidentity.h
-	stringhasprefix.h
-	cxx_feature_override.h
 	)
 target_link_libraries(driver_osvr osvr::osvrClientKit eigen-headers)
 target_include_directories(driver_osvr PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS})

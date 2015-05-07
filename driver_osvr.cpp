@@ -16,9 +16,6 @@
 // (Final version intended to be licensed under
 // the Apache License, Version 2.0)
 
-#ifndef INCLUDED_driver_osvr_cpp_GUID_ECDDF736_3E03_4CB2_8D91_5E89646BD6A3
-#define INCLUDED_driver_osvr_cpp_GUID_ECDDF736_3E03_4CB2_8D91_5E89646BD6A3
-
 // Internal Includes
 #include "ihmddriverprovider.h"
 #include "ihmddriver.h"
@@ -150,6 +147,4 @@ OSVR_DLL_EXPORT void* HmdDriverFactory(const char* pInterfaceName, int* pReturnC
 
 	return &g_driverOSVR;
 }
-
-#endif // INCLUDED_driver_osvr_cpp_GUID_ECDDF736_3E03_4CB2_8D91_5E89646BD6A3
 
