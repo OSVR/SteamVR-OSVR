@@ -23,7 +23,6 @@
 #include "osvr_compiler_detection.h"
 #include "osvr_display_configuration.h"
 #include "make_unique.h"
-#include "hmdmatrix_setidentity.h"
 #include "ClientMainloopThread.h"
 #include "matrix_cast.h"
 #include "projection_matrix.h"
