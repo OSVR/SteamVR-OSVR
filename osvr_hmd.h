@@ -41,7 +41,7 @@
 
 class OSVRHmd : public vr::IHmdDriver {
 public:
-	OSVRHmd(const std::string& display_description, osvr::clientkit::Interface const& tracker_interface);
+    OSVRHmd(const std::string& display_description, osvr::clientkit::ClientContext & context);
 
 	// ------------------------------------
 	// Management Methods
@@ -128,7 +128,8 @@ public:
 
 protected:
 	const std::string m_DisplayDescription;
-	osvr::clientkit::Interface m_TrackerInterface;
+    osvr::clientkit::ClientContext & m_Context;
+    osvr::clientkit::Interface m_TrackerInterface;
 	std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
 	vr::IPoseListener* m_PoseListener;
 };
@@ -140,7 +141,7 @@ struct CallbackData {
 
 void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 
-OSVRHmd::OSVRHmd(const std::string& display_description, osvr::clientkit::Interface const& tracker_interface) : m_DisplayDescription(display_description), m_TrackerInterface(tracker_interface), m_DisplayConfiguration(nullptr)
+OSVRHmd::OSVRHmd(const std::string& display_description, osvr::clientkit::ClientContext & context) : m_DisplayDescription(display_description), m_Context(context), m_DisplayConfiguration(nullptr), m_PoseListener(nullptr)
 {
 	// do nothing
 }
@@ -153,14 +154,21 @@ vr::HmdError OSVRHmd::Activate(vr::IPoseListener* pPoseListener)
 	m_DisplayConfiguration = std::make_unique<OSVRDisplayConfiguration>(m_DisplayDescription);
 
 	// Register tracker callback
-	CallbackData callback_data { m_PoseListener, this };
-	m_TrackerInterface.registerCallback(&HmdTrackerCallback, &callback_data);
+    if (m_TrackerInterface.notEmpty()) {
+        m_TrackerInterface.free();
+    }
+    m_TrackerInterface = m_Context.getInterface("/me/head");
+	m_TrackerInterface.registerCallback(&HmdTrackerCallback, this);
 
 	return vr::HmdError_None;
 }
 
 void OSVRHmd::Deactivate()
 {
+    /// Have to force freeing here 
+    if (m_TrackerInterface.notEmpty()) {
+        m_TrackerInterface.free();
+    }
 	m_PoseListener = NULL;
 }
 
