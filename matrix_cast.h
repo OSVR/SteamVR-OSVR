@@ -65,7 +65,7 @@ inline vr::HmdMatrix44_t cast(const Eigen::Affine3d& source, const identity<vr::
     vr::HmdMatrix44_t m;
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            m.m[i][j] = source(i, j);
+            m.m[i][j] = static_cast<float>(source(i, j));
         }
     }
     return m;
@@ -87,7 +87,7 @@ inline vr::HmdMatrix44_t cast(const Eigen::Matrix4d& source, const identity<vr::
     vr::HmdMatrix44_t m;
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            m.m[i][j] = source(i, j);
+            m.m[i][j] = static_cast<float>(source(i, j));
         }
     }
     return m;

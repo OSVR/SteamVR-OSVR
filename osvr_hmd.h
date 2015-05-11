@@ -241,10 +241,10 @@ void OSVRHmd::GetProjectionRaw(vr::Hmd_Eye eEye, float* pfLeft, float* pfRight, 
 
     const double near = eye_matrix(2, 3) / (eye_matrix(2, 2) - 1.0);
     const double far = eye_matrix(2, 3) / (eye_matrix(3, 3) + 1.0);
-    *pfBottom = near * (eye_matrix(1, 2) - 1.0) / eye_matrix(1, 1);
-    *pfTop = near * (eye_matrix(1, 2) + 1.0) / eye_matrix(1, 1);
-    *pfLeft = near * (eye_matrix(0, 2) - 1.0) / eye_matrix(0, 0);
-    *pfRight = near * (eye_matrix(0, 2) + 1.0) / eye_matrix(0, 0);
+    *pfBottom = static_cast<float>(near * (eye_matrix(1, 2) - 1.0) / eye_matrix(1, 1));
+    *pfTop = static_cast<float>(near * (eye_matrix(1, 2) + 1.0) / eye_matrix(1, 1));
+    *pfLeft = static_cast<float>(near * (eye_matrix(0, 2) - 1.0) / eye_matrix(0, 0));
+    *pfRight = static_cast<float>(near * (eye_matrix(0, 2) + 1.0) / eye_matrix(0, 0));
 }
 
 vr::HmdMatrix44_t OSVRHmd::GetEyeMatrix(vr::Hmd_Eye eEye)
