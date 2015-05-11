@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     // Instantiate the HMD driver
     std::cout << "Instantiating HMD driver..." << std::endl;
     int driver_init_return = 0;
-    std::unique_ptr<CDriver_OSVR> hmd_driver(static_cast<CDriver_OSVR*>(HmdDriverFactory(vr::IHmdDriverProvider_Version, &driver_init_return)));
+    auto hmd_driver = static_cast<CDriver_OSVR*>(HmdDriverFactory(vr::IHmdDriverProvider_Version, &driver_init_return));
     if (!hmd_driver) {
         std::cerr << "! Error creating HMD driver. ";
         switch (driver_init_return) {
