@@ -47,8 +47,17 @@ add_subdirectory(vendor)
 #
 add_library(driver_osvr
 	MODULE
+	ClientMainloop.h
+	ClientMainloopThread.h
+	export.h
+	make_unique.h
+	matrix_cast.h
+	osvr_display_configuration.h
+	osvr_dll_export.h
+	osvr_hmd.h
+	projection_matrix.h
 	driver_osvr.cpp
-	)
+)
 target_link_libraries(driver_osvr osvr::osvrClientKit eigen-headers)
 target_include_directories(driver_osvr PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
@@ -70,5 +79,3 @@ target_link_libraries(test_hmd_driver osvr::osvrClientKit jsoncpp_lib ${CMAKE_TH
 target_include_directories(test_hmd_driver PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
 target_compile_features(test_hmd_driver PRIVATE cxx_override)
-
-
