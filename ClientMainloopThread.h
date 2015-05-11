@@ -34,6 +34,7 @@
 // Standard includes
 #include <stdexcept>
 #include <thread>
+#include <chrono>
 
 static const auto SLEEP_TIME = std::chrono::milliseconds(1);
 
