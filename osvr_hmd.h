@@ -127,7 +127,8 @@ public:
 	 */
     virtual const char* GetSerialNumber() OSVR_OVERRIDE;
 
-protected:
+private:
+    static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
     osvr::clientkit::Interface m_TrackerInterface;
@@ -135,12 +136,6 @@ protected:
     vr::IPoseListener* m_PoseListener;
 };
 
-struct CallbackData {
-    vr::IPoseListener* poseListener;
-    vr::IHmdDriver* hmdDriver;
-};
-
-void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 
 OSVRHmd::OSVRHmd(const std::string& display_description, osvr::clientkit::ClientContext& context) : m_DisplayDescription(display_description), m_Context(context), m_DisplayConfiguration(nullptr), m_PoseListener(nullptr)
 {
@@ -159,7 +154,7 @@ vr::HmdError OSVRHmd::Activate(vr::IPoseListener* pPoseListener)
         m_TrackerInterface.free();
     }
     m_TrackerInterface = m_Context.getInterface("/me/head");
-    m_TrackerInterface.registerCallback(&HmdTrackerCallback, this);
+    m_TrackerInterface.registerCallback(&OSVRHmd::HmdTrackerCallback, this);
 
     return vr::HmdError_None;
 }
@@ -296,11 +291,12 @@ const char* OSVRHmd::GetSerialNumber()
     return "0";
 }
 
-void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
+void OSVRHmd::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
 {
-    CallbackData* callback_data = static_cast<CallbackData*>(userdata);
-    if (!callback_data->poseListener)
+    auto* self = static_cast<OSVRHmd*>(userdata);
+    if (!self->m_PoseListener) {
         return;
+    }
 
     vr::DriverPose_t pose;
     pose.poseTimeOffset = 0; // close enough
@@ -349,7 +345,7 @@ void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const O
     pose.willDriftInYaw = true;
     pose.shouldApplyHeadModel = true;
 
-    callback_data->poseListener->PoseUpdated(callback_data->hmdDriver, pose);
+    self->m_PoseListener->PoseUpdated(self, pose);
 }
 
 #endif // INCLUDED_osvr_hmd_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
