@@ -85,7 +85,7 @@ private:
     std::unique_ptr<ClientMainloopThread> client_;
 };
 
-CDriver_OSVR g_driverOSVR;
+std::unique_ptr<CDriver_OSVR> g_driverOSVR;
 
 vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDriverInstallDir)
 {
@@ -103,7 +103,10 @@ vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDri
 
 void CDriver_OSVR::Cleanup()
 {
-    // do nothing
+    client_.reset();
+    hmds_.clear();
+    context_.reset();
+    g_driverOSVR.reset();
 }
 
 uint32_t CDriver_OSVR::GetHmdCount()
@@ -144,5 +147,7 @@ OSVR_DLL_EXPORT void* HmdDriverFactory(const char* pInterfaceName, int* pReturnC
         return NULL;
     }
 
-    return &g_driverOSVR;
+    g_driverOSVR = std::make_unique<CDriver_OSVR>();
+
+    return g_driverOSVR.get();
 }
