@@ -39,4 +39,3 @@
 #endif
 
 #endif // INCLUDED_osvr_dll_export_h_GUID_86142D80_1F9B_45D5_9C6C_04FA424822B0
-

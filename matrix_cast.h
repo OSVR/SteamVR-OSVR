@@ -38,7 +38,7 @@
 
 //typedef Transform<double,3,Affine> Affine3d
 
-template<typename T>
+template <typename T>
 struct identity {
     typedef T type;
 };
@@ -94,4 +94,3 @@ inline vr::HmdMatrix44_t cast(const Eigen::Matrix4d& source, const identity<vr::
 }
 
 #endif // INCLUDED_matrix_cast_h_GUID_27799A61_A16D_4B3A_AFA8_A2A4336D40AD
-

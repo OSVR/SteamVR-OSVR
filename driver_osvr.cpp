@@ -35,9 +35,10 @@
 #include <vector>
 #include <cstring>
 
-class CDriver_OSVR : public vr::IHmdDriverProvider {
+class CDriver_OSVR : public vr::IHmdDriverProvider
+{
 public:
-	/**
+    /**
 	 * Initializes the driver.
 	 *
 	 * This is called when the driver is first loaded.
@@ -52,98 +53,96 @@ public:
 	 *
 	 * @returns HmdError_None on success.
 	 */
-	virtual vr::HmdError Init(const char* pchUserConfigDir, const char* pchDriverInstallDir) OSVR_OVERRIDE;
+    virtual vr::HmdError Init(const char* pchUserConfigDir, const char* pchDriverInstallDir) OSVR_OVERRIDE;
 
-	/**
+    /**
 	 * Performs any cleanup prior to the driver being unloaded.
 	 */
-	virtual void Cleanup() OSVR_OVERRIDE;
+    virtual void Cleanup() OSVR_OVERRIDE;
 
-	/**
+    /**
 	 * Returns the number of detect HMDs.
 	 */
-	virtual uint32_t GetHmdCount() OSVR_OVERRIDE;
+    virtual uint32_t GetHmdCount() OSVR_OVERRIDE;
 
-	/**
+    /**
 	 * Returns a single HMD by its index.
 	 *
 	 * @param index the index of the HMD to return.
 	 */
-	virtual vr::IHmdDriver* GetHmd(uint32_t index) OSVR_OVERRIDE;
+    virtual vr::IHmdDriver* GetHmd(uint32_t index) OSVR_OVERRIDE;
 
-	/**
+    /**
 	 * Returns a single HMD by its name.
 	 *
 	 * @param hmd_id the C string name of the HMD.
 	 */
-	virtual vr::IHmdDriver* FindHmd(const char* hmd_id) OSVR_OVERRIDE;
+    virtual vr::IHmdDriver* FindHmd(const char* hmd_id) OSVR_OVERRIDE;
 
 private:
-	std::vector<std::unique_ptr<OSVRHmd>> hmds_;
-	std::unique_ptr<osvr::clientkit::ClientContext> context_;
-	std::unique_ptr<ClientMainloopThread> client_;
+    std::vector<std::unique_ptr<OSVRHmd>> hmds_;
+    std::unique_ptr<osvr::clientkit::ClientContext> context_;
+    std::unique_ptr<ClientMainloopThread> client_;
 };
 
 CDriver_OSVR g_driverOSVR;
 
 vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDriverInstallDir)
 {
-	context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
+    context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
 
-	client_ = std::make_unique<ClientMainloopThread>(*context_);
+    client_ = std::make_unique<ClientMainloopThread>(*context_);
 
-	const std::string display_description = context_->getStringParameter("/display");
-	hmds_.emplace_back(std::make_unique<OSVRHmd>(display_description, *(context_.get())));
+    const std::string display_description = context_->getStringParameter("/display");
+    hmds_.emplace_back(std::make_unique<OSVRHmd>(display_description, *(context_.get())));
 
-	client_->start();
+    client_->start();
 
-	return vr::HmdError_None;
+    return vr::HmdError_None;
 }
 
 void CDriver_OSVR::Cleanup()
 {
-	// do nothing
+    // do nothing
 }
 
 uint32_t CDriver_OSVR::GetHmdCount()
 {
-	return hmds_.size();
+    return hmds_.size();
 }
 
 vr::IHmdDriver* CDriver_OSVR::GetHmd(uint32_t index)
 {
-	if (index >= hmds_.size())
-		return NULL;
+    if (index >= hmds_.size())
+        return NULL;
 
-	return hmds_[index].get();
+    return hmds_[index].get();
 }
 
 vr::IHmdDriver* CDriver_OSVR::FindHmd(const char* hmd_id)
 {
-	for (auto& hmd : hmds_) {
-		if (0 == std::strcmp(hmd_id, hmd->GetId()))
-			return hmd.get();
-	}
+    for (auto& hmd : hmds_) {
+        if (0 == std::strcmp(hmd_id, hmd->GetId()))
+            return hmd.get();
+    }
 
-	return NULL;
+    return NULL;
 }
-
 
 static const char* IHmdDriverProvider_Prefix = "IHmdDriverProvider_";
 
 OSVR_DLL_EXPORT void* HmdDriverFactory(const char* pInterfaceName, int* pReturnCode)
 {
-	if (!StringHasPrefix(pInterfaceName, IHmdDriverProvider_Prefix)) {
-		*pReturnCode = vr::HmdError_Init_InvalidInterface;
-		return NULL;
-	}
+    if (!StringHasPrefix(pInterfaceName, IHmdDriverProvider_Prefix)) {
+        *pReturnCode = vr::HmdError_Init_InvalidInterface;
+        return NULL;
+    }
 
-	if (0 != strcmp(vr::IHmdDriverProvider_Version, pInterfaceName)) {
-		if (pReturnCode)
-			*pReturnCode = vr::HmdError_Init_InterfaceNotFound;
-		return NULL;
-	}
+    if (0 != strcmp(vr::IHmdDriverProvider_Version, pInterfaceName)) {
+        if (pReturnCode)
+            *pReturnCode = vr::HmdError_Init_InterfaceNotFound;
+        return NULL;
+    }
 
-	return &g_driverOSVR;
+    return &g_driverOSVR;
 }
-
