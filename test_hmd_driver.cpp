@@ -82,6 +82,8 @@ int main(int argc, char* argv[])
     vr::IHmdDriver* hmd = hmd_driver->GetHmd(0);
 
 
+    hmd_driver->Cleanup();
+
     return EXIT_SUCCESS;
 }
 
