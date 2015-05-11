@@ -15,6 +15,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(SteamVR REQUIRED)
 find_package(osvr REQUIRED)
 find_package(jsoncpp REQUIRED)
+if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
+	add_library(jsoncpp_lib ALIAS jsoncpp_lib_static)
+endif()
+
 find_package(Threads REQUIRED)
 find_package(Boost COMPONENTS thread system REQUIRED)
 
@@ -58,7 +62,7 @@ add_library(driver_osvr
 	projection_matrix.h
 	driver_osvr.cpp
 )
-target_link_libraries(driver_osvr osvr::osvrClientKit eigen-headers)
+target_link_libraries(driver_osvr osvr::osvrClientKit eigen-headers jsoncpp_lib)
 target_include_directories(driver_osvr PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
