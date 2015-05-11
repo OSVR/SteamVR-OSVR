@@ -63,7 +63,7 @@ add_library(driver_osvr
 	driver_osvr.cpp
 )
 target_link_libraries(driver_osvr osvr::osvrClientKit eigen-headers jsoncpp_lib)
-target_include_directories(driver_osvr PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS})
+target_include_directories(driver_osvr PRIVATE osvr::osvrClientKit ${STEAMVR_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
 
