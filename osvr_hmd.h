@@ -41,7 +41,7 @@
 
 class OSVRHmd : public vr::IHmdDriver {
 public:
-	OSVRHmd(const std::string& display_description, osvr::clientkit::Interface* tracker_interface);
+	OSVRHmd(const std::string& display_description, osvr::clientkit::Interface const& tracker_interface);
 
 	// ------------------------------------
 	// Management Methods
@@ -85,7 +85,7 @@ public:
 	virtual void GetRecommendedRenderTargetSize(uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
 
 	/**
-	 * Gets the viewport in the frame buffer to draw the output of the disortion
+	 * Gets the viewport in the frame buffer to draw the output of the distortion
 	 * into
 	 */
 	virtual void GetEyeOutputViewport(vr::Hmd_Eye eEye, uint32_t* pnX, uint32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight) OSVR_OVERRIDE;
@@ -128,7 +128,7 @@ public:
 
 protected:
 	const std::string m_DisplayDescription;
-	osvr::clientkit::Interface* m_TrackerInterface;
+	osvr::clientkit::Interface m_TrackerInterface;
 	std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
 	vr::IPoseListener* m_PoseListener;
 };
@@ -140,7 +140,7 @@ struct CallbackData {
 
 void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 
-OSVRHmd::OSVRHmd(const std::string& display_description, osvr::clientkit::Interface* tracker_interface) : m_DisplayDescription(display_description), m_TrackerInterface(tracker_interface), m_DisplayConfiguration(nullptr)
+OSVRHmd::OSVRHmd(const std::string& display_description, osvr::clientkit::Interface const& tracker_interface) : m_DisplayDescription(display_description), m_TrackerInterface(tracker_interface), m_DisplayConfiguration(nullptr)
 {
 	// do nothing
 }
@@ -154,7 +154,7 @@ vr::HmdError OSVRHmd::Activate(vr::IPoseListener* pPoseListener)
 
 	// Register tracker callback
 	CallbackData callback_data { m_PoseListener, this };
-	m_TrackerInterface->registerCallback(&HmdTrackerCallback, &callback_data);
+	m_TrackerInterface.registerCallback(&HmdTrackerCallback, &callback_data);
 
 	return vr::HmdError_None;
 }
@@ -166,7 +166,7 @@ void OSVRHmd::Deactivate()
 
 const char* OSVRHmd::GetId()
 {
-	// TODO When available, return the actual unique ID of the HMD
+	/// @todo When available, return the actual unique ID of the HMD
 	return "OSVR HMD";
 }
 
@@ -264,7 +264,7 @@ vr::HmdMatrix44_t OSVRHmd::GetEyeMatrix(vr::Hmd_Eye eEye)
 
 vr::DistortionCoordinates_t OSVRHmd::ComputeDistortion(vr::Hmd_Eye eEye, float fU, float fV)
 {
-	// FIXME Compute distortion using display configuration data
+    /// @todo FIXME Compute distortion using display configuration data
 	vr::DistortionCoordinates_t coords;
 	coords.rfRed[0] = 0.0;
 	coords.rfRed[1] = 0.0;
@@ -277,13 +277,13 @@ vr::DistortionCoordinates_t OSVRHmd::ComputeDistortion(vr::Hmd_Eye eEye, float f
 
 const char* OSVRHmd::GetModelNumber()
 {
-	// TODO When available, return the actual model number of the HMD
+	/// @todo When available, return the actual model number of the HMD
 	return "OSVR HMD";
 }
 
 const char* OSVRHmd::GetSerialNumber()
 {
-	// TODO When available, return the actual serial number of the HMD
+    /// @todo When available, return the actual serial number of the HMD
 	return "0";
 }
 

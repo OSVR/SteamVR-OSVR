@@ -94,7 +94,7 @@ vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDri
 
 	const std::string display_description = context_->getStringParameter("/display");
 	osvr::clientkit::Interface head_tracker_interface = context_->getInterface("/me/head");
-	hmds_.emplace_back(std::make_unique<OSVRHmd>(display_description, &head_tracker_interface));
+	hmds_.emplace_back(std::make_unique<OSVRHmd>(display_description, head_tracker_interface));
 
 	client_->start();
 
