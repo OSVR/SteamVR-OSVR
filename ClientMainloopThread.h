@@ -29,19 +29,19 @@
 #include "ClientMainloop.h"
 
 // Library/third-party includes
-#include <boost/thread/thread.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/chrono.hpp>
+// - none
 
 // Standard includes
 #include <stdexcept>
+#include <thread>
 
-static const auto SLEEP_TIME = boost::posix_time::milliseconds(1);
+static const auto SLEEP_TIME = std::chrono::milliseconds(1);
 
-class ClientMainloopThread : boost::noncopyable {
+class ClientMainloopThread {
   public:
     typedef ClientMainloop::mutex_type mutex_type;
     typedef ClientMainloop::lock_type lock_type;
+    typedef std::thread thread_type;
     ClientMainloopThread(osvr::clientkit::ClientContext &ctx,
                          bool startNow = false)
         : m_run(false), m_started(false), m_mainloop(ctx) {
@@ -49,6 +49,12 @@ class ClientMainloopThread : boost::noncopyable {
             start();
         }
     }
+
+    /// Can't copy-construct
+    ClientMainloopThread(ClientMainloopThread const&) = delete;
+    /// Can't assign
+    ClientMainloopThread& operator=(ClientMainloopThread const&) = delete;
+
     void start() {
         if (m_run || m_started) {
             throw std::logic_error(
@@ -56,7 +62,7 @@ class ClientMainloopThread : boost::noncopyable {
         }
         m_started = true;
         m_run = true;
-        m_thread = boost::thread([&] {
+        m_thread = thread_type([&] {
             while (m_run) {
                 oneLoop();
             }
@@ -65,12 +71,12 @@ class ClientMainloopThread : boost::noncopyable {
 
     void oneLoop() {
         m_mainloop.mainloop();
-        boost::this_thread::sleep(SLEEP_TIME);
+        std::this_thread::sleep_for(SLEEP_TIME);
     }
 
     template <typename T>
-    void loopForDuration(T duration = boost::chrono::seconds(2)) {
-        typedef boost::chrono::steady_clock clock;
+    void loopForDuration(T duration = std::chrono::seconds(2)) {
+        typedef std::chrono::steady_clock clock;
         auto start = clock::now();
         do {
             oneLoop();
@@ -87,7 +93,7 @@ class ClientMainloopThread : boost::noncopyable {
     volatile bool m_run;
     bool m_started;
     ClientMainloop m_mainloop;
-    boost::thread m_thread;
+    thread_type m_thread;
 };
 
 #endif // INCLUDED_ClientMainloopThread_h_GUID_552DB227_9D15_4B9D_E3CD_42A57C734029

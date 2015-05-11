@@ -30,22 +30,26 @@
 #include <osvr/ClientKit/ClientKit.h>
 
 // Library/third-party includes
-#include <boost/noncopyable.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include <boost/thread/locks.hpp>
+#include <mutex>
 
 // Standard includes
 // - none
 
 /// @brief Simple class to handle running a client mainloop in another thread,
 /// but easily pausable.
-class ClientMainloop : boost::noncopyable {
+class ClientMainloop {
   public:
-    typedef boost::recursive_mutex mutex_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
+    typedef std::recursive_mutex mutex_type;
+    typedef std::unique_lock<mutex_type> lock_type;
     ClientMainloop(osvr::clientkit::ClientContext &ctx) : m_ctx(ctx) {}
+
+    /// Can't copy-construct
+    ClientMainloop(ClientMainloop const&) = delete;
+    /// Can't assign
+    ClientMainloop& operator=(ClientMainloop const&) = delete;
+
     void mainloop() {
-        lock_type lock(m_mutex, boost::try_to_lock);
+        lock_type lock(m_mutex, std::try_to_lock);
         if (lock) {
             m_ctx.update();
         }
