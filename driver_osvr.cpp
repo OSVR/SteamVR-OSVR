@@ -86,7 +86,6 @@ public:
 private:
     std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
-    std::unique_ptr<ClientMainloopThread> client_;
 };
 
 static CDriver_OSVR g_driverOSVR;
@@ -95,19 +94,14 @@ vr::HmdError CDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHos
 {
     context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
 
-    client_ = std::make_unique<ClientMainloopThread>(*context_);
-
     const std::string display_description = context_->getStringParameter("/display");
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get())));
-
-    client_->start();
 
     return vr::HmdError_None;
 }
 
 void CDriver_OSVR::Cleanup()
 {
-    client_.reset();
     trackedDevices_.clear();
     context_.reset();
 }
@@ -137,7 +131,7 @@ vr::ITrackedDeviceServerDriver* CDriver_OSVR::FindTrackedDeviceDriver(const char
 
 void CDriver_OSVR::RunFrame()
 {
-    // TODO loop client
+    context_->update();
 }
 
 static const char* IHmdDriverProvider_Prefix = "IHmdDriverProvider_";

@@ -36,7 +36,8 @@
 #include <Eigen/Geometry>
 
 // Standard includes
-// - none
+#include <cstring>
+#include <string>
 
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver
 {
@@ -230,6 +231,7 @@ private:
     osvr::clientkit::ClientContext& m_Context;
     osvr::clientkit::Interface m_TrackerInterface;
     std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
+    vr::DriverPose_t pose_;
 };
 
 
@@ -393,7 +395,22 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye
 
 vr::TrackedDeviceDriverInfo_t OSVRTrackedDevice::GetTrackedDeviceDriverInfo()
 {
-    // TODO
+    vr::TrackedDeviceDriverInfo_t info;
+    std::strncpy(info.rchTrackingSystemId, "OSVR", vr::k_unTrackingStringSize); // TODO name of the underlying tracking system
+    info.rchTrackingSystemId[vr::k_unTrackingStringSize - 1] = '\0';
+    std::strncpy(info.rchSerialNumber, GetSerialNumber(), vr::k_unTrackingStringSize);
+    info.rchSerialNumber[vr::k_unTrackingStringSize - 1] = '\0';
+    std::strncpy(info.rchModelNumber, GetModelNumber(), vr::k_unTrackingStringSize);
+    info.rchModelNumber[vr::k_unTrackingStringSize - 1] = '\0';
+    info.rchRenderModelName[0] = '\0'; // TODO pass this to GetRenderModel to get the mesh and texture to render this device
+    info.eClass = vr::TrackedDeviceClass_HMD; // TODO adjust accordingly
+    info.bDeviceIsConnected = true; // false if user unplugs device
+    info.bWillDriftInYaw = true; // true if gyro-only tracking system
+    info.bReportsTimeSinceVSync = false;
+    info.fSecondsFromVsyncToPhotons = 0.0; // seconds between vsync and photons hitting wearer's eyes
+    info.fDisplayFrequency = 60.0; // fps of display
+
+    return info;
 }
 
 const char* OSVRTrackedDevice::GetModelNumber()
@@ -415,7 +432,7 @@ float OSVRTrackedDevice::GetIPD()
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
 {
-    // TODO
+    return pose_;
 }
 
 bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
@@ -453,10 +470,12 @@ bool OSVRTrackedDevice::TriggerHapticPulse(uint32_t axis_id, uint16_t pulse_dura
     // TODO
 }
 
-
 void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
 {
-    // FIXME auto* self = static_cast<OSVRTrackedDevice*>(userdata);
+    if (!userdata)
+        return;
+
+    auto* self = static_cast<OSVRTrackedDevice*>(userdata);
 
     vr::DriverPose_t pose;
     pose.poseTimeOffset = 0; // close enough
@@ -504,7 +523,7 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.willDriftInYaw = true;
     pose.shouldApplyHeadModel = true;
 
-    // FIXME self->m_PoseListener->PoseUpdated(self, pose);
+    self->pose_ = pose;
 }
 
 #endif // INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
