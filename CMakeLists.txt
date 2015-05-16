@@ -51,8 +51,6 @@ add_subdirectory(vendor)
 #
 add_library(driver_osvr
 	MODULE
-	ClientMainloop.h
-	ClientMainloopThread.h
 	make_unique.h
 	matrix_cast.h
 	osvr_display_configuration.h
