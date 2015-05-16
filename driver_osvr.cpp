@@ -17,12 +17,11 @@
 // the Apache License, Version 2.0)
 
 // Internal Includes
-#include "ihmddriverprovider.h"
-#include "ihmddriver.h"
-#include "steamvr.h"
+#include <itrackeddevicedriverprovider.h>
+#include <iservertrackeddevicedriver.h>
 
 #include "osvr_compiler_detection.h"
-#include "osvr_hmd.h"
+#include "osvr_tracked_device.h"
 
 #include "stringhasprefix.h"
 #include "osvr_dll_export.h"
@@ -35,66 +34,71 @@
 #include <vector>
 #include <cstring>
 
-class CDriver_OSVR : public vr::IHmdDriverProvider
+class CDriver_OSVR : public vr::IServerTrackedDeviceProvider
 {
 public:
     /**
-	 * Initializes the driver.
-	 *
-	 * This is called when the driver is first loaded.
-	 *
-	 * @param user_config_dir the absoluate path of the directory where the
-	 *     driver should store any user configuration files.
-	 * @param driver_install_dir the absolute path of the driver's root
-	 *     directory.
-	 *
-	 * If Init() returns anything other than \c HmdError_None the driver will be
-	 * unloaded.
-	 *
-	 * @returns HmdError_None on success.
-	 */
-    virtual vr::HmdError Init(const char* pchUserConfigDir, const char* pchDriverInstallDir) OSVR_OVERRIDE;
+     * Initializes the driver.
+     *
+     * This is called when the driver is first loaded.
+     *
+     * @param user_config_dir the absoluate path of the directory where the
+     *     driver should store any user configuration files.
+     * @param driver_install_dir the absolute path of the driver's root
+     *     directory.
+     *
+     * If Init() returns anything other than \c HmdError_None the driver will be
+     * unloaded.
+     *
+     * @returns HmdError_None on success.
+     */
+    virtual vr::HmdError Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
 
     /**
-	 * Performs any cleanup prior to the driver being unloaded.
-	 */
+     * Performs any cleanup prior to the driver being unloaded.
+     */
     virtual void Cleanup() OSVR_OVERRIDE;
 
     /**
-	 * Returns the number of detect HMDs.
-	 */
-    virtual uint32_t GetHmdCount() OSVR_OVERRIDE;
+     * Returns the number of tracked devices.
+     */
+    virtual uint32_t GetTrackedDeviceCount() OSVR_OVERRIDE;
 
     /**
-	 * Returns a single HMD by its index.
-	 *
-	 * @param index the index of the HMD to return.
-	 */
-    virtual vr::IHmdDriver* GetHmd(uint32_t index) OSVR_OVERRIDE;
+     * Returns a single tracked device by its index.
+     *
+     * @param index the index of the tracked device to return.
+     */
+    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index) OSVR_OVERRIDE;
 
     /**
-	 * Returns a single HMD by its name.
-	 *
-	 * @param hmd_id the C string name of the HMD.
-	 */
-    virtual vr::IHmdDriver* FindHmd(const char* hmd_id) OSVR_OVERRIDE;
+     * Returns a single HMD by its name.
+     *
+     * @param hmd_id the C string name of the HMD.
+     */
+    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id) OSVR_OVERRIDE;
+
+    /**
+     * Allows the driver do to some work in the main loop of the server.
+     */
+    virtual void RunFrame() OSVR_OVERRIDE;
 
 private:
-    std::vector<std::unique_ptr<OSVRHmd>> hmds_;
+    std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
     std::unique_ptr<ClientMainloopThread> client_;
 };
 
 static CDriver_OSVR g_driverOSVR;
 
-vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDriverInstallDir)
+vr::HmdError CDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
 {
     context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
 
     client_ = std::make_unique<ClientMainloopThread>(*context_);
 
     const std::string display_description = context_->getStringParameter("/display");
-    hmds_.emplace_back(std::make_unique<OSVRHmd>(display_description, *(context_.get())));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get())));
 
     client_->start();
 
@@ -104,43 +108,48 @@ vr::HmdError CDriver_OSVR::Init(const char* pchUserConfigDir, const char* pchDri
 void CDriver_OSVR::Cleanup()
 {
     client_.reset();
-    hmds_.clear();
+    trackedDevices_.clear();
     context_.reset();
 }
 
-uint32_t CDriver_OSVR::GetHmdCount()
+uint32_t CDriver_OSVR::GetTrackedDeviceCount()
 {
-    return hmds_.size();
+    return trackedDevices_.size();
 }
 
-vr::IHmdDriver* CDriver_OSVR::GetHmd(uint32_t index)
+vr::ITrackedDeviceServerDriver* CDriver_OSVR::GetTrackedDeviceDriver(uint32_t index)
 {
-    if (index >= hmds_.size())
+    if (index >= trackedDevices_.size())
         return NULL;
 
-    return hmds_[index].get();
+    return trackedDevices_[index].get();
 }
 
-vr::IHmdDriver* CDriver_OSVR::FindHmd(const char* hmd_id)
+vr::ITrackedDeviceServerDriver* CDriver_OSVR::FindTrackedDeviceDriver(const char* id)
 {
-    for (auto& hmd : hmds_) {
-        if (0 == std::strcmp(hmd_id, hmd->GetId()))
-            return hmd.get();
+    for (auto& tracked_device : trackedDevices_) {
+        if (0 == std::strcmp(id, tracked_device->GetId()))
+            return tracked_device.get();
     }
 
     return NULL;
 }
 
+void CDriver_OSVR::RunFrame()
+{
+    // TODO loop client
+}
+
 static const char* IHmdDriverProvider_Prefix = "IHmdDriverProvider_";
 
-OSVR_DLL_EXPORT void* HmdDriverFactory(const char* pInterfaceName, int* pReturnCode)
+OSVR_DLL_EXPORT void* TrackedDeviceDriverFactory(const char* pInterfaceName, int* pReturnCode)
 {
     if (!StringHasPrefix(pInterfaceName, IHmdDriverProvider_Prefix)) {
         *pReturnCode = vr::HmdError_Init_InvalidInterface;
         return NULL;
     }
 
-    if (0 != strcmp(vr::IHmdDriverProvider_Version, pInterfaceName)) {
+    if (0 != strcmp(vr::IServerTrackedDeviceProvider_Version, pInterfaceName)) {
         if (pReturnCode)
             *pReturnCode = vr::HmdError_Init_InterfaceNotFound;
         return NULL;

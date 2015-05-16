@@ -36,12 +36,12 @@
 
 int main(int argc, char* argv[])
 {
-    // Instantiate the HMD driver
-    std::cout << "Instantiating HMD driver..." << std::endl;
+    // Instantiate the tracker driver
+    std::cout << "Instantiating tracker driver..." << std::endl;
     int driver_init_return = 0;
-    auto hmd_driver = static_cast<CDriver_OSVR*>(HmdDriverFactory(vr::IHmdDriverProvider_Version, &driver_init_return));
-    if (!hmd_driver) {
-        std::cerr << "! Error creating HMD driver. ";
+    auto tracker_driver = static_cast<CDriver_OSVR*>(TrackedDeviceDriverFactory(vr::IServerTrackedDeviceProvider_Version, &driver_init_return));
+    if (!tracker_driver) {
+        std::cerr << "! Error creating tracker driver. ";
         switch (driver_init_return) {
         case vr::HmdError_Init_InvalidInterface:
             std::cerr << "Invalid interface.";
@@ -56,33 +56,33 @@ int main(int argc, char* argv[])
         std::cerr << std::endl;
         return EXIT_FAILURE;
     }
-    std::cout << " - HMD driver instantiated successfully." << std::endl;
+    std::cout << " - Tracker driver instantiated successfully." << std::endl;
 
-    // Initialize the HMD driver
-    std::cout << "Initializing the HMD driver..." << std::endl;
-    vr::HmdError error = hmd_driver->Init("", "");
+    // Initialize the tracker driver
+    std::cout << "Initializing the tracker driver..." << std::endl;
+    vr::HmdError error = tracker_driver->Init(nullptr, nullptr, "", "");
     if (vr::HmdError_None != error) {
-        std::cerr << "! Error initializing HMD driver: " << error << "." << std::endl;
-        hmd_driver->Cleanup();
+        std::cerr << "! Error initializing tracker driver: " << error << "." << std::endl;
+        tracker_driver->Cleanup();
         return EXIT_FAILURE;
     }
-    std::cout << " - HMD driver initialized successfully." << std::endl;
+    std::cout << " - Tracker driver initialized successfully." << std::endl;
 
-    // Get the number of HMDs
-    const auto hmd_count = hmd_driver->GetHmdCount();
-    std::cout << "Detected " << hmd_count << " HMDs." << std::endl;
-    if (hmd_count < 1) {
-        std::cerr << "! No HMDs were detected." << std::endl;
-        hmd_driver->Cleanup();
+    // Get the number of trackers
+    const auto tracker_count = tracker_driver->GetTrackedDeviceCount();
+    std::cout << "Detected " << tracker_count << " trackers." << std::endl;
+    if (tracker_count < 1) {
+        std::cerr << "! No trackers were detected." << std::endl;
+        tracker_driver->Cleanup();
         return EXIT_FAILURE;
     }
 
-    // Grab first HMD
-    std::cout << "Acquiring first detected HMD..." << std::endl;
-    vr::IHmdDriver* hmd = hmd_driver->GetHmd(0);
+    // Grab first tracker
+    std::cout << "Acquiring first detected tracker..." << std::endl;
+    vr::ITrackedDeviceServerDriver* tracker = tracker_driver->GetTrackedDeviceDriver(0);
 
 
-    hmd_driver->Cleanup();
+    tracker_driver->Cleanup();
 
     return EXIT_SUCCESS;
 }

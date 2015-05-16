@@ -1,14 +1,13 @@
-# - try to find the SteamVR SDK - currently designed for the version on GitHub.
+# - try to find the OpenVR SDK - currently designed for the version on GitHub.
 #
 # Cache Variables: (probably not for direct use in your scripts)
-#  STEAMVR_INCLUDE_DIR
-#  STEAMVR_SOURCE_DIR
-#  STEAMVR_VRTEST_API_LIBRARY
+#  OPENVR_INCLUDE_DIR
+#  OPENVR_SOURCE_DIR
 #
 # Non-cache variables you might use in your CMakeLists.txt:
-#  STEAMVR_FOUND
-#  STEAMVR_INCLUDE_DIRS
-#  STEAMVR_PLATFORM - something like Win32, Win64, etc.
+#  OPENVR_FOUND
+#  OPENVR_INCLUDE_DIRS
+#  OPENVR_PLATFORM - something like Win32, Win64, etc.
 #
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
@@ -20,15 +19,21 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-set(STEAMVR_ROOT_DIR
-	"${STEAMVR_ROOT_DIR}"
+set(OPENVR_ROOT_DIR
+	"${OPENVR_ROOT_DIR}"
 	CACHE
 	PATH
-	"Directory to search for SteamVR SDK")
+	"Directory to search for OpenVR SDK")
+
+set(OPENVR_HEADERS_ROOT_DIR
+	"${OPENVR_HEADERS_ROOT_DIR}"
+	CACHE
+	PATH
+	"Directory to search for private OpenVR headers")
 
 set(_root_dirs)
-if(STEAMVR_ROOT_DIR)
-	set(_root_dirs "${STEAMVR_ROOT_DIR}" "${STEAMVR_ROOT_DIR}/public")
+if(OPENVR_ROOT_DIR)
+	set(_root_dirs "${OPENVR_ROOT_DIR}" "${OPENVR_HEADERS_ROOT_DIR}" "${OPENVR_ROOT_DIR}/public")
 endif()
 
 # todo fails for universal builds
@@ -54,26 +59,13 @@ else()
 	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		set(_platform_base win)
 	endif()
-	set(STEAMVR_PLATFORM ${_platform_base}${_bitness})
-	set(_libpath lib/${STEAMVR_PLATFORM})
+	set(OPENVR_PLATFORM ${_platform_base}${_bitness})
+	set(_libpath lib/${OPENVR_PLATFORM})
 endif()
 
-find_library(STEAMVR_VRTEST_API_LIBRARY
+find_path(OPENVR_INCLUDE_DIR
 	NAMES
-	vrtest_api
-	PATHS
-	${_root_dirs}
-	PATH_SUFFIXES
-	${_libpath}
-	public/${_libpath})
-
-if(STEAMVR_VRTEST_API_LIBRARY)
-	get_filename_component(_libdir "${STEAMVR_VRTEST_API_LIBRARY}" PATH)
-endif()
-
-find_path(STEAMVR_INCLUDE_DIR
-	NAMES
-	steamvr.h
+	openvr.h
 	HINTS
 	"${_libdir}"
 	"${_libdir}/.."
@@ -86,29 +78,28 @@ find_path(STEAMVR_INCLUDE_DIR
 	steam
 	public/steam)
 
-find_path(STEAMVR_SOURCE_DIR
+find_path(OPENVR_SOURCE_DIR
 	NAMES
-	common/ihmdsystem.h
+	itrackeddevicedriverprovider.h
 	HINTS
 	"${_libdir}"
 	"${_libdir}/.."
 	"${_libdir}/../.."
 	"${_libdir}/../../.."
 	PATHS
-	${_root_dirs}
-	PATH_SUFFIXES
-	src)
+	${_root_dirs})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SteamVR
+find_package_handle_standard_args(OpenVR
 	DEFAULT_MSG
-	STEAMVR_INCLUDE_DIR)
+	OPENVR_INCLUDE_DIR
+	OPENVR_SOURCE_DIR)
 
-if(STEAMVR_FOUND)
-	set(STEAMVR_INCLUDE_DIRS ${STEAMVR_INCLUDE_DIR})
-	mark_as_advanced(STEAMVR_ROOT_DIR)
+if(OPENVR_FOUND)
+	list(APPEND OPENVR_INCLUDE_DIRS ${OPENVR_INCLUDE_DIR} ${OPENVR_SOURCE_DIR})
+	mark_as_advanced(OPENVR_ROOT_DIR)
 endif()
 
-mark_as_advanced(STEAMVR_INCLUDE_DIR
-	STEAMVR_SOURCE_DIR
-	STEAMVR_VRTEST_API_LIBRARY)
+mark_as_advanced(OPENVR_INCLUDE_DIR
+	OPENVR_SOURCE_DIR)
+

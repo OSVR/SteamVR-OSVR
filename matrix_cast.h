@@ -31,7 +31,7 @@
 
 // Library/third-party includes
 #include <Eigen/Geometry>
-#include <steamvr.h>
+#include <vrtypes.h>
 
 // Standard includes
 // - none
