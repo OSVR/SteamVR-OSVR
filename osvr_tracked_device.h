@@ -25,6 +25,7 @@
 #include "make_unique.h"
 #include "matrix_cast.h"
 #include "projection_matrix.h"
+#include "osvr_device_properties.h"
 
 // Library/third-party includes
 #include <iservertrackeddevicedriver.h>
@@ -64,9 +65,9 @@ public:
     virtual void Deactivate() OSVR_OVERRIDE;
 
     /**
-     * returns the ID of this particular HMD. This value is opaque to the VR
+     * Returns the ID of this particular HMD. This value is opaque to the VR
      * system itself, but should be unique within the driver because it will be
-     * passed back in via FindHmd
+     * passed back in via FindHmd().
      */
     virtual const char* GetId() OSVR_OVERRIDE;
 
@@ -231,10 +232,11 @@ private:
     osvr::clientkit::Interface m_TrackerInterface;
     std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
     vr::DriverPose_t pose_;
+    vr::TrackedDeviceClass deviceClass_;
 };
 
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context) : m_DisplayDescription(display_description), m_Context(context), m_DisplayConfiguration(nullptr)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context) : m_DisplayDescription(display_description), m_Context(context), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
     // do nothing
 }
@@ -436,37 +438,302 @@ vr::DriverPose_t OSVRTrackedDevice::GetPose()
 
 bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
 {
-    // TODO
+    const bool default_value = false;
+
+    if (isWrongDataType(prop, bool())) {
+        if (error)
+            *error = vr::TrackedProp_WrongDataType;
+        return default_value;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        if (error)
+            *error = vr::TrackedProp_WrongDeviceClass;
+        return default_value;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        if (error)
+            *error = vr::TrackedProp_InvalidDevice;
+        return default_value;
+    }
+
+    switch (prop) {
+    case vr::Prop_WillDriftInYaw_Bool: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+        break;
+    case vr::Prop_ReportsTimeSinceVSync_Bool: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+        break;
+    }
+
+    if (error)
+        *error = vr::TrackedProp_UnknownProperty;
+    return default_value;
 }
 
 float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
 {
-    // TODO
+    const float default_value = 0.0f;
+
+    if (isWrongDataType(prop, float())) {
+        if (error)
+            *error = vr::TrackedProp_WrongDataType;
+        return default_value;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        if (error)
+            *error = vr::TrackedProp_WrongDeviceClass;
+        return default_value;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        if (error)
+            *error = vr::TrackedProp_InvalidDevice;
+        return default_value;
+    }
+
+    switch (prop) {
+    case vr::Prop_SecondsFromVsyncToPhotons_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayFrequency_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_UserIpdMeters_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return static_cast<float>(m_DisplayConfiguration->getIPDMeters());
+    case vr::Prop_FieldOfViewLeftDegrees_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_FieldOfViewRightDegrees_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_FieldOfViewTopDegrees_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_FieldOfViewBottomDegrees_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_TrackingRangeMinimumMeters_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_TrackingRangeMaximumMeters_Float: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    }
+
+    if (error)
+        *error = vr::TrackedProp_UnknownProperty;
+    return default_value;
 }
 
 int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
 {
-    // TODO
+    const int32_t default_value = 0;
+
+    if (isWrongDataType(prop, int32_t())) {
+        if (error)
+            *error = vr::TrackedProp_WrongDataType;
+        return default_value;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        if (error)
+            *error = vr::TrackedProp_WrongDeviceClass;
+        return default_value;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        if (error)
+            *error = vr::TrackedProp_InvalidDevice;
+        return default_value;
+    }
+
+    switch (prop) {
+    case vr::Prop_Axis0Type_Int32: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis1Type_Int32: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis2Type_Int32: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis3Type_Int32: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis4Type_Int32: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    }
+
+    if (error)
+        *error = vr::TrackedProp_UnknownProperty;
+    return default_value;
 }
 
 uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
 {
-    // TODO
+    const uint64_t default_value = 0;
+
+    if (isWrongDataType(prop, uint64_t())) {
+        if (error)
+            *error = vr::TrackedProp_WrongDataType;
+        return default_value;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        if (error)
+            *error = vr::TrackedProp_WrongDeviceClass;
+        return default_value;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        if (error)
+            *error = vr::TrackedProp_InvalidDevice;
+        return default_value;
+    }
+
+    switch (prop) {
+    case vr::Prop_CurrentUniverseId_Uint64: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_PreviousUniverseId_Uint64: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_SupportedButtons_Uint64: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    }
+
+    if (error)
+        *error = vr::TrackedProp_UnknownProperty;
+    return default_value;
 }
 
 uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::TrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::TrackedPropertyError* error)
 {
-    // TODO
+    const uint32_t default_value = 0;
+
+    if (isWrongDataType(prop, value)) {
+        if (error)
+            *error = vr::TrackedProp_WrongDataType;
+        return default_value;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        if (error)
+            *error = vr::TrackedProp_WrongDeviceClass;
+        return default_value;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        if (error)
+            *error = vr::TrackedProp_InvalidDevice;
+        return default_value;
+    }
+
+    switch (prop) {
+    case vr::Prop_TrackingSystemName_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_ModelNumber_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_SerialNumber_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_RenderModelName_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_ManufacturerName_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_TrackingFirmwareVersion_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_HardwareRevision_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayFirmwareVersion_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_AttachedDeviceId_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    }
+
+    if (error)
+        *error = vr::TrackedProp_UnknownProperty;
+    return default_value;
 }
 
 vr::VRControllerState_t OSVRTrackedDevice::GetControllerState()
 {
     // TODO
+    vr::VRControllerState_t controller_state;
+
+#if 0
+    // If packet num matches that on your prior call, then the controller state hasn't been changed since 
+    // your last call and there is no need to process it
+    uint32_t unPacketNum;
+
+    // bit flags for each of the buttons. Use ButtonMaskFromId to turn an ID into a mask
+    uint64_t ulButtonPressed;
+    uint64_t ulButtonTouched;
+
+    // Axis data for the controller's analog inputs
+    VRControllerAxis_t rAxis[ k_unControllerStateAxisCount ];
+
+    /** contains information about one axis on the controller */
+    struct VRControllerAxis_t
+    {
+        float x; // Ranges from -1.0 to 1.0 for joysticks and track pads. Ranges from 0.0 to 1.0 for triggers were 0 is fully released.
+        float y; // Ranges from -1.0 to 1.0 for joysticks and track pads. Is always 0.0 for triggers.
+    };
+    /** the number of axes in the controller state */
+    static const uint32_t k_unControllerStateAxisCount = 5;
+#endif
+
+    return controller_state;
 }
 
 bool OSVRTrackedDevice::TriggerHapticPulse(uint32_t axis_id, uint16_t pulse_duration_microseconds)
 {
     // TODO
+    return false;
 }
 
 void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)

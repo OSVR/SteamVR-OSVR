@@ -27,7 +27,7 @@
 #define INCLUDED_matrix_cast_h_GUID_27799A61_A16D_4B3A_AFA8_A2A4336D40AD
 
 // Internal Includes
-// - none
+#include "identity.h"
 
 // Library/third-party includes
 #include <Eigen/Geometry>
@@ -37,11 +37,6 @@
 // - none
 
 //typedef Transform<double,3,Affine> Affine3d
-
-template <typename T>
-struct identity {
-    typedef T type;
-};
 
 template <typename Target, typename Source>
 inline Target cast(const Source& source)
