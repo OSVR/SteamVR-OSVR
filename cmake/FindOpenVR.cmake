@@ -2,7 +2,6 @@
 #
 # Cache Variables: (probably not for direct use in your scripts)
 #  OPENVR_INCLUDE_DIR
-#  OPENVR_SOURCE_DIR
 #
 # Non-cache variables you might use in your CMakeLists.txt:
 #  OPENVR_FOUND
@@ -65,7 +64,7 @@ endif()
 
 find_path(OPENVR_INCLUDE_DIR
 	NAMES
-	openvr.h
+	openvr_driver.h
 	HINTS
 	"${_libdir}"
 	"${_libdir}/.."
@@ -78,28 +77,15 @@ find_path(OPENVR_INCLUDE_DIR
 	steam
 	public/steam)
 
-find_path(OPENVR_SOURCE_DIR
-	NAMES
-	itrackeddevicedriverprovider.h
-	HINTS
-	"${_libdir}"
-	"${_libdir}/.."
-	"${_libdir}/../.."
-	"${_libdir}/../../.."
-	PATHS
-	${_root_dirs})
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(OpenVR
 	DEFAULT_MSG
-	OPENVR_INCLUDE_DIR
-	OPENVR_SOURCE_DIR)
+	OPENVR_INCLUDE_DIR)
 
 if(OPENVR_FOUND)
-	list(APPEND OPENVR_INCLUDE_DIRS ${OPENVR_INCLUDE_DIR} ${OPENVR_SOURCE_DIR})
+	list(APPEND OPENVR_INCLUDE_DIRS ${OPENVR_INCLUDE_DIR})
 	mark_as_advanced(OPENVR_ROOT_DIR)
 endif()
 
-mark_as_advanced(OPENVR_INCLUDE_DIR
-	OPENVR_SOURCE_DIR)
+mark_as_advanced(OPENVR_INCLUDE_DIR)
 

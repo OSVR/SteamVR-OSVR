@@ -28,7 +28,7 @@
 #include "osvr_device_properties.h"
 
 // Library/third-party includes
-#include <iservertrackeddevicedriver.h>
+#include <openvr_driver.h>
 
 #include <osvr/ClientKit/Context.h>
 #include <osvr/ClientKit/Interface.h>
@@ -70,6 +70,14 @@ public:
      * passed back in via FindHmd().
      */
     virtual const char* GetId() OSVR_OVERRIDE;
+
+    /**
+     * A VR Client has made this debug request of the driver. The set of valid
+     * requests is entirely up to the driver and the client to figure out, as is
+     * the format of the response. Responses that exceed the length of the
+     * supplied buffer should be truncated and null terminated.
+     */
+    virtual void DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size) OSVR_OVERRIDE;
 
     // ------------------------------------
     // Display Methods
@@ -270,6 +278,12 @@ const char* OSVRTrackedDevice::GetId()
     return "OSVR HMD";
 }
 
+void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size)
+{
+    // TODO
+    // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
+}
+
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
 {
     *x = m_DisplayConfiguration->getDisplayLeft();
@@ -465,6 +479,11 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::TrackedDeviceProperty p
         return default_value;
         break;
     case vr::Prop_ReportsTimeSinceVSync_Bool: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+        break;
+    case vr::Prop_IsOnDesktop_Bool: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
@@ -690,6 +709,14 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::TrackedDeviceProp
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     case vr::Prop_AttachedDeviceId_String: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_AllWirelessDongleDescriptions_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_ConnectedWirelessDongle_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;

@@ -23,7 +23,7 @@
 // - none
 
 // Library/third-party includes
-#include <vrtypes.h>
+#include <openvr_driver.h>
 
 // Standard includes
 // - none
@@ -33,6 +33,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const bool&)
     switch (prop) {
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
+    case vr::Prop_IsOnDesktop_Bool:
         return false;
     }
 
@@ -95,6 +96,8 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const char*)
     case vr::Prop_HardwareRevision_String:
     case vr::Prop_DisplayFirmwareVersion_String:
     case vr::Prop_AttachedDeviceId_String:
+    case vr::Prop_AllWirelessDongleDescriptions_String:
+    case vr::Prop_ConnectedWirelessDongle_String:
         return false;
     }
 
@@ -113,9 +116,11 @@ inline bool isWrongDeviceClass(vr::TrackedDeviceProperty prop, vr::TrackedDevice
     case vr::Prop_ManufacturerName_String:
     case vr::Prop_TrackingFirmwareVersion_String:
     case vr::Prop_HardwareRevision_String:
+    case vr::Prop_AllWirelessDongleDescriptions_String:
+    case vr::Prop_ConnectedWirelessDongle_String:
         return false;
 
-    // properties that are unique to TrackedDeviceClass_HMD
+    // Properties that are unique to TrackedDeviceClass_HMD
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
     case vr::Prop_DisplayFrequency_Float:
@@ -123,6 +128,7 @@ inline bool isWrongDeviceClass(vr::TrackedDeviceProperty prop, vr::TrackedDevice
     case vr::Prop_CurrentUniverseId_Uint64:
     case vr::Prop_PreviousUniverseId_Uint64:
     case vr::Prop_DisplayFirmwareVersion_String:
+    case vr::Prop_IsOnDesktop_Bool:
         return (vr::TrackedDeviceClass_HMD == device_class);
 
     // Properties that are unique to TrackedDeviceClass_Controller

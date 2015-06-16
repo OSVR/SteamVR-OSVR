@@ -31,7 +31,7 @@
 
 // Library/third-party includes
 #include <Eigen/Geometry>
-#include <vrtypes.h>
+#include <openvr_driver.h>
 
 // Standard includes
 // - none

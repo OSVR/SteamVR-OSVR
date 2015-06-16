@@ -17,9 +17,6 @@
 // the Apache License, Version 2.0)
 
 // Internal Includes
-#include <itrackeddevicedriverprovider.h>
-#include <iservertrackeddevicedriver.h>
-
 #include "osvr_compiler_detection.h"
 #include "osvr_tracked_device.h"
 
@@ -27,6 +24,8 @@
 #include "osvr_dll_export.h"
 
 // Library/third-party includes
+#include <openvr_driver.h>
+
 #include <osvr/ClientKit/Context.h>
 #include <osvr/ClientKit/Interface.h>
 
