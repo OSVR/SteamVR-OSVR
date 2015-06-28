@@ -48,22 +48,25 @@ add_subdirectory(vendor)
 
 
 # Disable 'lib' prefix on POSIX systems
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_MODULE_PREFIX "")
-set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 #
 # OpenVR driver
 #
 add_library(driver_osvr
 	MODULE
+	ClientDriver_OSVR.h
+	driver_osvr.cpp
+	identity.h
 	make_unique.h
 	matrix_cast.h
+	osvr_device_properties.h
 	osvr_display_configuration.h
 	osvr_dll_export.h
 	osvr_tracked_device.h
 	projection_matrix.h
-	driver_osvr.cpp
+	ServerDriver_OSVR.h
+	string_algo.h
 )
 target_link_libraries(driver_osvr osvr::osvrClientKit eigen-headers jsoncpp_lib)
 target_include_directories(driver_osvr PRIVATE osvr::osvrClientKit ${OPENVR_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
