@@ -1,0 +1,157 @@
+/** @file
+    @brief OSVR server driver for OpenVR
+
+    @date 2015
+
+    @author
+    Sensics, Inc.
+    <http://sensics.com>
+
+*/
+
+// Copyright 2015 Sensics, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
+#define INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
+
+// Internal Includes
+#include "osvr_tracked_device.h"            // for OSVRTrackedDevice
+
+// Library/third-party includes
+#include <openvr_driver.h>                  // for everything in vr namespace
+
+#include <osvr/ClientKit/Context.h>         // for osvr::clientkit::ClientContext
+
+// Standard includes
+#include <vector>                           // for std::vector
+#include <cstring>                          // for std::strcmp
+#include <string>                           // for std::string, std::to_string
+
+class ServerDriver_OSVR : public vr::IServerTrackedDeviceProvider
+{
+public:
+    /**
+     * Initializes the driver.
+     *
+     * This is called when the driver is first loaded.
+     *
+     * @param user_config_dir the absoluate path of the directory where the
+     *     driver should store any user configuration files.
+     * @param driver_install_dir the absolute path of the driver's root
+     *     directory.
+     *
+     * If Init() returns anything other than \c HmdError_None the driver will be
+     * unloaded.
+     *
+     * @returns HmdError_None on success.
+     */
+    virtual vr::HmdError Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
+
+    /**
+     * Performs any cleanup prior to the driver being unloaded.
+     */
+    virtual void Cleanup() OSVR_OVERRIDE;
+
+    /**
+     * Returns the number of tracked devices.
+     */
+    virtual uint32_t GetTrackedDeviceCount() OSVR_OVERRIDE;
+
+    /**
+     * Returns a single tracked device by its index.
+     *
+     * @param index the index of the tracked device to return.
+     */
+    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index) OSVR_OVERRIDE;
+
+    /**
+     * Returns a single HMD by its name.
+     *
+     * @param hmd_id the C string name of the HMD.
+     */
+    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id) OSVR_OVERRIDE;
+
+    /**
+     * Allows the driver do to some work in the main loop of the server.
+     */
+    virtual void RunFrame() OSVR_OVERRIDE;
+
+private:
+    std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
+    std::unique_ptr<osvr::clientkit::ClientContext> context_;
+    vr::IDriverLog* logger_;
+};
+
+vr::HmdError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
+{
+    logger_ = driver_log;
+
+    logger_->Log("ServerDriver_OSVR::Init() called.");
+    context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
+
+    const std::string display_description = context_->getStringParameter("/display");
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get())));
+
+    return vr::HmdError_None;
+}
+
+void ServerDriver_OSVR::Cleanup()
+{
+    trackedDevices_.clear();
+    context_.reset();
+}
+
+uint32_t ServerDriver_OSVR::GetTrackedDeviceCount()
+{
+    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceCount(): Detected " + std::to_string(trackedDevices_.size()) + " tracked devices.";
+    logger_->Log(msg.c_str());
+    return trackedDevices_.size();
+}
+
+vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t index)
+{
+    if (index >= trackedDevices_.size()) {
+        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " + std::to_string(index) + " is out of range [0.." + std::to_string(trackedDevices_.size()) + "].";
+        logger_->Log(msg.c_str());
+        return NULL;
+    }
+
+    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device " + std::to_string(index) + ".";
+    logger_->Log(msg.c_str());
+    return trackedDevices_[index].get();
+}
+
+vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id)
+{
+    for (auto& tracked_device : trackedDevices_) {
+        if (0 == std::strcmp(id, tracked_device->GetId())) {
+            std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " + std::string(id) + ".";
+            logger_->Log(msg.c_str());
+            return tracked_device.get();
+        }
+    }
+
+    std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Failed to locate device named '" + std::string(id) + "'.";
+    logger_->Log(msg.c_str());
+    return NULL;
+}
+
+void ServerDriver_OSVR::RunFrame()
+{
+    context_->update();
+}
+
+#endif // INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
+

@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     // Instantiate the tracker driver
     std::cout << "Instantiating tracker driver..." << std::endl;
     int driver_init_return = 0;
-    auto tracker_driver = static_cast<CDriver_OSVR*>(TrackedDeviceDriverFactory(vr::IServerTrackedDeviceProvider_Version, &driver_init_return));
+    auto tracker_driver = static_cast<ServerDriver_OSVR*>(TrackedDeviceDriverFactory(vr::IServerTrackedDeviceProvider_Version, &driver_init_return));
     if (!tracker_driver) {
         std::cerr << "! Error creating tracker driver. ";
         switch (driver_init_return) {

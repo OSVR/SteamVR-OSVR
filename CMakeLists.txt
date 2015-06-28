@@ -46,6 +46,12 @@ configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compil
 #
 add_subdirectory(vendor)
 
+
+# Disable 'lib' prefix on POSIX systems
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(CMAKE_SHARED_MODULE_PREFIX "")
+set(CMAKE_STATIC_LIBRARY_PREFIX "")
+
 #
 # OpenVR driver
 #
