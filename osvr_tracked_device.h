@@ -366,7 +366,9 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* ri
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
 {
+	vr::HmdMatrix34_t matrix;
     // TODO
+	return matrix;
 }
 
 #if 0 // obsolete

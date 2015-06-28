@@ -32,6 +32,8 @@
 // Standard includes
 #include <vector>
 #include <cstring>
+#include <string>
+#include <iostream>   // for debug output
 
 class CDriver_OSVR : public vr::IServerTrackedDeviceProvider
 {
@@ -85,12 +87,17 @@ public:
 private:
     std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
+	vr::IDriverLog* logger_;
 };
 
 static CDriver_OSVR g_driverOSVR;
 
 vr::HmdError CDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
 {
+	logger_ = driver_log;
+
+	logger_->Log("CDriver_OSVR::Init() called.");
+	std::cout << "CDriver_OSVR::Init() called." << std::endl;
     context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
 
     const std::string display_description = context_->getStringParameter("/display");
@@ -107,24 +114,31 @@ void CDriver_OSVR::Cleanup()
 
 uint32_t CDriver_OSVR::GetTrackedDeviceCount()
 {
+	std::cout << "CDriver_OSVR::GetTrackedDeviceCount(): Returning " << trackedDevices_.size() << std::endl;
     return trackedDevices_.size();
 }
 
 vr::ITrackedDeviceServerDriver* CDriver_OSVR::GetTrackedDeviceDriver(uint32_t index)
 {
-    if (index >= trackedDevices_.size())
-        return NULL;
+	if (index >= trackedDevices_.size()) {
+		std::cerr << "CDriver_OSVR::GetTrackedDeviceDriver(): Index " << index << " is out of range [0.." << trackedDevices_.size() << "]." << std::endl;
+		return NULL;
+	}
 
+	std::cout << "CDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device " << index << "." << std::endl;
     return trackedDevices_[index].get();
 }
 
 vr::ITrackedDeviceServerDriver* CDriver_OSVR::FindTrackedDeviceDriver(const char* id)
 {
     for (auto& tracked_device : trackedDevices_) {
-        if (0 == std::strcmp(id, tracked_device->GetId()))
-            return tracked_device.get();
+		if (0 == std::strcmp(id, tracked_device->GetId())) {
+			std::cout << "CDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " << id << "." << std::endl;
+			return tracked_device.get();
+		}
     }
 
+	std::cerr << "CDriver_OSVR::FindTrackedDeviceDriver(): Failed to locate device named '" << id << "'." << std::endl;
     return NULL;
 }
 
@@ -138,13 +152,19 @@ static const char* IHmdDriverProvider_Prefix = "IHmdDriverProvider_";
 OSVR_DLL_EXPORT void* TrackedDeviceDriverFactory(const char* pInterfaceName, int* pReturnCode)
 {
     if (!StringHasPrefix(pInterfaceName, IHmdDriverProvider_Prefix)) {
-        *pReturnCode = vr::HmdError_Init_InvalidInterface;
+		std::string msg = "TrackedDeviceDriverFactory(): Invalid interface. Interface name '" + std::string(pInterfaceName) + "' does not match prefix '" + std::string(IHmdDriverProvider_Prefix) + "'.";
+		std::cerr << msg << std::endl;
+		if (pReturnCode) {
+			*pReturnCode = vr::HmdError_Init_InvalidInterface;
+		}
         return NULL;
     }
 
     if (0 != strcmp(vr::IServerTrackedDeviceProvider_Version, pInterfaceName)) {
-        if (pReturnCode)
-            *pReturnCode = vr::HmdError_Init_InterfaceNotFound;
+		std::cerr << "TrackedDeviceDriverFactory(): Interface not found. The requested interface name '" << pInterfaceName << "' does not match the tracked device provider version '" << vr::IServerTrackedDeviceProvider_Version << "'." << std::endl;
+		if (pReturnCode) {
+			*pReturnCode = vr::HmdError_Init_InterfaceNotFound;
+		}
         return NULL;
     }
 
