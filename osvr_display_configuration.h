@@ -1,9 +1,39 @@
-//
-// OSVR display configuration
-//
+/** @file
+    @brief OSVR display configuration
 
-#include <string>
+    @date 2015
+
+    @author
+    Sensics, Inc.
+    <http://sensics.com>
+
+*/
+
+// Copyright 2015 Sensics, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
+#define INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
+
+// Internal Includes
+// - none
+
+// Library/third-party includes
 #include <json/reader.h>
+
+// Standard includes
+#include <string>
 #include <iostream>
 #include <cmath> // for M_PI
 
@@ -11,8 +41,7 @@
 #define M_PI 3.14159265358979323846 /* pi */
 #endif
 
-class OSVRDisplayConfiguration
-{
+class OSVRDisplayConfiguration {
 public:
     enum DisplayMode {
         HORIZONTAL_SIDE_BY_SIDE,
@@ -238,3 +267,6 @@ inline double OSVRDisplayConfiguration::getIPDMeters() const
 {
     return 0.065; // 65 mm
 }
+
+#endif // INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
+
