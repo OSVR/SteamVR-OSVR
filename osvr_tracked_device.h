@@ -42,7 +42,7 @@
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver
 {
 public:
-    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context);
+    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IDriverLog* driver_log = nullptr);
 
     // ------------------------------------
     // Management Methods
@@ -237,6 +237,7 @@ private:
     static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
+    vr::IDriverLog* logger_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
     vr::DriverPose_t pose_;
@@ -244,7 +245,7 @@ private:
 };
 
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context) : m_DisplayDescription(display_description), m_Context(context), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), logger_(driver_log), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
     // do nothing
 }
@@ -366,9 +367,17 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* ri
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
 {
-	vr::HmdMatrix34_t matrix;
+    vr::HmdMatrix34_t matrix;
     // TODO
-	return matrix;
+
+    // Return an identity matrix for now
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 4; ++i) {
+            matrix.m[i][j] = (i == j ? 1 : 0);
+        }
+    }
+
+    return matrix;
 }
 
 #if 0 // obsolete
@@ -792,7 +801,7 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
 
     // Position
     for (int i = 0; i < 3; ++i) {
-        pose.vecPosition[i] = report->pose.translation.data[0];
+        pose.vecPosition[i] = report->pose.translation.data[i];
     }
 
     // Position velocity and acceleration are not currently consistently provided
@@ -817,6 +826,8 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.poseIsValid = true;
     pose.willDriftInYaw = true;
     pose.shouldApplyHeadModel = true;
+
+    if (self->logger_) self->logger_->Log("OSVRTrackedDevice::HmdTrackerCallback(): Got new pose.\n");
 
     self->pose_ = pose;
 }
