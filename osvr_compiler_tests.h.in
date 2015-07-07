@@ -42,5 +42,6 @@
 #else // !_MSC_VER
 #cmakedefine OSVR_HAS_STD_MAKE_UNIQUE
 #endif
+
 #endif // INCLUDED_osvr_compiler_tests_h_in_GUID_1F4F98D8_4552_4C42_A7A4_896C371E0EA1
 

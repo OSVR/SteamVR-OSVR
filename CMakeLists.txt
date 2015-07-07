@@ -33,7 +33,7 @@ write_compiler_detection_header(
 	FILE "osvr_compiler_detection.h"
 	PREFIX OSVR
 	COMPILERS GNU Clang AppleClang MSVC
-	FEATURES cxx_override
+	FEATURES cxx_override cxx_noexcept
 )
 
 include(CheckCXXSourceCompiles)

@@ -27,19 +27,38 @@
 #define INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
 
 // Internal Includes
-// - none
+#include "osvr_compiler_detection.h"
 
 // Library/third-party includes
+#include <json/value.h>
 #include <json/reader.h>
 
 // Standard includes
 #include <string>
 #include <iostream>
 #include <cmath> // for M_PI
+#include <exception>
+#include <vector>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 /* pi */
 #endif
+
+class DisplayConfigurationParseException : public std::exception {
+public:
+    DisplayConfigurationParseException(const std::string& message) OSVR_NOEXCEPT : std::exception(), m_message(message)
+    {
+        // do nothing
+    }
+
+    virtual const char* what() const OSVR_NOEXCEPT OSVR_OVERRIDE
+    {
+        return m_message.c_str();
+    }
+
+private:
+    const std::string m_message;
+};
 
 class OSVRDisplayConfiguration {
 public:
@@ -56,6 +75,8 @@ public:
 
     void print() const;
 
+    int getNumDisplays() const;
+
     int getDisplayTop() const;
     int getDisplayLeft() const;
     int getDisplayWidth() const;
@@ -69,7 +90,21 @@ public:
     double getFOVAspectRatio() const;
     double getOverlapPercent() const;
 
+    double getPitchTilt() const;
+
     double getIPDMeters() const;
+
+    /// Structure holding the information for one eye.
+    class EyeInfo {
+    public:
+        double m_CenterProjX = 0.5;
+        double m_CenterProjY = 0.5;
+        bool m_rotate180 = false;
+
+        void print() const;
+    };
+
+    std::vector<EyeInfo> getEyes() const;
 
 private:
     struct Resolution {
@@ -78,6 +113,8 @@ private:
         int video_inputs;
         DisplayMode display_mode;
     };
+
+    int m_NumDisplays;
 
     double m_MonocularHorizontalFOV;
     double m_MonocularVerticalFOV;
@@ -95,8 +132,8 @@ private:
     double m_RightRoll;
     double m_LeftRoll;
 
-    double m_CenterProjX;
-    double m_CenterProjY;
+    // Eyes
+    std::vector<EyeInfo> m_eyes;
 };
 
 inline OSVRDisplayConfiguration::OSVRDisplayConfiguration()
@@ -120,14 +157,15 @@ inline void OSVRDisplayConfiguration::parse(const std::string& display_descripti
     m_MonocularVerticalFOV = root["hmd"]["field_of_view"]["monocular_vertical"].asDouble();
     m_OverlapPercent = root["hmd"]["field_of_view"]["overlap_percent"].asDouble() / 100.0;
     m_PitchTilt = root["hmd"]["field_of_view"]["pitch_tilt"].asDouble();
+    m_NumDisplays = root["hmd"]["device"]["properties"]["num_displays"].asInt();
 
     // Since SteamVR only supports outputting to a single window, we will
     // traverse the resolutions array to find the first entry that supports a
     // single video input.
     const Json::Value resolutions = root["hmd"]["resolutions"];
     if (resolutions.isNull()) {
-        std::cerr << "ERROR: Couldn't find resolutions array!\n";
-        throw;
+        std::cerr << "OSVRDisplayConfiguration::parse(): ERROR: Couldn't find resolutions array!\n";
+        throw DisplayConfigurationParseException("Couldn't find resolutions array.");
     }
 
     Resolution res;
@@ -147,7 +185,7 @@ inline void OSVRDisplayConfiguration::parse(const std::string& display_descripti
 
     if (resolution.isNull()) {
         // We couldn't find any appropriate resolution entries
-        std::cerr << "ERROR: Couldn't find any appropriate resolutions.\n";
+        std::cerr << "OSVRDisplayConfiguration::parse(): ERROR: Couldn't find any appropriate resolutions.\n";
         return;
     }
 
@@ -166,7 +204,7 @@ inline void OSVRDisplayConfiguration::parse(const std::string& display_descripti
         res.display_mode = FULL_SCREEN;
     } else {
         res.display_mode = HORIZONTAL_SIDE_BY_SIDE;
-        std::cerr << "WARNING: Unknown display mode: " << display_mode_str << "\n";
+        std::cerr << "OSVRDisplayConfiguration::parse(): WARNING: Unknown display mode: " << display_mode_str << std::endl;
     }
 
     m_Resolutions.push_back(res);
@@ -174,8 +212,20 @@ inline void OSVRDisplayConfiguration::parse(const std::string& display_descripti
     m_RightRoll = root["hmd"]["rendering"]["right_roll"].asDouble();
     m_LeftRoll = root["hmd"]["rendering"]["left_roll"].asDouble();
 
-    m_CenterProjX = root["hmd"]["eyes"][0]["center_proj_x"].asDouble();
-    m_CenterProjY = root["hmd"]["eyes"][0]["center_proj_y"].asDouble();
+    const Json::Value eyes = root["hmd"]["eyes"];
+    if (eyes.isNull()) {
+        std::cerr << "OSVRDisplayConfiguration::parse(): ERROR: Couldn't find eyes array!\n";
+        throw DisplayConfigurationParseException("Couldn't find eyes array.");
+    }
+    for (Json::Value::iterator iter = eyes.begin(); iter != eyes.end(); ++iter) {
+        EyeInfo e;
+        e.m_CenterProjX = (*iter)["center_proj_x"].asDouble();
+        e.m_CenterProjY = (*iter)["center_proj_y"].asDouble();
+        if ((*iter).isMember("rotate_180")) {
+            e.m_rotate180 = ((*iter)["rotate_180"].asInt() != 0);
+        }
+        m_eyes.push_back(e);
+    }
 
 #if 0
 	/** The components necessary to build your own projection matrix in case your
@@ -196,16 +246,25 @@ inline void OSVRDisplayConfiguration::parse(const std::string& display_descripti
 
 inline void OSVRDisplayConfiguration::print() const
 {
-    std::cout << "Monocular horizontal FOV: " << m_MonocularHorizontalFOV << "\n";
-    std::cout << "Monocular vertical FOV: " << m_MonocularVerticalFOV << "\n";
-    std::cout << "Overlap percent: " << m_OverlapPercent << "%\n";
-    std::cout << "Pitch tilt: " << m_PitchTilt << "\n";
-    std::cout << "Resolution: " << m_Resolutions.at(0).width << " × " << m_Resolutions.at(0).height << "\n";
-    std::cout << "Video inputs: " << m_Resolutions.at(0).video_inputs << "\n";
-    std::cout << "Display mode: " << m_Resolutions.at(0).display_mode << "\n";
-    std::cout << "Right roll: " << m_RightRoll << "\n";
-    std::cout << "Left roll: " << m_LeftRoll << "\n";
-    std::cout << "Center projection: (" << m_CenterProjX << ", " << m_CenterProjY << ")\n";
+    std::cout << "Monocular horizontal FOV: " << m_MonocularHorizontalFOV << std::endl;
+    std::cout << "Monocular vertical FOV: " << m_MonocularVerticalFOV << std::endl;
+    std::cout << "Overlap percent: " << m_OverlapPercent << "%" << std::endl;
+    std::cout << "Pitch tilt: " << m_PitchTilt << std::endl;
+    std::cout << "Resolution: " << m_Resolutions.at(0).width << " x " << m_Resolutions.at(0).height << std::endl;
+    std::cout << "Video inputs: " << m_Resolutions.at(0).video_inputs << std::endl;
+    std::cout << "Display mode: " << m_Resolutions.at(0).display_mode << std::endl;
+    std::cout << "Right roll: " << m_RightRoll << std::endl;
+    std::cout << "Left roll: " << m_LeftRoll << std::endl;
+    std::cout << "Number of eyes: " << m_eyes.size() << std::endl;
+    for (std::vector<EyeInfo>::size_type i = 0; i < m_eyes.size(); ++i) {
+        std::cout << "Eye " << i << ": " << std::endl;
+        m_eyes[i].print();
+    }
+}
+
+inline int OSVRDisplayConfiguration::getNumDisplays() const
+{
+    return m_NumDisplays;
 }
 
 inline int OSVRDisplayConfiguration::getDisplayTop() const
@@ -263,9 +322,26 @@ inline double OSVRDisplayConfiguration::getOverlapPercent() const
     return m_OverlapPercent;
 }
 
+inline double OSVRDisplayConfiguration::getPitchTilt() const
+{
+    return m_PitchTilt;
+}
+
 inline double OSVRDisplayConfiguration::getIPDMeters() const
 {
     return 0.065; // 65 mm
+}
+
+inline std::vector<OSVRDisplayConfiguration::EyeInfo> OSVRDisplayConfiguration::getEyes() const
+{
+    return m_eyes;
+}
+
+inline void OSVRDisplayConfiguration::EyeInfo::print() const
+{
+    std::cout << "Center of projection (X): " << m_CenterProjX << std::endl;
+    std::cout << "Center of projection (Y): " << m_CenterProjY << std::endl;
+    std::cout << "Rotate by 180: " << m_rotate180 << std::endl;
 }
 
 #endif // INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
