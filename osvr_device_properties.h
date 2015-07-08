@@ -34,6 +34,8 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const bool&)
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
+    case vr::Prop_DeviceIsWireless_Bool:
+    case vr::Prop_DeviceIsCharging_Bool:
         return false;
     }
 
@@ -52,6 +54,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const float&)
     case vr::Prop_FieldOfViewBottomDegrees_Float:
     case vr::Prop_TrackingRangeMinimumMeters_Float:
     case vr::Prop_TrackingRangeMaximumMeters_Float:
+    case vr::Prop_DeviceBatteryPercentage_Float:
         return false;
     }
 
@@ -104,6 +107,16 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const char*)
     return true;
 }
 
+inline bool isWrongDataType(vr::TrackedDeviceProperty prop, vr::HmdMatrix34_t)
+{
+    switch (prop) {
+    case vr::Prop_StatusDisplayTransform_Matrix34:
+        return false;
+    }
+
+    return true;
+}
+
 inline bool isWrongDeviceClass(vr::TrackedDeviceProperty prop, vr::TrackedDeviceClass device_class)
 {
     switch (prop) {
@@ -118,6 +131,10 @@ inline bool isWrongDeviceClass(vr::TrackedDeviceProperty prop, vr::TrackedDevice
     case vr::Prop_HardwareRevision_String:
     case vr::Prop_AllWirelessDongleDescriptions_String:
     case vr::Prop_ConnectedWirelessDongle_String:
+    case vr::Prop_DeviceIsWireless_Bool:
+    case vr::Prop_DeviceIsCharging_Bool:
+    case vr::Prop_DeviceBatteryPercentage_Float:
+    case vr::Prop_StatusDisplayTransform_Matrix34:
         return false;
 
     // Properties that are unique to TrackedDeviceClass_HMD

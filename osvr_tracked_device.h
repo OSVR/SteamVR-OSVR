@@ -209,6 +209,12 @@ public:
     virtual uint64_t GetUint64TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
 
     /**
+     * Returns a matrix property. If the device index is not valid or the
+     * property is not a matrix type, this function will return identity.
+     */
+    virtual vr::HmdMatrix34_t GetMatrix34TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
+
+    /**
      * Returns a string property. If the property is not available this function
      * will return 0 and @p error will be set to an error. Otherwise it returns
      * the length of the number of bytes necessary to hold this string including
@@ -654,6 +660,46 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::TrackedDeviceProp
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     case vr::Prop_SupportedButtons_Uint64: // TODO
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    }
+
+    if (error)
+        *error = vr::TrackedProp_UnknownProperty;
+    return default_value;
+}
+
+vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
+{
+    // Default value is identity matrix
+    vr::HmdMatrix34_t default_value;
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 4; ++i) {
+            default_value.m[i][j] = (i == j ? 1 : 0);
+        }
+    }
+
+    if (isWrongDataType(prop, vr::HmdMatrix34_t())) {
+        if (error)
+            *error = vr::TrackedProp_WrongDataType;
+        return default_value;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        if (error)
+            *error = vr::TrackedProp_WrongDeviceClass;
+        return default_value;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        if (error)
+            *error = vr::TrackedProp_InvalidDevice;
+        return default_value;
+    }
+
+    switch (prop) {
+    case vr::Prop_StatusDisplayTransform_Matrix34: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
