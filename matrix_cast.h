@@ -5,8 +5,7 @@
 
     @author
     Sensics, Inc.
-    <http://sensics.com>
-
+    <http://sensics.com/osvr>
 */
 
 // Copyright 2015 Sensics, Inc.
