@@ -69,12 +69,12 @@ std::string to_lower(std::string str);
 // Implementations
 //
 
-bool starts_with(const std::string& str, const std::string& prefix)
+inline bool starts_with(const std::string& str, const std::string& prefix)
 {
     return (0 == str.compare(0, prefix.size(), prefix));
 }
 
-bool istarts_with(std::string str, std::string prefix)
+inline bool istarts_with(std::string str, std::string prefix)
 {
     // Convert to lowercase, then compare
     str = to_lower(str);
@@ -83,7 +83,7 @@ bool istarts_with(std::string str, std::string prefix)
     return starts_with(str, prefix);
 }
 
-std::string to_upper(std::string str)
+inline std::string to_upper(std::string str)
 {
     for (auto& ch : str)
         std::toupper(ch);
@@ -91,7 +91,7 @@ std::string to_upper(std::string str)
     return str;
 }
 
-std::string to_lower(std::string str)
+inline std::string to_lower(std::string str)
 {
     for (auto& ch : str)
         std::tolower(ch);
