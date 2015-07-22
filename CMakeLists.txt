@@ -73,9 +73,6 @@ target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
 
-include(GenerateExportHeader)
-generate_export_header(driver_osvr)
-
 install(TARGETS driver_osvr
 	DESTINATION drivers/${OPENVR_PLATFORM})
 
