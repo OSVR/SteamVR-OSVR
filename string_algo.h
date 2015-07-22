@@ -32,8 +32,8 @@
 // - none
 
 // Standard includes
-#include <cctype>       // for std::tolower
-#include <string>       // for std::string
+#include <cctype> // for std::tolower
+#include <string> // for std::string
 
 /**
  * Tests whether a string begins with a prefix (case-sensitive).
@@ -64,7 +64,6 @@ std::string to_upper(std::string str);
  * Converts a string to lowercase.
  */
 std::string to_lower(std::string str);
-
 
 //
 // Implementations
@@ -101,4 +100,3 @@ std::string to_lower(std::string str)
 }
 
 #endif // INCLUDED_string_algo_h_GUID_A677EA52_82B0_4F30_B9D5_5E8F05050918
-

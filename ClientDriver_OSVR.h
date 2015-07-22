@@ -34,7 +34,8 @@
 // Standard includes
 // - none
 
-class ClientDriver_OSVR : public vr::IClientTrackedDeviceProvider {
+class ClientDriver_OSVR : public vr::IClientTrackedDeviceProvider
+{
 public:
     /**
      * Initializes the driver.
@@ -149,4 +150,3 @@ vr::HiddenAreaMesh_t ClientDriver_OSVR::GetHiddenAreaMesh(vr::Hmd_Eye eye)
 }
 
 #endif // INCLUDED_ClientDriver_OSVR_h_GUID_7C0E8547_F8CF_4186_B637_9488CD6E3663
-

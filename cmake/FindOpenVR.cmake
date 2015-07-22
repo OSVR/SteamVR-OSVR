@@ -88,4 +88,3 @@ if(OPENVR_FOUND)
 endif()
 
 mark_as_advanced(OPENVR_INCLUDE_DIR)
-

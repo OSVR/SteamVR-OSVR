@@ -43,7 +43,8 @@
 #define M_PI 3.14159265358979323846 /* pi */
 #endif
 
-class DisplayConfigurationParseException : public std::exception {
+class DisplayConfigurationParseException : public std::exception
+{
 public:
     DisplayConfigurationParseException(const std::string& message) OSVR_NOEXCEPT : std::exception(), m_message(message)
     {
@@ -59,7 +60,8 @@ private:
     const std::string m_message;
 };
 
-class OSVRDisplayConfiguration {
+class OSVRDisplayConfiguration
+{
 public:
     enum DisplayMode {
         HORIZONTAL_SIDE_BY_SIDE,
@@ -94,7 +96,8 @@ public:
     double getIPDMeters() const;
 
     /// Structure holding the information for one eye.
-    class EyeInfo {
+    class EyeInfo
+    {
     public:
         double m_CenterProjX = 0.5;
         double m_CenterProjY = 0.5;
@@ -344,4 +347,3 @@ inline void OSVRDisplayConfiguration::EyeInfo::print() const
 }
 
 #endif // INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
-

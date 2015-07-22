@@ -26,17 +26,17 @@
 #define INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
 
 // Internal Includes
-#include "osvr_tracked_device.h"            // for OSVRTrackedDevice
+#include "osvr_tracked_device.h" // for OSVRTrackedDevice
 
 // Library/third-party includes
-#include <openvr_driver.h>                  // for everything in vr namespace
+#include <openvr_driver.h> // for everything in vr namespace
 
-#include <osvr/ClientKit/Context.h>         // for osvr::clientkit::ClientContext
+#include <osvr/ClientKit/Context.h> // for osvr::clientkit::ClientContext
 
 // Standard includes
-#include <vector>                           // for std::vector
-#include <cstring>                          // for std::strcmp
-#include <string>                           // for std::string, std::to_string
+#include <vector>  // for std::vector
+#include <cstring> // for std::strcmp
+#include <string>  // for std::string, std::to_string
 
 class ServerDriver_OSVR : public vr::IServerTrackedDeviceProvider
 {
@@ -153,4 +153,3 @@ void ServerDriver_OSVR::RunFrame()
 }
 
 #endif // INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
-

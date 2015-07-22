@@ -137,7 +137,7 @@ public:
      * the per-eye flavor of view space that provides stereo disparity. Instead
      * of Model * View * Projection the model is Model * View * Eye *
      * Projection.  Normally View and Eye will be multiplied together and
-     * treated as View in your application. 
+     * treated as View in your application.
      */
     virtual vr::HmdMatrix44_t GetEyeMatrix(vr::Hmd_Eye eEye) OSVR_OVERRIDE;
 #endif
@@ -255,7 +255,6 @@ private:
     vr::DriverPose_t pose_;
     vr::TrackedDeviceClass deviceClass_;
 };
-
 
 OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), logger_(driver_log), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
@@ -440,13 +439,13 @@ vr::TrackedDeviceDriverInfo_t OSVRTrackedDevice::GetTrackedDeviceDriverInfo()
     info.rchSerialNumber[vr::k_unTrackingStringSize - 1] = '\0';
     std::strncpy(info.rchModelNumber, GetModelNumber(), vr::k_unTrackingStringSize);
     info.rchModelNumber[vr::k_unTrackingStringSize - 1] = '\0';
-    info.rchRenderModelName[0] = '\0'; // TODO pass this to GetRenderModel to get the mesh and texture to render this device
+    info.rchRenderModelName[0] = '\0';        // TODO pass this to GetRenderModel to get the mesh and texture to render this device
     info.eClass = vr::TrackedDeviceClass_HMD; // TODO adjust accordingly
-    info.bDeviceIsConnected = true; // false if user unplugs device
-    info.bWillDriftInYaw = true; // true if gyro-only tracking system
+    info.bDeviceIsConnected = true;           // false if user unplugs device
+    info.bWillDriftInYaw = true;              // true if gyro-only tracking system
     info.bReportsTimeSinceVSync = false;
     info.fSecondsFromVsyncToPhotons = 0.0; // seconds between vsync and photons hitting wearer's eyes
-    info.fDisplayFrequency = 60.0; // fps of display
+    info.fDisplayFrequency = 60.0;         // fps of display
 
     return info;
 }
@@ -796,7 +795,7 @@ vr::VRControllerState_t OSVRTrackedDevice::GetControllerState()
     vr::VRControllerState_t controller_state;
 
 #if 0
-    // If packet num matches that on your prior call, then the controller state hasn't been changed since 
+    // If packet num matches that on your prior call, then the controller state hasn't been changed since
     // your last call and there is no need to process it
     uint32_t unPacketNum;
 
@@ -879,7 +878,8 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.willDriftInYaw = true;
     pose.shouldApplyHeadModel = true;
 
-    if (self->logger_) self->logger_->Log("OSVRTrackedDevice::HmdTrackerCallback(): Got new pose.\n");
+    if (self->logger_)
+        self->logger_->Log("OSVRTrackedDevice::HmdTrackerCallback(): Got new pose.\n");
 
     self->pose_ = pose;
 }

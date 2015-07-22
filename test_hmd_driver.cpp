@@ -30,7 +30,7 @@
 // - none
 
 // Standard includes
-#include <cstdlib>      // for EXIT_SUCCESS
+#include <cstdlib> // for EXIT_SUCCESS
 #include <iostream>
 
 int main(int argc, char* argv[])
@@ -80,9 +80,7 @@ int main(int argc, char* argv[])
     std::cout << "Acquiring first detected tracker..." << std::endl;
     vr::ITrackedDeviceServerDriver* tracker = tracker_driver->GetTrackedDeviceDriver(0);
 
-
     tracker_driver->Cleanup();
 
     return EXIT_SUCCESS;
 }
-

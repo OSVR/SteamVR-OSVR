@@ -89,4 +89,3 @@ target_link_libraries(test_hmd_driver osvr::osvrClientKit jsoncpp_lib ${CMAKE_TH
 target_include_directories(test_hmd_driver PRIVATE osvr::osvrClientKit ${OPENVR_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
 target_compile_features(test_hmd_driver PRIVATE cxx_override)
-

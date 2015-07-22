@@ -23,16 +23,16 @@
 // limitations under the License.
 
 // Internal Includes
-#include "ServerDriver_OSVR.h"  // for ServerDriver_OSVR
-#include "ClientDriver_OSVR.h"  // for ClientDriver_OSVR
+#include "ServerDriver_OSVR.h" // for ServerDriver_OSVR
+#include "ClientDriver_OSVR.h" // for ClientDriver_OSVR
 
-#include "osvr_dll_export.h"    // for OSVR_DLL_EXPORT
+#include "osvr_dll_export.h" // for OSVR_DLL_EXPORT
 
 // Library/third-party includes
-#include <openvr_driver.h>      // for everything in vr namespace
+#include <openvr_driver.h> // for everything in vr namespace
 
 // Standard includes
-#include <cstring>              // for std::strcmp
+#include <cstring> // for std::strcmp
 
 static ServerDriver_OSVR g_ServerDriverOSVR;
 static ClientDriver_OSVR g_ClientDriverOSVR;
@@ -58,4 +58,3 @@ OSVR_DLL_EXPORT void* HmdDriverFactory(const char* interface_name, int* return_c
 {
     return TrackedDeviceDriverFactory(interface_name, return_code);
 }
-
