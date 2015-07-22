@@ -1,5 +1,5 @@
 /** @file
-    @brief Header
+    @brief Generated config header
 
     @date 2015
 
@@ -43,4 +43,3 @@
 #endif
 
 #endif // INCLUDED_osvr_compiler_tests_h_in_GUID_1F4F98D8_4552_4C42_A7A4_896C371E0EA1
-
