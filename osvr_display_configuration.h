@@ -25,6 +25,10 @@
 #ifndef INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
 #define INCLUDED_osvr_display_configuration_h_GUID_BF32FB3A_205A_40D0_B774_F38F6419EC54
 
+#ifdef _MSC_VER
+#define _USE_MATH_DEFINES // for M_PI
+#endif
+
 // Internal Includes
 #include "osvr_compiler_detection.h"
 
@@ -38,10 +42,6 @@
 #include <cmath> // for M_PI
 #include <exception>
 #include <vector>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846 /* pi */
-#endif
 
 class DisplayConfigurationParseException : public std::exception
 {
