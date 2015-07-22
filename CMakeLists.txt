@@ -9,6 +9,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Be able to find openvr as a peer.
+list(APPEND CMAKE_PREFIX_PATH
+	"${CMAKE_CURRENT_SOURCE_DIR}/openvr"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../openvr")
+
 #
 # Dependencies
 #
