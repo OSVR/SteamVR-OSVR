@@ -50,10 +50,12 @@ endif()
 
 set(_platform)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	# TODO
 	message(FATAL_ERROR "Don't have an example of a Mac OS X build to work from!")
 else()
 	if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set(_platform_base linux)
+		# TODO Massive hack!
 		add_definitions(-DGNUC -DPOSIX -DCOMPILER_GCC -D_LINUX -DLINUX -DPOSIX -D_POSIX)
 	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		set(_platform_base win)
