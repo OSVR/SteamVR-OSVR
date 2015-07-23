@@ -55,6 +55,8 @@ As mentioned above, the `install` target will place the driver binary in a speci
 
 - This project: Licensed under the Apache License, Version 2.0.
 
+- `make_unique.h`: Dual-licensed under the MIT and University of Illinois Open Source Licenses.
+
 - Vendored projects included in the source tree:
 
 	- `/vendor/eigen-3.2.4` - Unpacked release from <http://eigen.tuxfamily.org/> - header-only library under the MPL2 (a file-level copyleft, compatible with proprietary software), used with the preprocessor definition `EIGEN_MPL2_ONLY` to exclude modules with other license from the build.

@@ -4,8 +4,12 @@
     @date 2015
 
     @author
-    Stephan T. Lavavej <stl@microsoft.com>
+    LLVM Team
+    University of Illinois at Urbana-Champaign
+    <http://llvm.org>
 
+    Extracted from libc++ which is dual-licensed under the MIT and the
+    University of Illinois "BSD-Like" licenses.
 */
 
 #ifndef INCLUDED_make_unique_h_GUID_C7526AAA_3549_41DF_AF95_5323788FBADE
@@ -24,45 +28,48 @@
 
 // Standard includes
 #include <cstddef>
-#include <memory>
-#include <type_traits>
-#include <utility>
+#include <memory>       // for std::unique_ptr
+#include <type_traits>  // for std::remove_extent
+#include <utility>      // for std::forward
 
 namespace std {
 
-template<class T> struct _Unique_if
+template<class _Tp>
+struct __unique_if
 {
-    typedef unique_ptr<T> _Single_object;
+    typedef unique_ptr<_Tp> __unique_single;
 };
 
-template<class T> struct _Unique_if<T[]>
+template<class _Tp>
+struct __unique_if<_Tp[]>
 {
-    typedef unique_ptr<T[]> _Unknown_bound;
+    typedef unique_ptr<_Tp[]> __unique_array_unknown_bound;
 };
 
-template<class T, size_t N> struct _Unique_if<T[N]>
+template<class _Tp, size_t _Np>
+struct __unique_if<_Tp[_Np]>
 {
-    typedef void _Known_bound;
+    typedef void __unique_array_known_bound;
 };
 
-template<class T, class... Args>
-typename _Unique_if<T>::_Single_object
-make_unique(Args&&... args)
+template<class _Tp, class... _Args>
+inline typename __unique_if<_Tp>::__unique_single
+make_unique(_Args&&... __args)
 {
-    return unique_ptr<T>(new T(std::forward<Args>(args)...));
+    return unique_ptr<_Tp>(new _Tp(std::forward<_Args>(__args)...));
 }
 
-template<class T>
-typename _Unique_if<T>::_Unknown_bound
-make_unique(size_t n)
+template<class _Tp>
+inline typename __unique_if<_Tp>::__unique_array_unknown_bound
+make_unique(size_t __n)
 {
-    typedef typename remove_extent<T>::type U;
-    return unique_ptr<T>(new U[n]());
+    typedef typename remove_extent<_Tp>::type _Up;
+    return unique_ptr<_Tp>(new _Up[__n]());
 }
 
-template<class T, class... Args>
-typename _Unique_if<T>::_Known_bound
-make_unique(Args&&...) = delete;
+template<class _Tp, class... _Args>
+typename __unique_if<_Tp>::__unique_array_known_bound
+make_unique(_Args&&...) = delete;
 
 } // end namespace std
 
