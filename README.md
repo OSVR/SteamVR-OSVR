@@ -1,4 +1,4 @@
-# SteamVR Driver Using OSVR 
+# SteamVR Driver Using OSVR
 > Maintained at <https://github.com/OSVR/SteamVR-OSVR>
 >
 > For details, see <http://osvr.github.io>
@@ -55,14 +55,15 @@ As mentioned above, the `install` target will place the driver binary in a speci
 
 - This project: Licensed under the Apache License, Version 2.0.
 
-- `make_unique.h`: Dual-licensed under the MIT and University of Illinois Open Source Licenses.
-
 - Vendored projects included in the source tree:
 
 	- `/vendor/eigen-3.2.4` - Unpacked release from <http://eigen.tuxfamily.org/> - header-only library under the MPL2 (a file-level copyleft, compatible with proprietary software), used with the preprocessor definition `EIGEN_MPL2_ONLY` to exclude modules with other license from the build.
+
+	- `/vendor/libcxx` - Extracted files from [libc++][] - dual-licensed under the MIT and the University of Illinois "BSD-Like" licenses. See that directory for full copyright, license, and credits.
 
 [CMake]: http://cmake.org
 [OSVR-Core]: https://github.com/OSVR/OSVR-Core
 [Boost]: http://boost.org
 [jsoncpp]: https://github.com/open-source-parsers/jsoncpp
 [openvr]: https://github.com/ValveSoftware/openvr
+[libc++]: http://libcxx.llvm.org/

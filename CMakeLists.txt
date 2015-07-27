@@ -77,6 +77,9 @@ target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers j
 target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
+if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
+    target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
+endif()
 
 install(TARGETS driver_osvr
 	DESTINATION drivers/${OPENVR_PLATFORM})
