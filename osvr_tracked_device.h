@@ -41,6 +41,8 @@
 
 #include <Eigen/Geometry>
 
+#include <util/FixedLengthStringFunctions.h>
+
 // Standard includes
 #include <cstring>
 #include <string>
@@ -433,12 +435,9 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye
 vr::TrackedDeviceDriverInfo_t OSVRTrackedDevice::GetTrackedDeviceDriverInfo()
 {
     vr::TrackedDeviceDriverInfo_t info;
-    std::strncpy(info.rchTrackingSystemId, "OSVR", vr::k_unTrackingStringSize); // TODO name of the underlying tracking system
-    info.rchTrackingSystemId[vr::k_unTrackingStringSize - 1] = '\0';
-    std::strncpy(info.rchSerialNumber, GetSerialNumber(), vr::k_unTrackingStringSize);
-    info.rchSerialNumber[vr::k_unTrackingStringSize - 1] = '\0';
-    std::strncpy(info.rchModelNumber, GetModelNumber(), vr::k_unTrackingStringSize);
-    info.rchModelNumber[vr::k_unTrackingStringSize - 1] = '\0';
+    util::strcpy_safe(info.rchTrackingSystemId, "OSVR"); // TODO name of the underlying tracking system
+    util::strcpy_safe(info.rchSerialNumber, GetSerialNumber());
+    util::strcpy_safe(info.rchModelNumber, GetModelNumber());
     info.rchRenderModelName[0] = '\0';        // TODO pass this to GetRenderModel to get the mesh and texture to render this device
     info.eClass = vr::TrackedDeviceClass_HMD; // TODO adjust accordingly
     info.bDeviceIsConnected = true;           // false if user unplugs device
