@@ -386,7 +386,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
     // Return an identity matrix for now
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 4; ++i) {
-            matrix.m[i][j] = (i == j ? 1 : 0);
+            matrix.m[i][j] = (i == j ? 1.f : 0.f);
         }
     }
 
@@ -463,7 +463,7 @@ const char* OSVRTrackedDevice::GetSerialNumber()
 
 float OSVRTrackedDevice::GetIPD()
 {
-    return m_DisplayConfiguration->getIPDMeters();
+    return static_cast<float>(m_DisplayConfiguration->getIPDMeters());
 }
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
@@ -680,7 +680,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::Tracke
     vr::HmdMatrix34_t default_value;
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 4; ++i) {
-            default_value.m[i][j] = (i == j ? 1 : 0);
+            default_value.m[i][j] = (i == j ? 1.f : 0.f);
         }
     }
 
