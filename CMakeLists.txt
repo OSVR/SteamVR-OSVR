@@ -73,7 +73,7 @@ add_library(driver_osvr
 	ServerDriver_OSVR.h
 	string_algo.h
 )
-target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers jsoncpp_lib)
+target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
@@ -88,7 +88,7 @@ install(TARGETS driver_osvr
 # Test program
 #
 add_executable(test_hmd_driver test_hmd_driver.cpp)
-target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers jsoncpp_lib)
+target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 target_include_directories(test_hmd_driver PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
 target_compile_features(test_hmd_driver PRIVATE cxx_override)
