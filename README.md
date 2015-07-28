@@ -61,9 +61,12 @@ As mentioned above, the `install` target will place the driver binary in a speci
 
 	- `/vendor/libcxx` - Extracted files from [libc++][] - dual-licensed under the MIT and the University of Illinois "BSD-Like" licenses. See that directory for full copyright, license, and credits.
 
+	- `/vendor/util-headers` - Select header files from [util-headers][] - licensed under the Boost Software License v1.0.
+
 [CMake]: http://cmake.org
 [OSVR-Core]: https://github.com/OSVR/OSVR-Core
 [Boost]: http://boost.org
 [jsoncpp]: https://github.com/open-source-parsers/jsoncpp
 [openvr]: https://github.com/ValveSoftware/openvr
 [libc++]: http://libcxx.llvm.org/
+[util-headers]: https://github.com/rpavlik/util-headers
