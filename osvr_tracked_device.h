@@ -38,6 +38,7 @@
 
 #include <osvr/ClientKit/Context.h>
 #include <osvr/ClientKit/Interface.h>
+#include <osvr/Util/EigenInterop.h>
 
 #include <Eigen/Geometry>
 
@@ -825,43 +826,26 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     vr::DriverPose_t pose;
     pose.poseTimeOffset = 0; // close enough
 
-    for (int i = 0; i < 3; ++i) {
-        pose.vecWorldFromDriverTranslation[i] = 0.0;
-        pose.vecDriverFromHeadTranslation[i] = 0.0;
-    }
+    Eigen::Vector3d::Map(pose.vecWorldFromDriverTranslation) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecDriverFromHeadTranslation) = Eigen::Vector3d::Zero();
 
-    pose.qWorldFromDriverRotation.w = 1;
-    pose.qWorldFromDriverRotation.x = 0;
-    pose.qWorldFromDriverRotation.y = 0;
-    pose.qWorldFromDriverRotation.z = 0;
+    map(pose.qWorldFromDriverRotation) = Eigen::Quaterniond::Identity();
 
-    pose.qDriverFromHeadRotation.w = 1;
-    pose.qDriverFromHeadRotation.x = 0;
-    pose.qDriverFromHeadRotation.y = 0;
-    pose.qDriverFromHeadRotation.z = 0;
+    map(pose.qDriverFromHeadRotation) = Eigen::Quaterniond::Identity();
 
     // Position
-    for (int i = 0; i < 3; ++i) {
-        pose.vecPosition[i] = report->pose.translation.data[i];
-    }
+    Eigen::Vector3d::Map(pose.vecPosition) = osvr::util::vecMap(report->pose.translation);
 
     // Position velocity and acceleration are not currently consistently provided
-    for (int i = 0; i < 3; ++i) {
-        pose.vecVelocity[i] = 0.0;
-        pose.vecAcceleration[i] = 0.0;
-    }
+    Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecAcceleration) = Eigen::Vector3d::Zero();
 
     // Orientation
-    pose.qRotation.w = osvrQuatGetW(&(report->pose.rotation));
-    pose.qRotation.x = osvrQuatGetX(&(report->pose.rotation));
-    pose.qRotation.y = osvrQuatGetY(&(report->pose.rotation));
-    pose.qRotation.z = osvrQuatGetZ(&(report->pose.rotation));
+    map(pose.qRotation) = osvr::util::fromQuat(report->pose.rotation);
 
     // Angular velocity and acceleration are not currently consistently provided
-    for (int i = 0; i < 3; ++i) {
-        pose.vecAngularVelocity[i] = 0.0;
-        pose.vecAngularAcceleration[i] = 0.0;
-    }
+    Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecAngularAcceleration) = Eigen::Vector3d::Zero();
 
     pose.result = vr::TrackingResult_Running_OK;
     pose.poseIsValid = true;
