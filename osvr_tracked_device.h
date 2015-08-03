@@ -382,13 +382,8 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
 {
     vr::HmdMatrix34_t matrix;
     // TODO
-
     // Return an identity matrix for now
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 4; ++i) {
-            matrix.m[i][j] = (i == j ? 1.f : 0.f);
-        }
-    }
+    map(matrix) = Matrix34f::Identity();
 
     return matrix;
 }
@@ -678,11 +673,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::Tracke
 {
     // Default value is identity matrix
     vr::HmdMatrix34_t default_value;
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 4; ++i) {
-            default_value.m[i][j] = (i == j ? 1.f : 0.f);
-        }
-    }
+    map(default_value) = Matrix34f::Identity();
 
     if (isWrongDataType(prop, vr::HmdMatrix34_t())) {
         if (error)

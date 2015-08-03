@@ -36,7 +36,19 @@
 // - none
 
 //typedef Transform<double,3,Affine> Affine3d
+typedef Eigen::Matrix<float, 3, 4> Matrix34f;
+typedef Eigen::Map<Eigen::Matrix<float, 3, 4, Eigen::RowMajor>> HmdMatrix34Map;
 
+inline HmdMatrix34Map map(vr::HmdMatrix34_t& mat)
+{
+    return HmdMatrix34Map(&(mat.m[0][0]));
+}
+
+typedef Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>> HmdMatrix44Map;
+inline HmdMatrix44Map map(vr::HmdMatrix44_t& mat)
+{
+    return HmdMatrix44Map(&(mat.m[0][0]));
+}
 template <typename Target, typename Source>
 inline Target cast(const Source& source)
 {
