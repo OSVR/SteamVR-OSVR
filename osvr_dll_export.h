@@ -28,7 +28,7 @@
 #if defined(_WIN32)
 #define OSVR_DLL_EXPORT extern "C" __declspec(dllexport)
 #define OSVR_DLL_IMPORT extern "C" __declspec(dllimport)
-#elif defined(GNUC) || defined(COMPILER_GCC)
+#elif defined(GNUC) || defined(COMPILER_GCC) || defined(__APPLE__)
 #define OSVR_DLL_EXPORT extern "C" __attribute__((visibility("default")))
 #define OSVR_DLL_IMPORT extern "C"
 #else
