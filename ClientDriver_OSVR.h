@@ -95,6 +95,11 @@ public:
      */
     virtual vr::HiddenAreaMesh_t GetHiddenAreaMesh(vr::Hmd_Eye eye) OSVR_OVERRIDE;
 
+	/** Get the MC image for the current HMD.
+	 * Returns the size in bytes of the buffer required to hold the specified resource.
+     */
+	virtual uint32_t GetMCImage( uint32_t *pImgWidth, uint32_t *pImgHeight, uint32_t *pChannels, void *pDataBuffer, uint32_t unBufferLen ) OSVR_OVERRIDE;
+
 private:
     vr::IDriverLog* logger_ = nullptr;
     vr::IClientDriverHost* driverHost_ = nullptr;
@@ -147,6 +152,12 @@ vr::HiddenAreaMesh_t ClientDriver_OSVR::GetHiddenAreaMesh(vr::Hmd_Eye eye)
     hidden_area_mesh.unTriangleCount = 0;
 
     return hidden_area_mesh;
+}
+
+uint32_t ClientDriver_OSVR::GetMCImage(uint32_t *pImgWidth, uint32_t *pImgHeight, uint32_t *pChannels, void *pDataBuffer, uint32_t unBufferLen )
+{
+    // what is this function for? SteamVR drivers return 0, doing the same here.
+    return 0;
 }
 
 #endif // INCLUDED_ClientDriver_OSVR_h_GUID_7C0E8547_F8CF_4186_B637_9488CD6E3663

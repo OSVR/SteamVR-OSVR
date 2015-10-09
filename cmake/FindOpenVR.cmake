@@ -51,7 +51,7 @@ endif()
 set(_platform)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	# TODO
-	message(FATAL_ERROR "Don't have an example of a Mac OS X build to work from!")
+	set(_platform_base macosx)
 else()
 	if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set(_platform_base linux)

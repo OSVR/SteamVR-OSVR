@@ -89,6 +89,9 @@ install(TARGETS driver_osvr
 #
 add_executable(test_hmd_driver test_hmd_driver.cpp)
 target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
+    target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
+endif()
 target_include_directories(test_hmd_driver PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
 target_compile_features(test_hmd_driver PRIVATE cxx_override)
