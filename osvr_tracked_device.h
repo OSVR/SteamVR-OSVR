@@ -375,6 +375,8 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint3
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* right, float* top, float* bottom)
 {
+    /// @todo this does not produce correct output
+
     // Projection matrix centered between the eyes
     const double z_near = 0.1;
     const double z_far = 100.0;
@@ -399,39 +401,29 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* ri
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
 {
-    vr::HmdMatrix34_t matrix;
-    // TODO
-    // Return an identity matrix for now
-    map(matrix) = Matrix34f::Identity();
 
-    return matrix;
-}
-
-#if 0 // obsolete
-vr::HmdMatrix44_t OSVRTrackedDevice::GetEyeMatrix(vr::Hmd_Eye eEye)
-{
     // Rotate per the display configuration
     const double horiz_fov = m_DisplayConfiguration->getHorizontalFOVRadians();
     const double overlap = m_DisplayConfiguration->getOverlapPercent() * horiz_fov;
     double angle = (horiz_fov - overlap) / 2.0;
-    if (vr::Eye_Right == eEye) {
+    if (vr::Eye_Right == eye) {
         angle *= -1.0;
     }
     const Eigen::Affine3d rotation = Eigen::Affine3d(Eigen::AngleAxisd(angle, Eigen::Vector3d(0, 1, 0)));
 
     // Translate along x-axis by half the interpupillary distance
     double eye_translation = m_DisplayConfiguration->getIPDMeters() / 2.0;
-    if (vr::Eye_Left == eEye) {
+    if (vr::Eye_Left == eye) {
         eye_translation *= -1.0;
     }
     const Eigen::Affine3d translation(Eigen::Translation3d(Eigen::Vector3d(eye_translation, 0.0, 0.0)));
-
     // Eye matrix
-    const Eigen::Matrix4d mat = (translation * rotation).matrix();
+    const Matrix34f mat = (translation * rotation).matrix().block(0,0,3,4).cast<float>();
 
-    return cast<vr::HmdMatrix44_t>(mat);
+    vr::HmdMatrix34_t matrix;
+    map(matrix) = (mat);
+    return matrix;
 }
-#endif
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye, float u, float v)
 {
