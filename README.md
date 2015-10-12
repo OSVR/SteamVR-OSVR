@@ -24,9 +24,9 @@ Note that despite similar goals, the internal models of the two systems are not 
 		- headers-only is fine: no compiled libraries are required
 	- [jsoncpp][]
 		- prebuilt Visual Studio binaries available at <http://access.osvr.com/binary/deps/jsoncpp>
-- An installation of the [Valve Software OpenVR SDK][openvr] - right now the repo is a binary distribution, so you can just clone the repo.
-	- If you name the directory `openvr` (which is the default when cloning with git) and place it next to or within this project's root directory, CMake will be able to find it automatically.
-	- As of the moment this file is committed, the latest version works (and may be required). They're iterating the SDK and changing APIs rapidly, so if you have compile issues, you may have to look at the git history and either use an older version or update this project to match.
+- An installation of the [Valve Software OpenVR SDK][openvr]
+    - This is currently provided as a git submodule.
+    - Run ```git submodule --init --update``` to download the OpenVR SDK.
 
 ### Building
 
