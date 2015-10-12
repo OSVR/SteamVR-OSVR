@@ -437,12 +437,12 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye
 {
     /// @todo FIXME Compute distortion using display configuration data
     vr::DistortionCoordinates_t coords;
-    coords.rfRed[0] = 0.0;
-    coords.rfRed[1] = 0.0;
-    coords.rfBlue[0] = 0.0;
-    coords.rfBlue[1] = 0.0;
-    coords.rfGreen[0] = 0.0;
-    coords.rfGreen[1] = 0.0;
+    coords.rfRed[0] = u;
+    coords.rfRed[1] = v;
+    coords.rfBlue[0] = u;
+    coords.rfBlue[1] = v;
+    coords.rfGreen[0] = u;
+    coords.rfGreen[1] = v;
     return coords;
 }
 
