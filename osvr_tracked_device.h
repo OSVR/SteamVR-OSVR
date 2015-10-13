@@ -57,7 +57,7 @@ namespace vr {
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver
 {
 public:
-    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
 
     // ------------------------------------
     // Management Methods
@@ -271,13 +271,14 @@ private:
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
     vr::IDriverLog* logger_ = nullptr;
+    vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
     vr::DriverPose_t pose_;
     vr::TrackedDeviceClass deviceClass_;
 };
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), logger_(driver_log), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
     // do nothing
 }
@@ -920,6 +921,7 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
         self->logger_->Log("OSVRTrackedDevice::HmdTrackerCallback(): Got new pose.\n");
 
     self->pose_ = pose;
+    self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
 }
 
 #endif // INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
