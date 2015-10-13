@@ -376,7 +376,7 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint3
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* right, float* top, float* bottom)
 {
-    /// @todo this does not produce correct output
+    /// @todo Use OSVR API to obtain this data
 
     // Projection matrix centered between the eyes
     const double z_near = 0.1;
@@ -392,12 +392,30 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* ri
 
     const Eigen::Matrix4d eye_matrix = translation * center;
 
-    const double near = eye_matrix(2, 3) / (eye_matrix(2, 2) - 1.0);
-    const double far = eye_matrix(2, 3) / (eye_matrix(3, 3) + 1.0);
-    *bottom = static_cast<float>(near * (eye_matrix(1, 2) - 1.0) / eye_matrix(1, 1));
-    *top = static_cast<float>(near * (eye_matrix(1, 2) + 1.0) / eye_matrix(1, 1));
-    *left = static_cast<float>(near * (eye_matrix(0, 2) - 1.0) / eye_matrix(0, 0));
-    *right = static_cast<float>(near * (eye_matrix(0, 2) + 1.0) / eye_matrix(0, 0));
+    // Reference: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetProjectionRaw
+    // This is similar to glFrustum but not quite the same!
+    // idx = 1 / (right - left)
+    // idy = 1 / (bottom - top)
+    // idz = 1 / (far - near)
+    // sx = right + left
+    // sy = bottom + top
+    // eye(0, 0) = 2 * idx = 2 / (right - left)
+    // eye(1, 1) = 2 * idy = 2 / (bottom - top)
+    // eye(0, 2) = sx * idx = (right + left) / (right - left)
+    // eye(1, 2) = sy * idy = (bottom + top) / (bottom - top)
+    // eye(2, 2) = -far * idz = -far / (far - near)
+    // eye(2, 3) = -(far * near * idz) = -(far * near) / (far - near)
+    // eye(3, 2) = -1
+
+    const double dx = 2.0 / eye_matrix(0, 0); // (right - left)
+    const double sx = eye_matrix(0, 2) * dx; // (right + left)
+    *right = static_cast<float>((sx + dx) / 2.0); // right
+    *left = static_cast<float>(sx - *right);
+
+    const double dy = 2.0 / eye_matrix(1, 1); // (bottom - top)
+    const double sy = eye_matrix(1, 2) * dy; // (bottom + top)
+    *bottom = static_cast<float>((sy + dy) / 2.0); // bottom
+    *top = static_cast<float>(sy - *bottom);
 }
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)

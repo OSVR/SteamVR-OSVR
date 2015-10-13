@@ -36,11 +36,14 @@
 
 Eigen::Matrix4d make_projection_matrix(double vertical_fov, double aspect_ratio, double near_plane, double far_plane)
 {
+    // References:
+    // http://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/building-basic-perspective-projection-matrix
+    // http://schabby.de/projection-matrix/
     const double y_scale = 1.0 / std::tan(vertical_fov / 2.0);
     const double x_scale = y_scale / aspect_ratio;
 
-    const double alpha = -(far_plane + near_plane) / (far_plane - near_plane);
-    const double beta = -2.0 * near_plane * far_plane / (far_plane - near_plane);
+    const double alpha = -(far_plane + near_plane) / (near_plane - far_plane);
+    const double beta = (2 * near_plane * far_plane) / (near_plane - far_plane);
 
     Eigen::Matrix4d mat;
     mat << x_scale, 0.0, 0.0, 0.0,
