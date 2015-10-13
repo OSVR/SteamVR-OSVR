@@ -101,7 +101,7 @@ vr::HmdError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriv
     context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
 
     const std::string display_description = context_->getStringParameter("/display");
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), logger_));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), driver_host, logger_));
 
     return vr::HmdError_None;
 }

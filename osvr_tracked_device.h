@@ -57,7 +57,7 @@ namespace vr {
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver
 {
 public:
-    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
 
     // ------------------------------------
     // Management Methods
@@ -271,13 +271,14 @@ private:
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
     vr::IDriverLog* logger_ = nullptr;
+    vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
     vr::DriverPose_t pose_;
     vr::TrackedDeviceClass deviceClass_;
 };
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), logger_(driver_log), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
     // do nothing
 }
@@ -375,6 +376,8 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint3
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* right, float* top, float* bottom)
 {
+    /// @todo this does not produce correct output
+
     // Projection matrix centered between the eyes
     const double z_near = 0.1;
     const double z_far = 100.0;
@@ -399,50 +402,40 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* ri
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
 {
-    vr::HmdMatrix34_t matrix;
-    // TODO
-    // Return an identity matrix for now
-    map(matrix) = Matrix34f::Identity();
 
-    return matrix;
-}
-
-#if 0 // obsolete
-vr::HmdMatrix44_t OSVRTrackedDevice::GetEyeMatrix(vr::Hmd_Eye eEye)
-{
     // Rotate per the display configuration
     const double horiz_fov = m_DisplayConfiguration->getHorizontalFOVRadians();
     const double overlap = m_DisplayConfiguration->getOverlapPercent() * horiz_fov;
     double angle = (horiz_fov - overlap) / 2.0;
-    if (vr::Eye_Right == eEye) {
+    if (vr::Eye_Right == eye) {
         angle *= -1.0;
     }
     const Eigen::Affine3d rotation = Eigen::Affine3d(Eigen::AngleAxisd(angle, Eigen::Vector3d(0, 1, 0)));
 
     // Translate along x-axis by half the interpupillary distance
     double eye_translation = m_DisplayConfiguration->getIPDMeters() / 2.0;
-    if (vr::Eye_Left == eEye) {
+    if (vr::Eye_Left == eye) {
         eye_translation *= -1.0;
     }
     const Eigen::Affine3d translation(Eigen::Translation3d(Eigen::Vector3d(eye_translation, 0.0, 0.0)));
-
     // Eye matrix
-    const Eigen::Matrix4d mat = (translation * rotation).matrix();
+    const Matrix34f mat = (translation * rotation).matrix().block(0,0,3,4).cast<float>();
 
-    return cast<vr::HmdMatrix44_t>(mat);
+    vr::HmdMatrix34_t matrix;
+    map(matrix) = (mat);
+    return matrix;
 }
-#endif
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye, float u, float v)
 {
     /// @todo FIXME Compute distortion using display configuration data
     vr::DistortionCoordinates_t coords;
-    coords.rfRed[0] = 0.0;
-    coords.rfRed[1] = 0.0;
-    coords.rfBlue[0] = 0.0;
-    coords.rfBlue[1] = 0.0;
-    coords.rfGreen[0] = 0.0;
-    coords.rfGreen[1] = 0.0;
+    coords.rfRed[0] = u;
+    coords.rfRed[1] = v;
+    coords.rfBlue[0] = u;
+    coords.rfBlue[1] = v;
+    coords.rfGreen[0] = u;
+    coords.rfGreen[1] = v;
     return coords;
 }
 
@@ -928,6 +921,7 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
         self->logger_->Log("OSVRTrackedDevice::HmdTrackerCallback(): Got new pose.\n");
 
     self->pose_ = pose;
+    self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
 }
 
 #endif // INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
