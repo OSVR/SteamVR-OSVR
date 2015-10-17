@@ -33,18 +33,20 @@ namespace vr {
 
 // Internal Includes
 #include "osvr_compiler_detection.h"
-#include "osvr_display_configuration.h"
 #include "make_unique.h"
 #include "matrix_cast.h"
-#include "projection_matrix.h"
 #include "osvr_device_properties.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
 
 #include <osvr/ClientKit/Context.h>
+#include <osvr/ClientKit/DisplayC.h>
+#include <osvr/Client/DisplayConfig.h>
+#include <osvr/ClientKit/Display.h>
 #include <osvr/ClientKit/Interface.h>
 #include <osvr/Util/EigenInterop.h>
+#include <osvr/Util/Pose3C.h>
 
 #include <Eigen/Geometry>
 
@@ -139,17 +141,6 @@ public:
      * treated as View in your application.
      */
     virtual vr::HmdMatrix34_t GetHeadFromEyePose(vr::Hmd_Eye eye) OSVR_OVERRIDE;
-
-#if 0 // obsolete
-    /**
-     * Returns the transform between the view space and eye space. Eye space is
-     * the per-eye flavor of view space that provides stereo disparity. Instead
-     * of Model * View * Projection the model is Model * View * Eye *
-     * Projection.  Normally View and Eye will be multiplied together and
-     * treated as View in your application.
-     */
-    virtual vr::HmdMatrix44_t GetEyeMatrix(vr::Hmd_Eye eEye) OSVR_OVERRIDE;
-#endif
 
     /**
      * Returns the result of the distortion function for the specified eye and
@@ -270,24 +261,23 @@ private:
     static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
+    osvr::clientkit::DisplayConfig m_DisplayConfig;
     vr::IDriverLog* logger_ = nullptr;
     vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
-    std::unique_ptr<OSVRDisplayConfiguration> m_DisplayConfiguration;
     vr::DriverPose_t pose_;
     vr::TrackedDeviceClass deviceClass_;
 };
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), m_DisplayConfiguration(nullptr), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), m_DisplayConfig(osvr::clientkit::DisplayConfig(context)), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
-    // do nothing
+    if((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
+        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
+    }
 }
 
 vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
 {
-    // Retrieve display parameters
-    m_DisplayConfiguration = std::make_unique<OSVRDisplayConfiguration>(m_DisplayDescription);
-
     // Register tracker callback
     if (m_TrackerInterface.notEmpty()) {
         m_TrackerInterface.free();
@@ -320,10 +310,15 @@ void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer,
 
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
 {
-    *x = m_DisplayConfiguration->getDisplayLeft();
-    *y = m_DisplayConfiguration->getDisplayTop();
-    *width = m_DisplayConfiguration->getDisplayWidth();
-    *height = m_DisplayConfiguration->getDisplayHeight();
+    int nDisplays = m_DisplayConfig.getNumDisplayInputs();
+    if (nDisplays != 1) {
+        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!");
+    }
+    osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
+    *x = 0;
+    *y = 0;
+    *width = displayDims.width;
+    *height = displayDims.height;
 }
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
@@ -340,86 +335,45 @@ bool OSVRTrackedDevice::IsDisplayRealDisplay()
 
 void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
-    *width = m_DisplayConfiguration->getDisplayWidth();
-    *height = m_DisplayConfiguration->getDisplayHeight();
+    /// @todo this is nearly identical to GetWindowBounds()
+    int nDisplays = m_DisplayConfig.getNumDisplayInputs();
+    if (nDisplays != 1) {
+        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!");
+    }
+    osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
+    *width = displayDims.width;
+    *height = displayDims.height;
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
-    switch (m_DisplayConfiguration->getDisplayMode()) {
-    case OSVRDisplayConfiguration::HORIZONTAL_SIDE_BY_SIDE:
-        *width = m_DisplayConfiguration->getDisplayWidth() / 2;
-        *height = m_DisplayConfiguration->getDisplayHeight();
-        *x = (vr::Eye_Left == eye) ? 0 : *width;
-        *y = 0;
-        break;
-    case OSVRDisplayConfiguration::VERTICAL_SIDE_BY_SIDE:
-        *width = m_DisplayConfiguration->getDisplayWidth();
-        *height = m_DisplayConfiguration->getDisplayHeight() / 2;
-        *x = 0;
-        *y = (vr::Eye_Left == eye) ? 0 : *height;
-        break;
-    case OSVRDisplayConfiguration::FULL_SCREEN:
-        *width = m_DisplayConfiguration->getDisplayWidth();
-        *height = m_DisplayConfiguration->getDisplayHeight();
-        *x = 0;
-        *y = 0;
-        break;
-    default:
-        *width = m_DisplayConfiguration->getDisplayWidth();
-        *height = m_DisplayConfiguration->getDisplayHeight();
-        *x = 0;
-        *y = 0;
-        std::cerr << "ERROR: Unexpected display mode type: " << m_DisplayConfiguration->getDisplayMode() << ".\n";
-    }
+    osvr::clientkit::RelativeViewport viewPort = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
+    *x = viewPort.left;
+    *y = viewPort.bottom;
+    *width = viewPort.width;
+    *height = viewPort.height;
 }
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* right, float* top, float* bottom)
 {
-    /// @todo Use OSVR API to obtain this data
-
-    // Projection matrix centered between the eyes
-    const double z_near = 0.1;
-    const double z_far = 100.0;
-    const Eigen::Matrix4d center = make_projection_matrix(m_DisplayConfiguration->getHorizontalFOVRadians(), m_DisplayConfiguration->getFOVAspectRatio(), z_near, z_far);
-
-    // Translate projection matrix to left or right eye
-    double eye_translation = m_DisplayConfiguration->getIPDMeters() / 2.0;
-    if (vr::Eye_Left == eye) {
-        eye_translation *= -1.0;
-    }
-    const Eigen::Affine3d translation(Eigen::Translation3d(Eigen::Vector3d(eye_translation, 0.0, 0.0)));
-
-    const Eigen::Matrix4d eye_matrix = translation * center;
-
-    // Reference: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetProjectionRaw
-    // This is similar to glFrustum but not quite the same!
-    // idx = 1 / (right - left)
-    // idy = 1 / (bottom - top)
-    // idz = 1 / (far - near)
-    // sx = right + left
-    // sy = bottom + top
-    // eye(0, 0) = 2 * idx = 2 / (right - left)
-    // eye(1, 1) = 2 * idy = 2 / (bottom - top)
-    // eye(0, 2) = sx * idx = (right + left) / (right - left)
-    // eye(1, 2) = sy * idy = (bottom + top) / (bottom - top)
-    // eye(2, 2) = -far * idz = -far / (far - near)
-    // eye(2, 3) = -(far * near * idz) = -(far * near) / (far - near)
-    // eye(3, 2) = -1
-
-    const double dx = 2.0 / eye_matrix(0, 0); // (right - left)
-    const double sx = eye_matrix(0, 2) * dx; // (right + left)
-    *right = static_cast<float>((sx + dx) / 2.0); // right
-    *left = static_cast<float>(sx - *right);
-
-    const double dy = 2.0 / eye_matrix(1, 1); // (bottom - top)
-    const double sy = eye_matrix(1, 2) * dy; // (bottom + top)
-    *bottom = static_cast<float>((sy + dy) / 2.0); // bottom
-    *top = static_cast<float>(sy - *bottom);
+    osvr::clientkit::ProjectionClippingPlanes clippingPlanes = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getProjectionClippingPlanes();
+    *right = static_cast<float>(clippingPlanes.right);
+    *left = static_cast<float>(clippingPlanes.left);
+    *top = static_cast<float>(clippingPlanes.top);
+    *bottom = static_cast<float>(clippingPlanes.bottom);
 }
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
 {
+    OSVR_Pose3 headPose, eyePose;
+    
+    if(m_DisplayConfig.getViewer(0).getPose(headPose) != true) {
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get head pose!");
+    }
+    if(m_DisplayConfig.getViewer(0).getEye(eye).getPose(eyePose) != true) {
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get eye pose!");
+    }
+#if 0
 
     // Rotate per the display configuration
     const double horiz_fov = m_DisplayConfiguration->getHorizontalFOVRadians();
@@ -442,6 +396,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
     vr::HmdMatrix34_t matrix;
     map(matrix) = (mat);
     return matrix;
+#endif
 }
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye, float u, float v)
@@ -488,7 +443,7 @@ const char* OSVRTrackedDevice::GetSerialNumber()
 
 float OSVRTrackedDevice::GetIPD()
 {
-    return static_cast<float>(m_DisplayConfiguration->getIPDMeters());
+    return 0.063f; /// @todo update when this becomes exposed to the API
 }
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
@@ -575,7 +530,7 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::TrackedDeviceProperty
     case vr::Prop_UserIpdMeters_Float: // TODO
         if (error)
             *error = vr::TrackedProp_Success;
-        return static_cast<float>(m_DisplayConfiguration->getIPDMeters());
+        return 0.063f; /// @todo fix this once OSVR API has IPD
     case vr::Prop_FieldOfViewLeftDegrees_Float: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
