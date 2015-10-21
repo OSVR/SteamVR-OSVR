@@ -53,13 +53,13 @@ add_subdirectory(vendor)
 
 
 # Disable 'lib' prefix on POSIX systems
-set(CMAKE_SHARED_MODULE_PREFIX "")
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 #
 # OpenVR driver
 #
 add_library(driver_osvr
-	MODULE
+	SHARED
 	ClientDriver_OSVR.h
 	driver_osvr.cpp
 	identity.h
