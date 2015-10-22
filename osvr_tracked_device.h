@@ -331,14 +331,13 @@ bool OSVRTrackedDevice::IsDisplayRealDisplay()
 
 void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
-    /// @todo this is nearly identical to GetWindowBounds()
-    int nDisplays = m_DisplayConfig.getNumDisplayInputs();
-    if (nDisplays != 1) {
-        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!");
-    }
-    osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
-    *width = displayDims.width;
-    *height = displayDims.height;
+    /// @todo calculate overfill factor properly
+    double overfillFactor = 1.0;
+    int32_t x, y;
+    uint32_t w, h;
+    GetWindowBounds(&x, &y, &w, &h);
+    *width = (w-x) * overfillFactor;
+    *height = (h-y) * overfillFactor;
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
@@ -422,7 +421,20 @@ const char* OSVRTrackedDevice::GetSerialNumber()
 
 float OSVRTrackedDevice::GetIPD()
 {
-    return 0.063f; /// @todo update when this becomes exposed to the API
+    /// @todo poses returned from OSVR don't appear to have correct translation values.
+    float result = 0.063f; // default
+#if 0
+    OSVR_Pose3 leftEye, rightEye;
+    if(m_DisplayConfig.getViewer(0).getEye(0).getPose(leftEye) != true) {
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!");
+    }
+    if(m_DisplayConfig.getViewer(0).getEye(1).getPose(rightEye) != true) {
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!");
+    }
+    Eigen::Map<Eigen::Vector3d> lT = osvr::util::vecMap(leftEye.translation);
+    Eigen::Map<Eigen::Vector3d> rT = osvr::util::vecMap(rightEye.translation);
+#endif
+    return result;
 }
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
@@ -506,10 +518,10 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::TrackedDeviceProperty
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_UserIpdMeters_Float: // TODO
+    case vr::Prop_UserIpdMeters_Float:
         if (error)
             *error = vr::TrackedProp_Success;
-        return 0.063f; /// @todo fix this once OSVR API has IPD
+        return GetIPD();
     case vr::Prop_FieldOfViewLeftDegrees_Float: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
