@@ -37,24 +37,20 @@ namespace vr {
 #include "matrix_cast.h"
 #include "osvr_device_properties.h"
 
-// Library/third-party includes
+// OpenVR includes
+#include <openvr.h>
 #include <openvr_driver.h>
 
-#include <osvr/ClientKit/Context.h>
-#include <osvr/ClientKit/DisplayC.h>
-#include <osvr/Client/DisplayConfig.h>
+// Library/third-party includes
 #include <osvr/ClientKit/Display.h>
-#include <osvr/ClientKit/Interface.h>
 #include <osvr/Util/EigenInterop.h>
-#include <osvr/Util/Pose3C.h>
-
-#include <Eigen/Geometry>
 
 #include <util/FixedLengthStringFunctions.h>
 
 // Standard includes
 #include <cstring>
 #include <string>
+#include <iostream>
 
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver
 {
@@ -356,47 +352,30 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint3
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* right, float* top, float* bottom)
 {
-    osvr::clientkit::ProjectionClippingPlanes clippingPlanes = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getProjectionClippingPlanes();
-    *right = static_cast<float>(clippingPlanes.right);
-    *left = static_cast<float>(clippingPlanes.left);
-    *top = static_cast<float>(clippingPlanes.top);
-    *bottom = static_cast<float>(clippingPlanes.bottom);
+    // Reference: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetProjectionRaw
+    // SteamVR expects top and bottom to be swapped!
+    osvr::clientkit::ProjectionClippingPlanes pl = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getProjectionClippingPlanes();
+    *left = static_cast<float>(pl.left);
+    *right = static_cast<float>(pl.right);
+    *bottom = static_cast<float>(pl.top); // SWAPPED
+    *top = static_cast<float>(pl.bottom); // SWAPPED
 }
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
 {
     OSVR_Pose3 headPose, eyePose;
-    
+    vr::HmdMatrix34_t matrix;
+
     if(m_DisplayConfig.getViewer(0).getPose(headPose) != true) {
         logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get head pose!");
     }
     if(m_DisplayConfig.getViewer(0).getEye(eye).getPose(eyePose) != true) {
         logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get eye pose!");
     }
-#if 0
 
-    // Rotate per the display configuration
-    const double horiz_fov = m_DisplayConfiguration->getHorizontalFOVRadians();
-    const double overlap = m_DisplayConfiguration->getOverlapPercent() * horiz_fov;
-    double angle = (horiz_fov - overlap) / 2.0;
-    if (vr::Eye_Right == eye) {
-        angle *= -1.0;
-    }
-    const Eigen::Affine3d rotation = Eigen::Affine3d(Eigen::AngleAxisd(angle, Eigen::Vector3d(0, 1, 0)));
-
-    // Translate along x-axis by half the interpupillary distance
-    double eye_translation = m_DisplayConfiguration->getIPDMeters() / 2.0;
-    if (vr::Eye_Left == eye) {
-        eye_translation *= -1.0;
-    }
-    const Eigen::Affine3d translation(Eigen::Translation3d(Eigen::Vector3d(eye_translation, 0.0, 0.0)));
-    // Eye matrix
-    const Matrix34f mat = (translation * rotation).matrix().block(0,0,3,4).cast<float>();
-
-    vr::HmdMatrix34_t matrix;
-    map(matrix) = (mat);
+    /// @todo FIXME Implement this (needs to return eye pose in head space) -- returns identity for now
+    map(matrix) = Matrix34f::Identity();
     return matrix;
-#endif
 }
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye, float u, float v)
