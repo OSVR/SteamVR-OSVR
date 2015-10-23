@@ -49,6 +49,7 @@ namespace vr {
 
 // Standard includes
 #include <cstring>
+#include <ctime>
 #include <string>
 #include <iostream>
 
@@ -265,19 +266,48 @@ private:
     vr::TrackedDeviceClass deviceClass_;
 };
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), m_DisplayConfig(osvr::clientkit::DisplayConfig(context)), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
-    if((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
-        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
-    }
 }
 
 vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
 {
+    const std::time_t waitTime = 5; // wait up to 5 seconds for init
     // Register tracker callback
     if (m_TrackerInterface.notEmpty()) {
         m_TrackerInterface.free();
     }
+
+    // ensure context is fully started up
+    logger_->Log("Waiting for the context to fully start up...");
+    std::time_t startTime = std::time(nullptr);
+    while (!m_Context.checkStatus()) {
+        m_Context.update();
+        if(std::time(nullptr) > startTime + waitTime) {
+            logger_->Log("Context startup timed out!");
+            break;
+        }
+    }
+
+    m_DisplayConfig = osvr::clientkit::DisplayConfig(m_Context);
+
+    // ensure display is fully started up
+    logger_->Log("Waiting for the display to fully start up, including receiving initial pose update...");
+    startTime = std::time(nullptr);
+    while (!m_DisplayConfig.checkStartup()) {
+        m_Context.update();
+        if(std::time(nullptr) > startTime + waitTime) {
+            logger_->Log("Display startup timed out!");
+            break;
+        }
+    }
+
+    // verify valid display config
+    if((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
+        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
+    }
+
+    // register tracker callback
     m_TrackerInterface = m_Context.getInterface("/me/head");
     m_TrackerInterface.registerCallback(&OSVRTrackedDevice::HmdTrackerCallback, this);
 
@@ -421,9 +451,6 @@ const char* OSVRTrackedDevice::GetSerialNumber()
 
 float OSVRTrackedDevice::GetIPD()
 {
-    /// @todo poses returned from OSVR don't appear to have correct translation values.
-    float result = 0.063f; // default
-#if 0
     OSVR_Pose3 leftEye, rightEye;
     if(m_DisplayConfig.getViewer(0).getEye(0).getPose(leftEye) != true) {
         logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!");
@@ -433,8 +460,7 @@ float OSVRTrackedDevice::GetIPD()
     }
     Eigen::Map<Eigen::Vector3d> lT = osvr::util::vecMap(leftEye.translation);
     Eigen::Map<Eigen::Vector3d> rT = osvr::util::vecMap(rightEye.translation);
-#endif
-    return result;
+    return 2*std::sqrt(std::abs(rT.dot(lT)));
 }
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
