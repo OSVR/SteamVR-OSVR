@@ -279,12 +279,12 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
     }
 
     // ensure context is fully started up
-    logger_->Log("Waiting for the context to fully start up...");
+    logger_->Log("Waiting for the context to fully start up...\n");
     std::time_t startTime = std::time(nullptr);
     while (!m_Context.checkStatus()) {
         m_Context.update();
         if(std::time(nullptr) > startTime + waitTime) {
-            logger_->Log("Context startup timed out!");
+            logger_->Log("Context startup timed out!\n");
             return vr::HmdError_Driver_Failed;
         }
     }
@@ -292,12 +292,12 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
     m_DisplayConfig = osvr::clientkit::DisplayConfig(m_Context);
 
     // ensure display is fully started up
-    logger_->Log("Waiting for the display to fully start up, including receiving initial pose update...");
+    logger_->Log("Waiting for the display to fully start up, including receiving initial pose update...\n");
     startTime = std::time(nullptr);
     while (!m_DisplayConfig.checkStartup()) {
         m_Context.update();
         if(std::time(nullptr) > startTime + waitTime) {
-            logger_->Log("Display startup timed out!");
+            logger_->Log("Display startup timed out!\n");
             return vr::HmdError_Driver_Failed;
         }
     }
@@ -305,7 +305,7 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
     // verify valid display config
     if((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
         logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
-        if(m_DisplayConfig.getNumViewers() < 1) || (m_DisplayConfig.getViewer(0).getNumEyes() < 2) || (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
+        if((m_DisplayConfig.getNumViewers() < 1) || (m_DisplayConfig.getViewer(0).getNumEyes() < 2) || (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
             logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Cannot continue with current display parameters: insufficient viewers, eyes, or surfaces!\n");
             return vr::HmdError_Driver_HmdDisplayNotFound;
         }
@@ -342,7 +342,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
 {
     int nDisplays = m_DisplayConfig.getNumDisplayInputs();
     if (nDisplays != 1) {
-        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!");
+        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!\n");
     }
     osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
     *x = 0;
@@ -400,10 +400,10 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
     vr::HmdMatrix34_t matrix;
 
     if(m_DisplayConfig.getViewer(0).getPose(headPose) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get head pose!");
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get head pose!\n");
     }
     if(m_DisplayConfig.getViewer(0).getEye(eye).getPose(eyePose) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get eye pose!");
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get eye pose!\n");
     }
 
     /// @todo FIXME Implement this (needs to return eye pose in head space) -- returns identity for now
@@ -457,10 +457,10 @@ float OSVRTrackedDevice::GetIPD()
 {
     OSVR_Pose3 leftEye, rightEye;
     if(m_DisplayConfig.getViewer(0).getEye(0).getPose(leftEye) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!");
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!\n");
     }
     if(m_DisplayConfig.getViewer(0).getEye(1).getPose(rightEye) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!");
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n");
     }
     Eigen::Map<Eigen::Vector3d> lT = osvr::util::vecMap(leftEye.translation);
     Eigen::Map<Eigen::Vector3d> rT = osvr::util::vecMap(rightEye.translation);
