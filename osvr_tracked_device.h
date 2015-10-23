@@ -414,8 +414,11 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
         logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get eye pose!\n");
     }
 
-    /// @todo FIXME Implement this (needs to return eye pose in head space) -- returns identity for now
-    map(matrix) = Matrix34f::Identity();
+    Eigen::Isometry3d h = osvr::util::fromPose(headPose);
+    Eigen::Isometry3d e = osvr::util::fromPose(eyePose);
+
+    const Matrix34f headInEyeSpaceMat = ( h * e.inverse()).matrix().block(0,0,3,4).cast<float>();
+    map(matrix) = (headInEyeSpaceMat);
     return matrix;
 }
 
