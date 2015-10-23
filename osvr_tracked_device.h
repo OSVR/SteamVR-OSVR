@@ -922,9 +922,6 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.willDriftInYaw = true;
     pose.shouldApplyHeadModel = true;
 
-    if (self->logger_)
-        self->logger_->Log("OSVRTrackedDevice::HmdTrackerCallback(): Got new pose.\n");
-
     self->pose_ = pose;
     self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
 }
