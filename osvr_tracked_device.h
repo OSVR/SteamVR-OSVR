@@ -305,8 +305,16 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
     // verify valid display config
     if((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
         logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
-        if((m_DisplayConfig.getNumViewers() < 1) || (m_DisplayConfig.getViewer(0).getNumEyes() < 2) || (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
-            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Cannot continue with current display parameters: insufficient viewers, eyes, or surfaces!\n");
+        if(m_DisplayConfig.getNumViewers() < 1) {
+            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least one viewer must exist.\n");
+            return vr::HmdError_Driver_HmdDisplayNotFound;
+        }
+        else if(m_DisplayConfig.getViewer(0).getNumEyes() < 2) {
+            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least two eyes must exist.\n");
+            return vr::HmdError_Driver_HmdDisplayNotFound;
+        }
+        else if((m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
+            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least one surface must exist for each eye.\n");
             return vr::HmdError_Driver_HmdDisplayNotFound;
         }
     }
