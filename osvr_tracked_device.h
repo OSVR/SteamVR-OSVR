@@ -473,9 +473,7 @@ float OSVRTrackedDevice::GetIPD()
     if(m_DisplayConfig.getViewer(0).getEye(1).getPose(rightEye) != true) {
         logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n");
     }
-    Eigen::Map<Eigen::Vector3d> lT = osvr::util::vecMap(leftEye.translation);
-    Eigen::Map<Eigen::Vector3d> rT = osvr::util::vecMap(rightEye.translation);
-    return 2*std::sqrt(std::abs(rT.dot(lT)));
+    return (osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm();
 }
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
