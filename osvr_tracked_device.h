@@ -285,7 +285,7 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
         m_Context.update();
         if(std::time(nullptr) > startTime + waitTime) {
             logger_->Log("Context startup timed out!");
-            break;
+            return vr::HmdError_Driver_Failed;
         }
     }
 
@@ -298,13 +298,17 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
         m_Context.update();
         if(std::time(nullptr) > startTime + waitTime) {
             logger_->Log("Display startup timed out!");
-            break;
+            return vr::HmdError_Driver_Failed;
         }
     }
 
     // verify valid display config
     if((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
         logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
+        if(m_DisplayConfig.getNumViewers() < 1) || (m_DisplayConfig.getViewer(0).getNumEyes() < 2) || (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
+            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Cannot continue with current display parameters: insufficient viewers, eyes, or surfaces!\n");
+            return vr::HmdError_Driver_HmdDisplayNotFound;
+        }
     }
 
     // register tracker callback
