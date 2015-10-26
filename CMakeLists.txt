@@ -66,10 +66,8 @@ add_library(driver_osvr
 	make_unique.h
 	matrix_cast.h
 	osvr_device_properties.h
-	osvr_display_configuration.h
 	osvr_dll_export.h
 	osvr_tracked_device.h
-	projection_matrix.h
 	ServerDriver_OSVR.h
 	string_algo.h
 )
