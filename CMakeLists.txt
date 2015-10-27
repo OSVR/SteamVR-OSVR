@@ -82,6 +82,14 @@ endif()
 install(TARGETS driver_osvr
 	DESTINATION drivers/osvr/bin/${OPENVR_PLATFORM})
 
+if(WIN32)
+	include(CopyImportedTarget)
+	foreach(target osvr::osvrClientKit osvr::osvrClient osvr::osvrCommon osvr::osvrUtil)
+		copy_imported_targets(${target}) # for use in build tree
+		install_imported_target(${target} DESTINATION drivers/osvr/bin/${OPENVR_PLATFORM}) # in installed directory
+	endforeach()
+endif()
+
 #
 # Test program
 #
