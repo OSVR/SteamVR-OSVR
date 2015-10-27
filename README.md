@@ -4,6 +4,8 @@
 > For details, see <http://osvr.github.io>
 >
 > For support, see <http://support.osvr.com>
+>
+> Windows alpha binaries: [ ![Download Windows Alpha](https://api.bintray.com/packages/osvr/SteamVR-OSVR/SteamVR-OSVR-Win/images/download.svg) ](https://bintray.com/osvr/SteamVR-OSVR/SteamVR-OSVR-Win/_latestVersion)
 
 This is a SteamVR driver for allowing applications written against that API to work with hardware and software running with the OSVR software framework.
 
