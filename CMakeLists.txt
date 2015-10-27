@@ -80,7 +80,7 @@ if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 endif()
 
 install(TARGETS driver_osvr
-	DESTINATION drivers/${OPENVR_PLATFORM})
+	DESTINATION drivers/osvr/bin/${OPENVR_PLATFORM})
 
 #
 # Test program
