@@ -11,6 +11,42 @@ This is a SteamVR driver for allowing applications written against that API to w
 
 Note that despite similar goals, the internal models of the two systems are not the same (in most cases, OSVR has a more flexible, descriptive model), so if you're writing an application from scratch, be sure to evaluate that. This driver exists primarily for compatibility reasons (a bit like the Unity or Unreal integration, but more general), so existing software using the SteamVR system can run on OSVR. *OSVR ClientKit itself (along with its wrappers/engine integrations) is and remains the first-class preferred API for working with OSVR.*
 
+## Binary Usage Instructions
+If you'd just like to try this out with pre-compiled binaries on Windows, the link above contains a compressed file with the 32- and 64-bit builds in it. (Other platforms will have to build from source at this time.) This is not the only way to use the binaries, but it's the simplest way to use them with commercially-released SteamVR games.
+
+### Installation
+
+1. Download and extract an [OSVR Core snapshot build and whatever plugins you need](http://osvr.github.io/using/) for your hardware. (Support for the OSVR HDK, among others, is bundled with the main download, no additional plugins required.) This is for the OSVR Server, and is common to using any OSVR-enabled application.
+2. Install [Steam](http://steampowered.com) and optionally, a SteamVR-enabled game (Team Fortress 2 was tested).
+3. Install SteamVR by hovering over the "Library" button in Steam, clicking on to "Tools" in the drop-down menu, then finding the "SteamVR" entry, right-clicking it, and clicking "Install Game". (You should **not** need any beta versions of Steam or SteamVR to use this.)
+4. Download the binary snapshot, and extract it using 7-Zip.
+5. Now, you'll need to put the driver where SteamVR can find it.
+
+The default locations are as follows:
+
+- If you accepted defaults, Steam's nested SteamVR directory is installed in `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR"` - you can paste that into the Windows Run dialog and it should open the right folder.  You can also find SteamVR in the Library, Tools section of Steam, right-click it, choose Properties, then Local Files, then "Browse local files..."
+
+	- "The right folder" will contain, among other things, a directory called `drivers`.
+
+- Upon extracting the OSVR driver, you'll get a `SteamVR-OSVR` directory, with a `drivers` directory inside it (with additional directories and files deeper inside `drivers`).
+
+You'll want to drag the `drivers` directory from the `SteamVR-OSVR` extracted folder over into the Steam directory, to merge its contents with the existing contents of the `drivers` directory. (It should just making an `osvr` subdirectory with contents.)
+
+To know if you got it right, do the same Windows Run (or other way of opening a folder by its name) as above, with the path `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR\drivers\osvr\bin\win32"` instead. (Make changes as appropriate to suit your Steam install location.) If you got it right, you should see a number of files, including one called `driver_osvr.dll`.
+
+### Usage
+
+In all cases, hook up your hardware and launch OSVR Server first.
+
+**Simple:** Paste `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR\demo\bin\win32\hellovr_sdl.exe"` into the Windows Run dialog and click run to start the SteamVR simple demo app - you should get a command-prompt window with some text, the screen might flicker, then you should get a split-screen display that reacts to the movement of the HMD by changing your view of a world with infinite cubes of test patterns. (You might need to click to bring the demo window to the foreground.)
+
+**Real game:** You may wish to open the "VRMonitor" - the SteamVR status window, that should be accessible through the Start Menu. At this time, it appears to also launch Steam in VR or "Big Picture" mode, which may or may not be what you want, but you can close that interface and keep the VR Monitor open. It might say "Not Ready", but if you hover over the HMD icon it should say "HMD Connected, but not ready" - that's normal.
+
+Different games have different ways of turning on VR mode - some you right-click on them in Steam and specify in the options to pass `/vr` to launch in VR mode. You might find info about this on the Internet - many of these sources are outdated: for example, no command line switch is required for TF2 to run in VR.
+
+In this example, we'll use TF2, which has it accessible in its menu: go to "Options", then "Video" and change "Virtual Reality Mode" to "Enabled". You'll have to save that setting and restart the game before you'll see a new entry on the game's main menu called "Activate Virtual Reality". Selecting "Activate Virtual Reality" should flip the game into VR mode and you're ready to play. (Might be best to use a gamepad, as WASD and mouselook don't go well with VR, the mouselook portion in particular.)
+
+
 ## Build Instructions
 ### Prerequisites
 - [CMake][] v3.1 or newer, latest version always recommended
