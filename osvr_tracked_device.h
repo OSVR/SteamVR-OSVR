@@ -25,12 +25,6 @@
 #ifndef INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
 #define INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
 
-/// @fixme workaround OpenVR bug!
-namespace vr {
-    typedef unsigned short CameraVideoStreamFormat_e; /// @todo this type is used in the SteamVR drivers
-    typedef unsigned short * CameraVideoStreamFrame_t; /// @todo this type is used in the SteamVR drivers
-}
-
 // Internal Includes
 #include "osvr_compiler_detection.h"
 #include "make_unique.h"
@@ -38,7 +32,6 @@ namespace vr {
 #include "osvr_device_properties.h"
 
 // OpenVR includes
-#include <openvr.h>
 #include <openvr_driver.h>
 
 // Library/third-party includes
@@ -245,15 +238,23 @@ public:
     // Camera Methods
     // ------------------------------------
     virtual bool HasCamera() OSVR_OVERRIDE;
+	virtual bool GetCameraFirmwareDescription( char *pBuffer, uint32_t nBufferLen ) OSVR_OVERRIDE;
+	virtual bool GetCameraFrameDimensions( vr::ECameraVideoStreamFormat nVideoStreamFormat, uint32_t *pWidth, uint32_t *pHeight ) OSVR_OVERRIDE;
     virtual bool GetCameraFrameBufferingRequirements( int *pDefaultFrameQueueSize, uint32_t *pFrameBufferDataSize ) OSVR_OVERRIDE;
     virtual bool SetCameraFrameBuffering( int nFrameBufferCount, void **ppFrameBuffers, uint32_t nFrameBufferDataSize ) OSVR_OVERRIDE;
-    virtual vr::CameraVideoStreamFormat_e GetCameraVideoStreamFormat() OSVR_OVERRIDE;
-    virtual const vr::CameraVideoStreamFrame_t *GetVideoStreamFrame() OSVR_OVERRIDE;
-    virtual void ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage ) OSVR_OVERRIDE;
+	virtual bool SetCameraVideoStreamFormat( vr::ECameraVideoStreamFormat nVideoStreamFormat ) OSVR_OVERRIDE;
+	virtual vr::ECameraVideoStreamFormat GetCameraVideoStreamFormat() OSVR_OVERRIDE;
     virtual bool StartVideoStream() OSVR_OVERRIDE;
     virtual void StopVideoStream() OSVR_OVERRIDE;
     virtual bool IsVideoStreamActive() OSVR_OVERRIDE;
     virtual float GetVideoStreamElapsedTime() OSVR_OVERRIDE;
+	virtual const vr::CameraVideoStreamFrame_t *GetVideoStreamFrame() OSVR_OVERRIDE;
+	virtual void ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage ) OSVR_OVERRIDE;
+	virtual bool SetAutoExposure( bool bEnable ) OSVR_OVERRIDE;
+	virtual bool SupportsPauseResume() OSVR_OVERRIDE;
+	virtual bool PauseVideoStream() OSVR_OVERRIDE;
+	virtual bool ResumeVideoStream() OSVR_OVERRIDE;
+	virtual bool IsVideoStreamPaused() OSVR_OVERRIDE;
 private:
     static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     const std::string m_DisplayDescription;
@@ -835,7 +836,16 @@ bool OSVRTrackedDevice::HasCamera()
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
     return false;
 }
-
+bool OSVRTrackedDevice::GetCameraFirmwareDescription( char *pBuffer, uint32_t nBufferLen )
+{
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
+}
+bool OSVRTrackedDevice::GetCameraFrameDimensions( vr::ECameraVideoStreamFormat nVideoStreamFormat, uint32_t *pWidth, uint32_t *pHeight )
+{
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
+}
 bool OSVRTrackedDevice::GetCameraFrameBufferingRequirements( int *pDefaultFrameQueueSize, uint32_t *pFrameBufferDataSize )
 {
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
@@ -846,21 +856,16 @@ bool OSVRTrackedDevice::SetCameraFrameBuffering( int nFrameBufferCount, void **p
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
     return false;
 }
-vr::CameraVideoStreamFormat_e OSVRTrackedDevice::GetCameraVideoStreamFormat()
+bool OSVRTrackedDevice::SetCameraVideoStreamFormat( vr::ECameraVideoStreamFormat nVideoStreamFormat )
 {
-    /// @todo SteamVR drivers return NULL and do nothing else, doing the same here
-    return 0;
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
 }
-const vr::CameraVideoStreamFrame_t * OSVRTrackedDevice::GetVideoStreamFrame()
+vr::ECameraVideoStreamFormat OSVRTrackedDevice::GetCameraVideoStreamFormat()
 {
-    /// @todo SteamVR drivers return NULL and do nothing else, doing the same here
-    return NULL;
+    /// @todo SteamVR drivers return 0 and do nothing else, doing the same here
+    return vr::CVS_FORMAT_UNKNOWN; // this maps to 0
 }
-void OSVRTrackedDevice::ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage )
-{
-    /// @todo SteamVR drivers does nothing, doing the same here
-}
-
 bool OSVRTrackedDevice::StartVideoStream()
 {
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
@@ -880,9 +885,40 @@ float OSVRTrackedDevice::GetVideoStreamElapsedTime()
     /// @todo SteamVR drivers return 0 and do nothing else, doing the same here
     return 0;
 }
-
-
-
+const vr::CameraVideoStreamFrame_t * OSVRTrackedDevice::GetVideoStreamFrame()
+{
+    /// @todo SteamVR drivers return NULL and do nothing else, doing the same here
+    return NULL;
+}
+void OSVRTrackedDevice::ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage )
+{
+    /// @todo SteamVR drivers does nothing, doing the same here
+}
+bool OSVRTrackedDevice::SetAutoExposure( bool bEnable )
+{
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
+}
+bool OSVRTrackedDevice::SupportsPauseResume()
+{
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
+}
+bool OSVRTrackedDevice::PauseVideoStream()
+{
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
+}
+bool OSVRTrackedDevice::ResumeVideoStream()
+{
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
+}
+bool OSVRTrackedDevice::IsVideoStreamPaused()
+{
+    /// @todo SteamVR drivers return false and do nothing else, doing the same here
+    return false;
+}
 
 void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
 {
