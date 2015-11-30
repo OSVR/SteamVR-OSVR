@@ -42,10 +42,10 @@ int main(int argc, char* argv[])
     if (!tracker_driver) {
         std::cerr << "! Error creating tracker driver. ";
         switch (driver_init_return) {
-        case vr::HmdError_Init_InvalidInterface:
+        case vr::VRInitError_Init_InvalidInterface:
             std::cerr << "Invalid interface.";
             break;
-        case vr::HmdError_Init_InterfaceNotFound:
+        case vr::VRInitError_Init_InterfaceNotFound:
             std::cerr << "Interface not found.";
             break;
         default:
@@ -59,8 +59,8 @@ int main(int argc, char* argv[])
 
     // Initialize the tracker driver
     std::cout << "Initializing the tracker driver..." << std::endl;
-    vr::HmdError error = tracker_driver->Init(nullptr, nullptr, "", "");
-    if (vr::HmdError_None != error) {
+    vr::EVRInitError error = tracker_driver->Init(nullptr, nullptr, "", "");
+    if (vr::VRInitError_None != error) {
         std::cerr << "! Error initializing tracker driver: " << error << "." << std::endl;
         tracker_driver->Cleanup();
         return EXIT_FAILURE;

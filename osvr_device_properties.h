@@ -34,7 +34,7 @@
 // Standard includes
 // - none
 
-inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const bool&)
+inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
 {
     switch (prop) {
     case vr::Prop_WillDriftInYaw_Bool:
@@ -48,7 +48,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const bool&)
     return true;
 }
 
-inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const float&)
+inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
 {
     switch (prop) {
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -67,7 +67,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const float&)
     return true;
 }
 
-inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const int32_t&)
+inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
 {
     switch (prop) {
     case vr::Prop_Axis0Type_Int32:
@@ -81,7 +81,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const int32_t&)
     return true;
 }
 
-inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const uint64_t&)
+inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
 {
     switch (prop) {
     case vr::Prop_CurrentUniverseId_Uint64:
@@ -93,7 +93,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const uint64_t&)
     return true;
 }
 
-inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const char*)
+inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
 {
     switch (prop) {
     case vr::Prop_TrackingSystemName_String:
@@ -113,7 +113,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, const char*)
     return true;
 }
 
-inline bool isWrongDataType(vr::TrackedDeviceProperty prop, vr::HmdMatrix34_t)
+inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
 {
     switch (prop) {
     case vr::Prop_StatusDisplayTransform_Matrix34:
@@ -123,7 +123,7 @@ inline bool isWrongDataType(vr::TrackedDeviceProperty prop, vr::HmdMatrix34_t)
     return true;
 }
 
-inline bool isWrongDeviceClass(vr::TrackedDeviceProperty prop, vr::TrackedDeviceClass device_class)
+inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDeviceClass device_class)
 {
     switch (prop) {
     // General properties that apply to all device classes

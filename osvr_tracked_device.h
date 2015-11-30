@@ -62,7 +62,7 @@ public:
      * valid until Deactivate is called, but should not be used after that
      * point.
      */
-    virtual vr::HmdError Activate(uint32_t object_id) OSVR_OVERRIDE;
+    virtual vr::EVRInitError Activate(uint32_t object_id) OSVR_OVERRIDE;
 
     /**
      * This is called when The VR system is switching from this Hmd being the
@@ -115,29 +115,20 @@ public:
      * Gets the viewport in the frame buffer to draw the output of the distortion
      * into
      */
-    virtual void GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
+    virtual void GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
 
     /**
      * The components necessary to build your own projection matrix in case your
      * application is doing something fancy like infinite Z
      */
-    virtual void GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* right, float* top, float* bottom) OSVR_OVERRIDE;
-
-    /**
-     * Returns the transform from eye space to the head space. Eye space is the
-     * per-eye flavor of head space that provides stereo disparity. Instead of
-     * Model * View * Projection the sequence is Model * View * Eye^-1 *
-     * Projection.  Normally View and Eye^-1 will be multiplied together and
-     * treated as View in your application.
-     */
-    virtual vr::HmdMatrix34_t GetHeadFromEyePose(vr::Hmd_Eye eye) OSVR_OVERRIDE;
+    virtual void GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom) OSVR_OVERRIDE;
 
     /**
      * Returns the result of the distortion function for the specified eye and
      * input UVs. UVs go from 0,0 in the upper left of that eye's viewport and
      * 1,1 in the lower right of that eye's viewport.
      */
-    virtual vr::DistortionCoordinates_t ComputeDistortion(vr::Hmd_Eye eye, float u, float v) OSVR_OVERRIDE;
+    virtual vr::DistortionCoordinates_t ComputeDistortion(vr::EVREye eye, float u, float v) OSVR_OVERRIDE;
 
     // -----------------------------------
     // Assorted capability methods
@@ -163,15 +154,6 @@ public:
     virtual const char* GetSerialNumber() OSVR_OVERRIDE;
 
     // ------------------------------------
-    // IPD Methods
-    // ------------------------------------
-
-    /**
-     * Gets the current IPD (Interpupillary Distance) in meters.
-     */
-    virtual float GetIPD() OSVR_OVERRIDE;
-
-    // ------------------------------------
     // Tracking Methods
     // ------------------------------------
     virtual vr::DriverPose_t GetPose() OSVR_OVERRIDE;
@@ -184,31 +166,31 @@ public:
      * Returns a bool property. If the property is not available this function
      * will return false.
      */
-    virtual bool GetBoolTrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
+    virtual bool GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
     /**
      * Returns a float property. If the property is not available this function
      * will return 0.
      */
-    virtual float GetFloatTrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
+    virtual float GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
     /**
      * Returns an int property. If the property is not available this function
      * will return 0.
      */
-    virtual int32_t GetInt32TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
+    virtual int32_t GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
     /**
      * Returns a uint64 property. If the property is not available this function
      * will return 0.
      */
-    virtual uint64_t GetUint64TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
+    virtual uint64_t GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
     /**
      * Returns a matrix property. If the device index is not valid or the
      * property is not a matrix type, this function will return identity.
      */
-    virtual vr::HmdMatrix34_t GetMatrix34TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
+    virtual vr::HmdMatrix34_t GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
     /**
      * Returns a string property. If the property is not available this function
@@ -219,7 +201,7 @@ public:
      * @c k_unTrackingStringSize characters. Drivers may not return strings longer
      * than @c k_unMaxPropertyStringSize.
      */
-    virtual uint32_t GetStringTrackedDeviceProperty(vr::TrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::TrackedPropertyError* error) OSVR_OVERRIDE;
+    virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
     // ------------------------------------
     // Controller Methods
@@ -255,8 +237,12 @@ public:
 	virtual bool PauseVideoStream() OSVR_OVERRIDE;
 	virtual bool ResumeVideoStream() OSVR_OVERRIDE;
 	virtual bool IsVideoStreamPaused() OSVR_OVERRIDE;
+    virtual bool GetCameraDistortion(float a, float b, float* c, float* d) OSVR_OVERRIDE;
+    virtual bool GetCameraProjection(float a, float b, float c, float d, vr::HmdMatrix44_t* e) OSVR_OVERRIDE;
+
 private:
     static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
+    float GetIPD();
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
     osvr::clientkit::DisplayConfig m_DisplayConfig;
@@ -264,14 +250,15 @@ private:
     vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     vr::DriverPose_t pose_;
-    vr::TrackedDeviceClass deviceClass_;
+    vr::ETrackedDeviceClass deviceClass_;
+
 };
 
 OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
 }
 
-vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
+vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 {
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
     // Register tracker callback
@@ -286,7 +273,7 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
         m_Context.update();
         if(std::time(nullptr) > startTime + waitTime) {
             logger_->Log("Context startup timed out!\n");
-            return vr::HmdError_Driver_Failed;
+            return vr::VRInitError_Driver_Failed;
         }
     }
 
@@ -299,7 +286,7 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
         m_Context.update();
         if(std::time(nullptr) > startTime + waitTime) {
             logger_->Log("Display startup timed out!\n");
-            return vr::HmdError_Driver_Failed;
+            return vr::VRInitError_Driver_Failed;
         }
     }
 
@@ -308,15 +295,15 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
         logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
         if(m_DisplayConfig.getNumViewers() < 1) {
             logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least one viewer must exist.\n");
-            return vr::HmdError_Driver_HmdDisplayNotFound;
+            return vr::VRInitError_Driver_HmdDisplayNotFound;
         }
         else if(m_DisplayConfig.getViewer(0).getNumEyes() < 2) {
             logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least two eyes must exist.\n");
-            return vr::HmdError_Driver_HmdDisplayNotFound;
+            return vr::VRInitError_Driver_HmdDisplayNotFound;
         }
         else if((m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
             logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least one surface must exist for each eye.\n");
-            return vr::HmdError_Driver_HmdDisplayNotFound;
+            return vr::VRInitError_Driver_HmdDisplayNotFound;
         }
     }
 
@@ -324,7 +311,7 @@ vr::HmdError OSVRTrackedDevice::Activate(uint32_t object_id)
     m_TrackerInterface = m_Context.getInterface("/me/head");
     m_TrackerInterface.registerCallback(&OSVRTrackedDevice::HmdTrackerCallback, this);
 
-    return vr::HmdError_None;
+    return vr::VRInitError_None;
 }
 
 void OSVRTrackedDevice::Deactivate()
@@ -383,7 +370,7 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
     *height = (h-y) * overfillFactor;
 }
 
-void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
+void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
     osvr::clientkit::RelativeViewport viewPort = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
     *x = viewPort.left;
@@ -392,7 +379,7 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::Hmd_Eye eye, uint32_t* x, uint3
     *height = viewPort.height;
 }
 
-void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* right, float* top, float* bottom)
+void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom)
 {
     // Reference: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetProjectionRaw
     // SteamVR expects top and bottom to be swapped!
@@ -403,27 +390,7 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::Hmd_Eye eye, float* left, float* ri
     *top = static_cast<float>(pl.bottom); // SWAPPED
 }
 
-vr::HmdMatrix34_t OSVRTrackedDevice::GetHeadFromEyePose(vr::Hmd_Eye eye)
-{
-    OSVR_Pose3 headPose, eyePose;
-    vr::HmdMatrix34_t matrix;
-
-    if(m_DisplayConfig.getViewer(0).getPose(headPose) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get head pose!\n");
-    }
-    if(m_DisplayConfig.getViewer(0).getEye(eye).getPose(eyePose) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get eye pose!\n");
-    }
-
-    Eigen::Isometry3d h = osvr::util::fromPose(headPose);
-    Eigen::Isometry3d e = osvr::util::fromPose(eyePose);
-
-    const Matrix34f headInEyeSpaceMat = ( h * e.inverse()).matrix().block(0,0,3,4).cast<float>();
-    map(matrix) = (headInEyeSpaceMat);
-    return matrix;
-}
-
-vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::Hmd_Eye eye, float u, float v)
+vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
     /// @todo FIXME Compute distortion using display configuration data
     vr::DistortionCoordinates_t coords;
@@ -482,7 +449,7 @@ vr::DriverPose_t OSVRTrackedDevice::GetPose()
     return pose_;
 }
 
-bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
+bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
     const bool default_value = false;
 
@@ -527,7 +494,7 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::TrackedDeviceProperty p
     return default_value;
 }
 
-float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
+float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
     const float default_value = 0.0f;
 
@@ -593,7 +560,7 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::TrackedDeviceProperty
     return default_value;
 }
 
-int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
+int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
     const int32_t default_value = 0;
 
@@ -643,7 +610,7 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::TrackedDeviceProper
     return default_value;
 }
 
-uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
+uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
     const uint64_t default_value = 0;
 
@@ -685,7 +652,7 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::TrackedDeviceProp
     return default_value;
 }
 
-vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* error)
+vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
     // Default value is identity matrix
     vr::HmdMatrix34_t default_value;
@@ -721,7 +688,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::Tracke
     return default_value;
 }
 
-uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::TrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::TrackedPropertyError* error)
+uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error)
 {
     const uint32_t default_value = 0;
 
@@ -958,6 +925,15 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
 
     self->pose_ = pose;
     self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
+}
+
+bool OSVRTrackedDevice::GetCameraDistortion(float a, float b, float* c, float* d)
+{
+    return false;
+}
+bool OSVRTrackedDevice::GetCameraProjection(float a, float b, float c, float d, vr::HmdMatrix44_t* e)
+{
+    return false;
 }
 
 #endif // INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

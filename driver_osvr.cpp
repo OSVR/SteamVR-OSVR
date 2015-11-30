@@ -48,7 +48,7 @@ OSVR_DLL_EXPORT void* TrackedDeviceDriverFactory(const char* interface_name, int
     }
 
     if (return_code) {
-        *return_code = vr::HmdError_Init_InterfaceNotFound;
+        *return_code = vr::VRInitError_Init_InterfaceNotFound;
     }
 
     return NULL;
