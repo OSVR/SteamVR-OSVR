@@ -50,7 +50,7 @@ public:
      * @param driver_install_dir The absolute path of the root directory for the
      *     driver.
      */
-    virtual vr::HmdError Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
+    virtual vr::EVRInitError Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
 
     /**
      * Cleans up the driver right before it is unloaded.
@@ -72,14 +72,7 @@ public:
      * Called when the client inits an HMD to let the client driver know which
      * one is in use.
      */
-    virtual vr::HmdError SetDisplayId(const char* display_id) OSVR_OVERRIDE;
-
-    /**
-     * [Windows Only]
-     *
-     * Notifies the driver that the VR output will appear in a particular window.
-     */
-    virtual bool AttachToWindow(void* window) OSVR_OVERRIDE;
+    virtual vr::EVRInitError SetDisplayId(const char* display_id) OSVR_OVERRIDE;
 
     /**
      * Returns the stencil mesh information for the current HMD. If this HMD
@@ -93,7 +86,7 @@ public:
      * this mesh with backface culling disabled since the winding order of the
      * vertices can be different per-HMD or per-eye.
      */
-    virtual vr::HiddenAreaMesh_t GetHiddenAreaMesh(vr::Hmd_Eye eye) OSVR_OVERRIDE;
+    virtual vr::HiddenAreaMesh_t GetHiddenAreaMesh(vr::EVREye eye) OSVR_OVERRIDE;
 
 	/** Get the MC image for the current HMD.
 	 * Returns the size in bytes of the buffer required to hold the specified resource.
@@ -107,7 +100,7 @@ private:
     std::string driverInstallDir_;
 };
 
-vr::HmdError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
+vr::EVRInitError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
 {
     logger_ = driver_log;
     driverHost_ = driver_host;
@@ -116,7 +109,7 @@ vr::HmdError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClientDriv
 
     // TODO ?
 
-    return vr::HmdError_None;
+    return vr::VRInitError_None;
 }
 
 void ClientDriver_OSVR::Cleanup()
@@ -133,19 +126,13 @@ bool ClientDriver_OSVR::BIsHmdPresent(const char* user_config_dir)
     return true;
 }
 
-vr::HmdError ClientDriver_OSVR::SetDisplayId(const char* display_id)
+vr::EVRInitError ClientDriver_OSVR::SetDisplayId(const char* display_id)
 {
     // TODO
-    return vr::HmdError_None;
+    return vr::VRInitError_None;
 }
 
-bool ClientDriver_OSVR::AttachToWindow(void* window)
-{
-    // TODO
-    return false;
-}
-
-vr::HiddenAreaMesh_t ClientDriver_OSVR::GetHiddenAreaMesh(vr::Hmd_Eye eye)
+vr::HiddenAreaMesh_t ClientDriver_OSVR::GetHiddenAreaMesh(vr::EVREye eye)
 {
     vr::HiddenAreaMesh_t hidden_area_mesh;
     hidden_area_mesh.pVertexData = nullptr;

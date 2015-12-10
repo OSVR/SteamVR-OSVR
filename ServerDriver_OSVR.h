@@ -51,12 +51,12 @@ public:
      * @param driver_install_dir the absolute path of the driver's root
      *     directory.
      *
-     * If Init() returns anything other than \c HmdError_None the driver will be
+     * If Init() returns anything other than \c VRInitError_None the driver will be
      * unloaded.
      *
-     * @returns HmdError_None on success.
+     * @returns VRInitError_None on success.
      */
-    virtual vr::HmdError Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
+    virtual vr::EVRInitError Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
 
     /**
      * Performs any cleanup prior to the driver being unloaded.
@@ -93,7 +93,7 @@ private:
     vr::IDriverLog* logger_;
 };
 
-vr::HmdError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
+vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
 {
     logger_ = driver_log;
 
@@ -103,7 +103,7 @@ vr::HmdError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriv
     const std::string display_description = context_->getStringParameter("/display");
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), driver_host, logger_));
 
-    return vr::HmdError_None;
+    return vr::VRInitError_None;
 }
 
 void ServerDriver_OSVR::Cleanup()
