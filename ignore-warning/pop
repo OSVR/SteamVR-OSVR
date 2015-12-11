@@ -1,0 +1,19 @@
+//
+// ignore-warnings
+//
+// pop
+//
+// Authors:
+//   Kevin M. Godby <kevin@godby.org>
+//
+// This code is public domain.
+//
+
+#if defined(__clang__) // must appear before __GNUG__ because clang also defines __GNUG__
+#pragma clang diagnostic pop
+#elif defined(__GNUG__)
+#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+

@@ -36,6 +36,8 @@
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
 {
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
     switch (prop) {
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
@@ -44,12 +46,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_DeviceIsCharging_Bool:
         return false;
     }
+#include "ignore-warning/pop"
 
     return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
 {
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
     switch (prop) {
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
     case vr::Prop_DisplayFrequency_Float:
@@ -63,12 +68,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_DeviceBatteryPercentage_Float:
         return false;
     }
+#include "ignore-warning/pop"
 
     return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
 {
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
     switch (prop) {
     case vr::Prop_Axis0Type_Int32:
     case vr::Prop_Axis1Type_Int32:
@@ -77,24 +85,30 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_Axis4Type_Int32:
         return false;
     }
+#include "ignore-warning/pop"
 
     return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
 {
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
     switch (prop) {
     case vr::Prop_CurrentUniverseId_Uint64:
     case vr::Prop_PreviousUniverseId_Uint64:
     case vr::Prop_SupportedButtons_Uint64:
         return false;
     }
+#include "ignore-warning/pop"
 
     return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
 {
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
     switch (prop) {
     case vr::Prop_TrackingSystemName_String:
     case vr::Prop_ModelNumber_String:
@@ -109,22 +123,28 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_ConnectedWirelessDongle_String:
         return false;
     }
+#include "ignore-warning/pop"
 
     return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
 {
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
     switch (prop) {
     case vr::Prop_StatusDisplayTransform_Matrix34:
         return false;
     }
+#include "ignore-warning/pop"
 
     return true;
 }
 
 inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDeviceClass device_class)
 {
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
     switch (prop) {
     // General properties that apply to all device classes
     case vr::Prop_TrackingSystemName_String:
@@ -176,6 +196,7 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     default:
         return true;
     }
+#include "ignore-warning/pop"
 }
 
 #endif // INCLUDED_osvr_device_properties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E

@@ -1,0 +1,30 @@
+//
+// ignore-warnings
+//
+// switch-enum
+//
+// Authors:
+//   Kevin M. Godby <kevin@godby.org>
+//
+// This code is public domain.
+//
+
+#if defined(__clang__) // must appear before __GNUG__ because clang also defines __GNUG__
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#pragma clang diagnostic ignored "-Wswitch"
+
+#if __has_warning("-Wswitch-enum")
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#endif
+
+#if __has_warning("-Wswitch")
+#pragma clang diagnostic ignored "-Wswitch"
+#endif
+
+#elif defined(__GNUG__)
+#pragma GCC diagnostic ignored "-Wswitch"
+#elif defined(_MSC_VER)
+#pragma warning(disable: 4061) // not explicitly handled by specific case
+#pragma warning(disable: 4062) // not handled at all (i.e., no default case)
+#endif
+

@@ -471,6 +471,9 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
         return default_value;
     }
 
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
+
     switch (prop) {
     case vr::Prop_WillDriftInYaw_Bool: // TODO
         if (error)
@@ -488,6 +491,8 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
         return default_value;
         break;
     }
+
+#include "ignore-warning/pop"
 
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
@@ -515,6 +520,9 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
             *error = vr::TrackedProp_InvalidDevice;
         return default_value;
     }
+
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
 
     switch (prop) {
     case vr::Prop_SecondsFromVsyncToPhotons_Float: // TODO
@@ -555,6 +563,8 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
         return default_value;
     }
 
+#include "ignore-warning/pop"
+
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
@@ -582,6 +592,9 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
         return default_value;
     }
 
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
+
     switch (prop) {
     case vr::Prop_Axis0Type_Int32: // TODO
         if (error)
@@ -604,6 +617,8 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     }
+
+#include "ignore-warning/pop"
 
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
@@ -632,6 +647,9 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
         return default_value;
     }
 
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
+
     switch (prop) {
     case vr::Prop_CurrentUniverseId_Uint64: // TODO
         if (error)
@@ -646,6 +664,8 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     }
+
+#include "ignore-warning/pop"
 
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
@@ -676,12 +696,17 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
         return default_value;
     }
 
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
+
     switch (prop) {
     case vr::Prop_StatusDisplayTransform_Matrix34: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     }
+
+#include "ignore-warning/pop"
 
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
@@ -709,6 +734,9 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
             *error = vr::TrackedProp_InvalidDevice;
         return default_value;
     }
+
+#include "ignore-warning/push"
+#include "ignore-warning/switch-enum"
 
     switch (prop) {
     case vr::Prop_TrackingSystemName_String: // TODO
@@ -756,6 +784,8 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     }
+
+#include "ignore-warning/pop"
 
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
