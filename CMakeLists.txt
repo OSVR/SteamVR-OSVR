@@ -76,17 +76,30 @@ target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
-    target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
+	target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
+endif()
+
+# Set the default installation directories based on the current platform
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Library/Application Support/Steam/steamapps/common/SteamVR/")
+	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+		set(CMAKE_INSTALL_PREFIX "$ENV{ProgramFiles(x86)}/Steam/steamapps/common/SteamVR/")
+	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.steam/steam/SteamApps/common/SteamVR/")
+	else()
+		message(WARNING "Unknown system type (not Windows, Linux, or OS X). Please file an issue at <https://github.com/OSVR/SteamVR-OSVR/issues> and report the operating system you're using.")
+	endif()
 endif()
 
 install(TARGETS driver_osvr
-	DESTINATION drivers/osvr/bin/${OPENVR_PLATFORM})
+	DESTINATION "drivers/osvr/bin/${OPENVR_PLATFORM}")
 
 if(WIN32)
 	include(CopyImportedTarget)
 	foreach(target osvr::osvrClientKit osvr::osvrClient osvr::osvrCommon osvr::osvrUtil)
 		copy_imported_targets(${target}) # for use in build tree
-		install_imported_target(${target} DESTINATION drivers/osvr/bin/${OPENVR_PLATFORM}) # in installed directory
+		install_imported_target(${target} DESTINATION "drivers/osvr/bin/${OPENVR_PLATFORM}") # in installed directory
 	endforeach()
 endif()
 
@@ -96,7 +109,7 @@ endif()
 add_executable(test_hmd_driver test_hmd_driver.cpp)
 target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
-    target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
+	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
 endif()
 target_include_directories(test_hmd_driver PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
