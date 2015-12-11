@@ -50,8 +50,9 @@ endif()
 
 set(_platform)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	# TODO
-	set(_platform_base macosx)
+	set(_platform_base osx)
+	# SteamVR only supports 32-bit on OS X
+	set(OPENVR_PLATFORM osx32)
 else()
 	if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set(_platform_base linux)
