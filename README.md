@@ -30,7 +30,7 @@ The default locations are as follows:
 
 - Upon extracting the OSVR driver, you'll get a `SteamVR-OSVR` directory, with a `drivers` directory inside it (with additional directories and files deeper inside `drivers`).
 
-You'll want to drag the `drivers` directory from the `SteamVR-OSVR` extracted folder over into the Steam directory, to merge its contents with the existing contents of the `drivers` directory. (It should just making an `osvr` subdirectory with contents.)
+You'll want to drag the `drivers` directory from the `SteamVR-OSVR` extracted folder over into the Steam directory, to merge its contents with the existing contents of the `drivers` directory. (It should just make an `osvr` subdirectory with contents.)
 
 To know if you got it right, do the same Windows Run (or other way of opening a folder by its name) as above, with the path `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR\drivers\osvr\bin\win32"` instead. (Make changes as appropriate to suit your Steam install location.) If you got it right, you should see a number of files, including one called `driver_osvr.dll`.
 
@@ -51,9 +51,9 @@ In this example, we'll use TF2, which has it accessible in its menu: go to "Opti
 ### Prerequisites
 - [CMake][] v3.1 or newer, latest version always recommended
 - A compiler supporting C++11
-	-	On Windows, Visual Studio 2013 recommended.
+	- On Windows, Visual Studio 2013 recommended.
 	- Recent compilers on Linux are fine too.
-	- Mac OS X not tested/supported yet - feel free to pitch in and help change this!
+	- XCode and clang on OS X will build this project.
 - Somehow create or acquire a build of the following (make sure the bits match for everything that's not header-only):
 	- [OSVR-Core][]
 		- Client libraries are sufficient if you're building from scratch for this purpose only.
@@ -64,7 +64,7 @@ In this example, we'll use TF2, which has it accessible in its menu: go to "Opti
 		- prebuilt Visual Studio binaries available at <http://access.osvr.com/binary/deps/jsoncpp>
 - An installation of the [Valve Software OpenVR SDK][openvr]
     - This is currently provided as a git submodule.
-    - Run ```git submodule --init --update``` to download the OpenVR SDK.
+    - Run `git submodule update --init --recursive` to download the OpenVR SDK.
 
 ### Building
 
