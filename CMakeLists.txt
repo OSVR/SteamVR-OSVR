@@ -19,10 +19,6 @@ list(APPEND CMAKE_PREFIX_PATH
 #
 find_package(OpenVR REQUIRED)
 find_package(osvr REQUIRED)
-find_package(jsoncpp REQUIRED)
-if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
-	add_library(jsoncpp_lib ALIAS jsoncpp_lib_static)
-endif()
 
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED)
@@ -70,7 +66,7 @@ add_library(driver_osvr
 	osvr_tracked_device.h
 	ServerDriver_OSVR.h
 )
-target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers)
 target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
@@ -106,7 +102,7 @@ endif()
 # Test program
 #
 add_executable(test_hmd_driver test_hmd_driver.cpp)
-target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
 endif()
