@@ -233,7 +233,6 @@ public:
 	virtual const vr::CameraVideoStreamFrame_t *GetVideoStreamFrame() OSVR_OVERRIDE;
 	virtual void ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage ) OSVR_OVERRIDE;
 	virtual bool SetAutoExposure( bool bEnable ) OSVR_OVERRIDE;
-	virtual bool SupportsPauseResume() OSVR_OVERRIDE;
 	virtual bool PauseVideoStream() OSVR_OVERRIDE;
 	virtual bool ResumeVideoStream() OSVR_OVERRIDE;
 	virtual bool IsVideoStreamPaused() OSVR_OVERRIDE;
@@ -242,6 +241,7 @@ public:
 	virtual bool GetRecommendedCameraUndistortion( uint32_t *pUndistortionWidthPixels, uint32_t *pUndistortionHeightPixels ) OSVR_OVERRIDE;
 	virtual bool SetCameraUndistortion( uint32_t nUndistortionWidthPixels, uint32_t nUndistortionHeightPixels ) OSVR_OVERRIDE;
 	virtual bool GetCameraFirmwareVersion( uint64_t *pFirmwareVersion ) OSVR_OVERRIDE;
+	virtual bool SetFrameRate( int nISPFrameRate, int nSensorFrameRate ) OSVR_OVERRIDE;
 
 private:
     static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
@@ -899,11 +899,6 @@ bool OSVRTrackedDevice::SetAutoExposure( bool bEnable )
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
     return false;
 }
-bool OSVRTrackedDevice::SupportsPauseResume()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
 bool OSVRTrackedDevice::PauseVideoStream()
 {
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
@@ -977,6 +972,10 @@ bool OSVRTrackedDevice::SetCameraUndistortion( uint32_t nUndistortionWidthPixels
     return false;
 }
 bool OSVRTrackedDevice::GetCameraFirmwareVersion( uint64_t *pFirmwareVersion )
+{
+    return false;
+}
+bool OSVRTrackedDevice::SetFrameRate( int nISPFrameRate, int nSensorFrameRate )
 {
     return false;
 }
