@@ -344,7 +344,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
         logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!\n");
     }
     osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
-    *x = 0;
+    *x = 1920; // todo: assumes desktop display of 1920. get this from display config when it's exposed.
     *y = 0;
     *width = displayDims.width;
     *height = displayDims.height;
@@ -369,8 +369,8 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
     int32_t x, y;
     uint32_t w, h;
     GetWindowBounds(&x, &y, &w, &h);
-    *width = (w-x) * overfillFactor;
-    *height = (h-y) * overfillFactor;
+    *width = w * overfillFactor;
+    *height = h * overfillFactor;
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
