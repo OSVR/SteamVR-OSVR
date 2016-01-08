@@ -87,6 +87,17 @@ public:
      */
     virtual void RunFrame() OSVR_OVERRIDE;
 
+	/** Returns true if the driver wants to block Standby mode. */
+	virtual bool ShouldBlockStandbyMode() OSVR_OVERRIDE;
+
+	/** Called when the system is entering Standby mode. The driver should switch itself into whatever sort of low-power
+	* state it has. */
+	virtual void EnterStandby() OSVR_OVERRIDE;
+
+	/** Called when the system is leaving Standby mode. The driver should switch itself back to
+	full operation. */
+	virtual void LeaveStandby() OSVR_OVERRIDE;
+
 private:
     std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
@@ -151,5 +162,19 @@ void ServerDriver_OSVR::RunFrame()
 {
     context_->update();
 }
+
+bool ServerDriver_OSVR::ShouldBlockStandbyMode()
+{
+    return false;
+}
+
+void ServerDriver_OSVR::EnterStandby()
+{
+}
+
+void ServerDriver_OSVR::LeaveStandby()
+{
+}
+
 
 #endif // INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84

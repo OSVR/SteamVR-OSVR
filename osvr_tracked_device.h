@@ -233,12 +233,15 @@ public:
 	virtual const vr::CameraVideoStreamFrame_t *GetVideoStreamFrame() OSVR_OVERRIDE;
 	virtual void ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage ) OSVR_OVERRIDE;
 	virtual bool SetAutoExposure( bool bEnable ) OSVR_OVERRIDE;
-	virtual bool SupportsPauseResume() OSVR_OVERRIDE;
 	virtual bool PauseVideoStream() OSVR_OVERRIDE;
 	virtual bool ResumeVideoStream() OSVR_OVERRIDE;
 	virtual bool IsVideoStreamPaused() OSVR_OVERRIDE;
-    virtual bool GetCameraDistortion(float a, float b, float* c, float* d) OSVR_OVERRIDE;
-    virtual bool GetCameraProjection(float a, float b, float c, float d, vr::HmdMatrix44_t* e) OSVR_OVERRIDE;
+    virtual bool GetCameraDistortion( float flInputU, float flInputV, float *pflOutputU, float *pflOutputV ) OSVR_OVERRIDE;
+    virtual bool GetCameraProjection( float flWidthPixels, float flHeightPixels, float flZNear, float flZFar, vr::HmdMatrix44_t *pProjection ) OSVR_OVERRIDE;
+	virtual bool GetRecommendedCameraUndistortion( uint32_t *pUndistortionWidthPixels, uint32_t *pUndistortionHeightPixels ) OSVR_OVERRIDE;
+	virtual bool SetCameraUndistortion( uint32_t nUndistortionWidthPixels, uint32_t nUndistortionHeightPixels ) OSVR_OVERRIDE;
+	virtual bool GetCameraFirmwareVersion( uint64_t *pFirmwareVersion ) OSVR_OVERRIDE;
+	virtual bool SetFrameRate( int nISPFrameRate, int nSensorFrameRate ) OSVR_OVERRIDE;
 
 private:
     static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
@@ -896,11 +899,6 @@ bool OSVRTrackedDevice::SetAutoExposure( bool bEnable )
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
     return false;
 }
-bool OSVRTrackedDevice::SupportsPauseResume()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
 bool OSVRTrackedDevice::PauseVideoStream()
 {
     /// @todo SteamVR drivers return false and do nothing else, doing the same here
@@ -957,13 +955,30 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
 }
 
-bool OSVRTrackedDevice::GetCameraDistortion(float a, float b, float* c, float* d)
+bool OSVRTrackedDevice::GetCameraDistortion( float flInputU, float flInputV, float *pflOutputU, float *pflOutputV )
 {
     return false;
 }
-bool OSVRTrackedDevice::GetCameraProjection(float a, float b, float c, float d, vr::HmdMatrix44_t* e)
+bool OSVRTrackedDevice::GetCameraProjection( float flWidthPixels, float flHeightPixels, float flZNear, float flZFar, vr::HmdMatrix44_t *pProjection )
 {
     return false;
 }
+bool OSVRTrackedDevice::GetRecommendedCameraUndistortion( uint32_t *pUndistortionWidthPixels, uint32_t *pUndistortionHeightPixels )
+{
+    return false;
+}
+bool OSVRTrackedDevice::SetCameraUndistortion( uint32_t nUndistortionWidthPixels, uint32_t nUndistortionHeightPixels )
+{
+    return false;
+}
+bool OSVRTrackedDevice::GetCameraFirmwareVersion( uint64_t *pFirmwareVersion )
+{
+    return false;
+}
+bool OSVRTrackedDevice::SetFrameRate( int nISPFrameRate, int nSensorFrameRate )
+{
+    return false;
+}
+
 
 #endif // INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
