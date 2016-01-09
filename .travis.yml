@@ -14,7 +14,8 @@ matrix:
     compiler: gcc
 cache:
   directories:
-    $HOME/deps
+    $HOME/deps-release
+    $HOME/deps-debug
 before_install:
   - if [ $CC = gcc ]; then export CXX="g++-5" CC="gcc-5"; fi
   - if [ $TRAVIS_OS_NAME = 'linux' -a $CC = 'clang' ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
@@ -25,8 +26,13 @@ before_install:
   - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap osvr/osvr; fi"
   - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
       pushd $HOME;
-      mkdir deps;
-      cd deps;
+      if [ $CONFIG = 'Release' ]; then
+        mkdir -p deps-release;
+        cd deps-release;
+      else
+        mkdir -p deps-debug;
+        cd deps-debug;
+      fi;
       git clone https://github.com/open-source-parsers/jsoncpp.git;
       git clone https://github.com/OSVR/libfunctionality.git;
       git clone https://github.com/OSVR/OSVR-Core.git;
@@ -37,18 +43,22 @@ install:
   - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install jsoncpp --HEAD; fi"
   - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install osvr-core --HEAD; fi"
   - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      pushd $HOME/deps;
-      mkdir jsoncpp/build;
+      if [ $CONFIG = 'Release' ]; then
+        cd $HOME/deps-release;
+      else
+        cd $HOME/deps-debug;
+      fi;
+      mkdir -p jsoncpp/build;
       pushd jsoncpp/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
       make -j2 install;
       popd;
-      mkdir libfunctionality/build;
+      mkdir -p libfunctionality/build;
       pushd libfunctionality/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
       make -j2 install;
       popd;
-      mkdir OSVR-Core/build;
+      mkdir -p OSVR-Core/build;
       pushd OSVR-Core/build;
       git submodule update --init --recursive;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
@@ -81,6 +91,8 @@ addons:
     - libboost-chrono1.55-dev
     - libboost-program-options1.55-dev
     - libboost-filesystem1.55-dev
+    - libopencv-dev
+    - libusb-1.0-0-dev
     - cmake-data
     - cmake
     - gcc-5
