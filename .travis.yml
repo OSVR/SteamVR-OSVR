@@ -12,6 +12,8 @@ matrix:
   exclude:
   - os: osx
     compiler: gcc
+  - os: linux
+    compiler: clang
 cache:
   directories:
     $HOME/deps-release
@@ -44,9 +46,9 @@ install:
   - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install osvr-core --HEAD; fi"
   - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
       if [ $CONFIG = 'Release' ]; then
-        cd $HOME/deps-release;
+        pushd $HOME/deps-release;
       else
-        cd $HOME/deps-debug;
+        pushd $HOME/deps-debug;
       fi;
       mkdir -p jsoncpp/build;
       pushd jsoncpp/build;
@@ -97,35 +99,3 @@ addons:
     - cmake
     - gcc-5
     - g++-5
-    - clang-3.7
-    - build-essential
-    - git
-    - libgtk2.0-dev
-    - pkg-config
-    - python-dev
-    - python-numpy
-    - libdc1394-22
-    - libdc1394-22-dev
-    - libjpeg-dev
-    - libpng12-dev
-    - libtiff4-dev
-    - libjasper-dev
-    - libavcodec-dev
-    - libavformat-dev
-    - libswscale-dev
-    - libxine-dev
-    - libgstreamer0.10-dev
-    - libgstreamer-plugins-base0.10-dev
-    - libv4l-dev
-    - libtbb-dev
-    - libqt4-dev
-    - libfaac-dev
-    - libmp3lame-dev
-    - libopencore-amrnb-dev
-    - libopencore-amrwb-dev
-    - libtheora-dev
-    - libvorbis-dev
-    - libxvidcore-dev
-    - x264
-    - v4l-utils
-    - unzip
