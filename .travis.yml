@@ -35,9 +35,27 @@ before_install:
         mkdir -p deps-debug;
         cd deps-debug;
       fi;
-      git clone https://github.com/open-source-parsers/jsoncpp.git;
-      git clone https://github.com/OSVR/libfunctionality.git;
-      git clone https://github.com/OSVR/OSVR-Core.git;
+      if [ -d jsoncpp ]; then
+        pushd jsoncpp;
+        git pull;
+        popd;
+      else
+        git clone https://github.com/open-source-parsers/jsoncpp.git;
+      fi;
+      if [ -d libfunctionality ]; then
+        pushd libfunctionality;
+        git pull;
+        popd;
+      else
+        git clone https://github.com/OSVR/libfunctionality.git;
+      fi;
+      if [ -d OSVR-Core ]; then
+        pushd OSVR-Core;
+        git pull;
+        popd;
+      else
+        git clone https://github.com/OSVR/OSVR-Core.git;
+      fi;
       popd;
     fi"
 install:
