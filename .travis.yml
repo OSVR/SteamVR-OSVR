@@ -23,6 +23,7 @@ before_install:
   - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
       pushd $HOME;
       git clone https://github.com/open-source-parsers/jsoncpp.git;
+      git clone https://github.com/OSVR/libfunctionality.git;
       git clone https://github.com/OSVR/OSVR-Core.git;
       popd;
     fi"
@@ -34,6 +35,11 @@ install:
       mkdir $HOME/jsoncpp/build;
       pushd $HOME/jsoncpp/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
+      make -j2 install;
+      popd;
+      mkdir $HOME/libfunctionality/build;
+      pushd $HOME/libfunctionality/build;
+      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
       make -j2 install;
       popd;
       mkdir $HOME/OSVR-Core/build;
