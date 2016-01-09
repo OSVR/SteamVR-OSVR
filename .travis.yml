@@ -107,6 +107,7 @@ addons:
     - boost-latest
     - george-edison55-precise-backports
     - ubuntu-toolchain-r-test
+    - kubuntu-backports
     packages:
     - libusb-1.0-0-dev
     - libboost-thread1.55-dev
