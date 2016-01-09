@@ -87,12 +87,17 @@ install:
       popd;
     fi"
 script:
-  - git submodule update --init --recursive;
-  - mkdir build;
-  - cd build;
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_OSX_ARCHITECTURES=x86_64; fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF; fi
-  - make all -j2
+  - "git submodule update --init --recursive"
+  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
+       curl -L https://raw.githubusercontent.com/Kitware/CMake/65e6b1152fad1b8282761abdfcc389ea4fd4747e/Modules/WriteCompilerDetectionHeader.cmake > cmake/WriteCompilerDetectionHeader.cmake;
+       sed -i -- 's/${CMAKE_CURRENT_LIST_DIR}/${CMAKE_ROOT}\\/Modules/g' ./cmake/WriteCompilerDetectionHeader.cmake;
+       sed -i -- 's/WriteCompilerDetectionHeader/cmake\\/WriteCompilerDetectionHeader.cmake/g' CMakeLists.txt;
+     fi"
+  - "mkdir build;"
+  - "cd build;"
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_OSX_ARCHITECTURES=x86_64; fi"
+  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF; fi"
+  - "make all -j2"
 # TODO need to sort out false-failures due to container/platform issues.
 #  - "ctest -V"
 sudo: false
@@ -102,7 +107,6 @@ addons:
     - boost-latest
     - george-edison55-precise-backports
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.7
     packages:
     - libusb-1.0-0-dev
     - libboost-thread1.55-dev
