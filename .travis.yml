@@ -34,19 +34,20 @@ install:
   - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install jsoncpp --HEAD; fi"
   - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install osvr-core --HEAD; fi"
   - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      pushd deps;
-      mkdir $HOME/jsoncpp/build;
-      pushd $HOME/jsoncpp/build;
+      pushd $HOME/deps;
+      mkdir jsoncpp/build;
+      pushd jsoncpp/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
       make -j2 install;
       popd;
-      mkdir $HOME/libfunctionality/build;
-      pushd $HOME/libfunctionality/build;
+      mkdir libfunctionality/build;
+      pushd libfunctionality/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
       make -j2 install;
       popd;
-      mkdir $HOME/OSVR-Core/build;
-      pushd $HOME/OSVR-Core/build;
+      mkdir OSVR-Core/build;
+      pushd OSVR-Core/build;
+      git submodule update --init --recursive;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
       make -j2 install;
       popd;
