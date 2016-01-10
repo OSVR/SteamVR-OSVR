@@ -16,32 +16,16 @@ before_install:
   - if [ $CC = gcc ]; then export CXX="g++-5" CC="gcc-5"; fi
   - if [ $TRAVIS_OS_NAME = 'linux' -a $CC = 'clang' ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
   - $CC -v
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then export INSTPRF=$HOME/p; mkdir -p $INSTPRF; fi
-  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew update; fi"
-  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap homebrew/science; fi"
-  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap d235j/osvr; fi"
-  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      pushd $HOME;
-      git clone https://github.com/open-source-parsers/jsoncpp.git;
-      popd;
-    fi"
+  - ./devtools/travis-preinstall.sh
 install:
-  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew uninstall json-c; fi"
-  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install jsoncpp --HEAD; fi"
-  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      mkdir $HOME/jsoncpp/build;
-      pushd $HOME/jsoncpp/build;
-      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
-      make -j2 install;
-      popd;
-    fi"
+  - ./devtools/travis-install.sh
 script:
-  - "git submodule update --init --recursive;"
-  - "mkdir build;"
-  - "cd build;"
-  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_OSX_ARCHITECTURES=x86_64; fi"
-  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF; fi"
-  - "make all -j2"
+  - git submodule update --init --recursive;
+  - mkdir build;
+  - cd build;
+  - if [ $TRAVIS_OS_NAME = 'osx' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_OSX_ARCHITECTURES=x86_64; fi
+  - if [ $TRAVIS_OS_NAME = 'linux' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF; fi
+  - make all -j2
 # TODO need to sort out false-failures due to container/platform issues.
 #  - "ctest -V"
 sudo: false
