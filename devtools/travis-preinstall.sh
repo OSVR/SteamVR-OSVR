@@ -13,11 +13,8 @@ if [ $TRAVIS_OS_NAME = 'linux' ]; then
     git clone --recursive https://github.com/OSVR/libfunctionality.git
     git clone --recursive https://github.com/OSVR/OSVR-Core.git
 
-    pushd opencv
-    cd opencv
     wget https://github.com/Itseez/opencv/archive/3.1.0.zip -O opencv-3.1.0.zip
     unzip opencv-3.1.0.zip
-    popd # opencv
 
     popd # $HOME
 fi
