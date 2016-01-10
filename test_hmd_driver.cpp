@@ -33,6 +33,18 @@
 #include <cstdlib> // for EXIT_SUCCESS
 #include <iostream>
 
+class Logger : public vr::IDriverLog
+{
+public:
+    void Log(const char* pchLogMessage) override {
+        std::cout << pchLogMessage << std::endl;
+    };
+public:
+    virtual ~Logger()
+    {
+    }
+};
+
 int main(int argc, char* argv[])
 {
     // Instantiate the tracker driver
@@ -57,9 +69,11 @@ int main(int argc, char* argv[])
     }
     std::cout << " - Tracker driver instantiated successfully." << std::endl;
 
+	Logger logger;
+
     // Initialize the tracker driver
     std::cout << "Initializing the tracker driver..." << std::endl;
-    vr::EVRInitError error = tracker_driver->Init(nullptr, nullptr, "", "");
+    vr::EVRInitError error = tracker_driver->Init(&logger, nullptr, "", "");
     if (vr::VRInitError_None != error) {
         std::cerr << "! Error initializing tracker driver: " << error << "." << std::endl;
         tracker_driver->Cleanup();
