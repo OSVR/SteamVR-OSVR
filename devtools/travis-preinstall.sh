@@ -9,9 +9,9 @@ set -ev
 # Download dependencies
 if [ $TRAVIS_OS_NAME = 'linux' ]; then
     pushd $HOME
-    git clone https://github.com/open-source-parsers/jsoncpp.git
-    git clone https://github.com/OSVR/libfunctionality.git
-    git clone https://github.com/OSVR/OSVR-Core.git
+    git clone --recursive https://github.com/open-source-parsers/jsoncpp.git
+    git clone --recursive https://github.com/OSVR/libfunctionality.git
+    git clone --recursive https://github.com/OSVR/OSVR-Core.git
     popd
 fi
 
