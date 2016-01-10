@@ -6,6 +6,8 @@
 
 set -ev
 
+echo "Configuration type is [${CONFIG}]."
+
 # Build and install dependences
 if [ $TRAVIS_OS_NAME = 'osx' ]; then
     brew uninstall json-c
@@ -21,6 +23,13 @@ if [ $TRAVIS_OS_NAME = 'linux' ]; then
     pushd $HOME/jsoncpp/build
     cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/osvr -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=ON -DCMAKE_BUILD_TYPE=${CONFIG}
     make -j2 install
+    popd
+
+    # Build OpenCV 3
+    mkdir $HOME/opencv-3.1.0/build
+    pushd $HOME/opencv-3.1.0/build
+    cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/osvr -DCMAKE_BUILD_TYPE=${CONFIG} -DWITH_TBB=ON -DWITH_V4L=ON -DWITH_QT=ON -DWITH_OPENGL=ON
+    mamke -j2 install
     popd
 
     # Build libfunctionality
