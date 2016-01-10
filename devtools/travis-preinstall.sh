@@ -8,9 +8,6 @@ set -ev
 
 # Download dependencies
 if [ $TRAVIS_OS_NAME = 'linux' ]; then
-    export INSTPRF=$HOME/p
-    mkdir -p $INSTPRF
-
     pushd $HOME
     git clone https://github.com/open-source-parsers/jsoncpp.git
     git clone https://github.com/OSVR/libfunctionality.git
