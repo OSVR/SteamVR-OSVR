@@ -33,15 +33,19 @@
 #include <cstdlib> // for EXIT_SUCCESS
 #include <iostream>
 
-class Logger : public vr::IDriverLog
-{
+/**
+ * Log messages to the console by default.
+ */
+class Logger : public vr::IDriverLog {
 public:
-    void Log(const char* pchLogMessage) override {
-        std::cout << pchLogMessage << std::endl;
-    };
-public:
+    void Log(const char* message) OSVR_OVERRIDE
+    {
+        std::cout << message << std::endl;
+    }
+
     virtual ~Logger()
     {
+        // do nothing
     }
 };
 
