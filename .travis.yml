@@ -118,7 +118,6 @@ addons:
     - george-edison55-precise-backports
     - ubuntu-toolchain-r-test
     packages:
-    - libusb-1.0-0-dev
     - libboost-thread1.55-dev
     - libboost-system1.55-dev
     - libboost-date-time1.55-dev
