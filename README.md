@@ -60,6 +60,8 @@ In this example, we'll use TF2, which has it accessible in its menu: go to "Opti
 		- Windows snapshot builds are available at <http://access.osvr.com/binary/osvr-core>
 	- [Boost][]
 		- headers-only is fine: no compiled libraries are required
+	- [jsoncpp][]
+		- prebuilt Visual Studio binaries available at <http://access.osvr.com/binary/deps/jsoncpp>
 - An installation of the [Valve Software OpenVR SDK][openvr]
     - This is currently provided as a git submodule.
     - Run `git submodule update --init --recursive` to download the OpenVR SDK.
@@ -102,6 +104,7 @@ As mentioned above, the `install` target will place the driver binary in a speci
 [CMake]: http://cmake.org
 [OSVR-Core]: https://github.com/OSVR/OSVR-Core
 [Boost]: http://boost.org
+[jsoncpp]: https://github.com/open-source-parsers/jsoncpp
 [openvr]: https://github.com/ValveSoftware/openvr
 [libc++]: http://libcxx.llvm.org/
 [util-headers]: https://github.com/rpavlik/util-headers

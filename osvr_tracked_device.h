@@ -37,7 +37,7 @@
 // Library/third-party includes
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Util/EigenInterop.h>
-
+#include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>
 
 // Standard includes
@@ -249,6 +249,7 @@ private:
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
     osvr::clientkit::DisplayConfig m_DisplayConfig;
+    osvr::client::RenderManagerConfig m_RenderManagerConfig;
     vr::IDriverLog* logger_ = nullptr;
     vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
@@ -314,6 +315,11 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     m_TrackerInterface = m_Context.getInterface("/me/head");
     m_TrackerInterface.registerCallback(&OSVRTrackedDevice::HmdTrackerCallback, this);
 
+    auto const configString =
+        m_Context.getStringParameter("/renderManagerConfig");
+
+    m_RenderManagerConfig.parse(configString);
+
     return vr::VRInitError_None;
 }
 
@@ -344,8 +350,8 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
         logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!\n");
     }
     osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
-    *x = 1920; // todo: assumes desktop display of 1920. get this from display config when it's exposed.
-    *y = 0;
+    *x = m_RenderManagerConfig.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
+    *y = m_RenderManagerConfig.getWindowYPosition();
     *width = displayDims.width;
     *height = displayDims.height;
 }
