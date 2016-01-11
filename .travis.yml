@@ -56,6 +56,10 @@ before_install:
       else
         git clone https://github.com/OSVR/OSVR-Core.git;
       fi;
+      if [ ! -d opencv-3.1.0 ]; then
+        curl -LR https://github.com/Itseez/opencv/archive/3.1.0.zip -o opencv-3.1.0.zip;
+        unzip opencv-3.1.0.zip;
+      fi;
       popd;
     fi"
 install:
@@ -68,6 +72,10 @@ install:
       else
         pushd $HOME/deps-dbg;
       fi;
+      mkdir -p opencv-3.1.0/build;
+      pushd opencv-3.1.0/build;
+      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG} -DWITH_IPP=OFF;
+      popd;
       mkdir -p jsoncpp/build;
       pushd jsoncpp/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
