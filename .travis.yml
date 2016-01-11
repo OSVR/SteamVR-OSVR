@@ -75,6 +75,7 @@ install:
       mkdir -p opencv-3.1.0/build;
       pushd opencv-3.1.0/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG} -DWITH_IPP=OFF;
+      make -j2 install;
       popd;
       mkdir -p jsoncpp/build;
       pushd jsoncpp/build;
@@ -115,7 +116,6 @@ addons:
     - boost-latest
     - george-edison55-precise-backports
     - ubuntu-toolchain-r-test
-    - kubuntu-backports
     packages:
     - libusb-1.0-0-dev
     - libboost-thread1.55-dev
@@ -124,7 +124,6 @@ addons:
     - libboost-chrono1.55-dev
     - libboost-program-options1.55-dev
     - libboost-filesystem1.55-dev
-    - libopencv-dev
     - libusb-1.0-0-dev
     - cmake-data
     - cmake
