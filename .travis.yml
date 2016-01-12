@@ -12,20 +12,102 @@ matrix:
   exclude:
   - os: osx
     compiler: gcc
+  - os: linux
+    compiler: clang
+cache:
+  directories:
+    $HOME/deps-rel
+    $HOME/deps-dbg
 before_install:
   - if [ $CC = gcc ]; then export CXX="g++-5" CC="gcc-5"; fi
   - if [ $TRAVIS_OS_NAME = 'linux' -a $CC = 'clang' ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
   - $CC -v
-  - ./devtools/travis-preinstall.sh
+  - if [ $TRAVIS_OS_NAME = 'linux' ]; then export INSTPRF=$HOME/p; mkdir -p $INSTPRF; fi
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew update; fi"
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap homebrew/science; fi"
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap osvr/osvr; fi"
+  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
+      pushd $HOME;
+      if [ $CONFIG = 'Release' ]; then
+        mkdir -p deps-rel;
+        cd deps-rel;
+      else
+        mkdir -p deps-dbg;
+        cd deps-dbg;
+      fi;
+      if [ -d jsoncpp ]; then
+        pushd jsoncpp;
+        git pull;
+        popd;
+      else
+        git clone https://github.com/open-source-parsers/jsoncpp.git;
+      fi;
+      if [ -d libfunctionality ]; then
+        pushd libfunctionality;
+        git pull;
+        popd;
+      else
+        git clone https://github.com/OSVR/libfunctionality.git;
+      fi;
+      if [ -d OSVR-Core ]; then
+        pushd OSVR-Core;
+        git pull;
+        popd;
+      else
+        git clone https://github.com/OSVR/OSVR-Core.git;
+      fi;
+      if [ ! -d opencv-3.1.0 ]; then
+        curl -LR https://github.com/Itseez/opencv/archive/3.1.0.zip -o opencv-3.1.0.zip;
+        unzip opencv-3.1.0.zip;
+      fi;
+      popd;
+    fi"
 install:
-  - ./devtools/travis-install.sh
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew uninstall json-c; fi"
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install jsoncpp --HEAD; fi"
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install osvr-core --HEAD; fi"
+  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
+      if [ $CONFIG = 'Release' ]; then
+        pushd $HOME/deps-rel;
+      else
+        pushd $HOME/deps-dbg;
+      fi;
+      mkdir -p opencv-3.1.0/build;
+      pushd opencv-3.1.0/build;
+      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG} -DWITH_IPP=OFF -DWITH_1394=OFF -DWITH_FFMPEG=OFF;
+      make -j2 install;
+      popd;
+      mkdir -p jsoncpp/build;
+      pushd jsoncpp/build;
+      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
+      make -j2 install;
+      popd;
+      mkdir -p libfunctionality/build;
+      pushd libfunctionality/build;
+      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
+      make -j2 install;
+      popd;
+      mkdir -p OSVR-Core/build;
+      pushd OSVR-Core/build;
+      git submodule update --init --recursive;
+      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
+      make -j2 install;
+      popd;
+      popd;
+    fi"
 script:
-  - git submodule update --init --recursive;
-  - mkdir build;
-  - cd build;
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_OSX_ARCHITECTURES=x86_64; fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF; fi
-  - make all -j2
+  - "git submodule update --init --recursive"
+  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
+       curl -L https://raw.githubusercontent.com/Kitware/CMake/65e6b1152fad1b8282761abdfcc389ea4fd4747e/Modules/WriteCompilerDetectionHeader.cmake > cmake/WriteCompilerDetectionHeader.cmake;
+       sed -i -- 's/${CMAKE_CURRENT_LIST_DIR}/${CMAKE_ROOT}\\/Modules/g' ./cmake/WriteCompilerDetectionHeader.cmake;
+       sed -i -- 's/WriteCompilerDetectionHeader/cmake\\/WriteCompilerDetectionHeader.cmake/g' CMakeLists.txt;
+     fi"
+  - "mkdir build;"
+  - "cd build;"
+  - "if [ $TRAVIS_OS_NAME = 'osx' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_OSX_ARCHITECTURES=x86_64; fi"
+  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then cat /home/travis/p/lib/cmake/osvr/osvrConfigInstalledOpenCV.cmake; cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF; fi"
+  - "make all -j2"
+  - "./test_hmd_driver"
 # TODO need to sort out false-failures due to container/platform issues.
 #  - "ctest -V"
 sudo: false
@@ -35,48 +117,15 @@ addons:
     - boost-latest
     - george-edison55-precise-backports
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.7
     packages:
-    - libusb-1.0-0-dev
     - libboost-thread1.55-dev
     - libboost-system1.55-dev
     - libboost-date-time1.55-dev
     - libboost-chrono1.55-dev
     - libboost-program-options1.55-dev
     - libboost-filesystem1.55-dev
+    - libusb-1.0-0-dev
     - cmake-data
     - cmake
     - gcc-5
     - g++-5
-    - clang-3.7
-    - build-essential
-    - git
-    - libgtk2.0-dev
-    - pkg-config
-    - python-dev
-    - python-numpy
-    - libdc1394-22
-    - libdc1394-22-dev
-    - libjpeg-dev
-    - libpng12-dev
-    - libtiff4-dev
-    - libjasper-dev
-    - libavcodec-dev
-    - libavformat-dev
-    - libswscale-dev
-    - libxine-dev
-    - libgstreamer0.10-dev
-    - libgstreamer-plugins-base0.10-dev
-    - libv4l-dev
-    - libtbb-dev
-    - libqt4-dev
-    - libfaac-dev
-    - libmp3lame-dev
-    - libopencore-amrnb-dev
-    - libopencore-amrwb-dev
-    - libtheora-dev
-    - libvorbis-dev
-    - libxvidcore-dev
-    - x264
-    - v4l-utils
-    - unzip
