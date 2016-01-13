@@ -1,4 +1,6 @@
 # SteamVR Driver Using OSVR
+
+[![Join the chat at https://gitter.im/OSVR/SteamVR-OSVR](https://badges.gitter.im/OSVR/SteamVR-OSVR.svg)](https://gitter.im/OSVR/SteamVR-OSVR?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 > Maintained at <https://github.com/OSVR/SteamVR-OSVR>
 >
 > For details, see <http://osvr.github.io>
