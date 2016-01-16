@@ -59,10 +59,9 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 #
 # OpenVR driver
 #
-add_library(driver_osvr
-	SHARED
+
+set(HEADER_FILES
 	ClientDriver_OSVR.h
-	driver_osvr.cpp
 	identity.h
 	make_unique.h
 	matrix_cast.h
@@ -70,6 +69,20 @@ add_library(driver_osvr
 	osvr_dll_export.h
 	osvr_tracked_device.h
 	ServerDriver_OSVR.h
+    driver_osvr.h
+)
+
+set(SOURCE_FILES
+	src/driver_osvr.cpp
+    src/osvr_tracked_device.cpp
+    src/ServerDriver_OSVR.cpp
+    src/ClientDriver_OSVR.cpp
+)
+
+add_library(driver_osvr
+	SHARED
+    ${HEADER_FILES}
+    ${SOURCE_FILES}
 )
 target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
@@ -106,8 +119,9 @@ endif()
 #
 # Test program
 #
-add_executable(test_hmd_driver test_hmd_driver.cpp)
-target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+add_executable(test_hmd_driver
+    test_hmd_driver.cpp)
+target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib driver_osvr)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
 endif()
