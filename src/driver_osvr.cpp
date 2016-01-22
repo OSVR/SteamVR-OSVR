@@ -23,10 +23,10 @@
 // limitations under the License.
 
 // Internal Includes
-#include "ServerDriver_OSVR.h" // for ServerDriver_OSVR
-#include "ClientDriver_OSVR.h" // for ClientDriver_OSVR
+#include "headers/ServerDriver_OSVR.h" // for ServerDriver_OSVR
+#include "headers/ClientDriver_OSVR.h" // for ClientDriver_OSVR
 
-#include "osvr_dll_export.h" // for OSVR_DLL_EXPORT
+#include "headers/osvr_dll_export.h" // for OSVR_DLL_EXPORT
 
 // Library/third-party includes
 #include <openvr_driver.h> // for everything in vr namespace

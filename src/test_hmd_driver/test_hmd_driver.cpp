@@ -23,8 +23,11 @@
 // limitations under the License.
 
 // Internal Includes
-#include "driver_osvr.cpp"
-#include "make_unique.h"
+#include <osvr_compiler_detection.h>
+#include "headers/make_unique.h"
+#include "headers/ClientDriver_OSVR.h"
+#include "headers/ServerDriver_OSVR.h"
+#include "headers/driver_osvr.h"
 
 // Library/third-party includes
 // - none

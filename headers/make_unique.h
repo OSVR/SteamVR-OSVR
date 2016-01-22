@@ -27,7 +27,7 @@
 #define INCLUDED_make_unique_h_GUID_C7526AAA_3549_41DF_AF95_5323788FBADE
 
 // Internal Includes
-#include "osvr_compiler_tests.h"
+#include "headers/osvr_compiler_tests.h"
 
 #ifdef OSVR_HAS_STD_MAKE_UNIQUE
 
