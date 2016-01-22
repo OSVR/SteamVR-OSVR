@@ -23,7 +23,11 @@
 // limitations under the License.
 
 // Internal Includes
-#include "make_unique.h"
+#include <osvr_compiler_detection.h>
+#include "headers/make_unique.h"
+#include "headers/ClientDriver_OSVR.h"
+#include "headers/ServerDriver_OSVR.h"
+#include "headers/driver_osvr.h"
 
 // Library/third-party includes
 // - none
@@ -31,10 +35,6 @@
 // Standard includes
 #include <cstdlib> // for EXIT_SUCCESS
 #include <iostream>
-#include <ClientDriver_OSVR.h>
-#include <osvr_compiler_detection.h>
-#include <ServerDriver_OSVR.h>
-#include <driver_osvr.h>
 
 /**
  * Log messages to the console by default.

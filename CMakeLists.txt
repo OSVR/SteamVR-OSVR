@@ -45,7 +45,7 @@ write_compiler_detection_header(
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX11_STANDARD_COMPILE_OPTION})
 check_cxx_source_compiles("#include <memory>\nint main(int, char**) { std::unique_ptr<int> i = std::make_unique<int>(0); }" OSVR_HAS_STD_MAKE_UNIQUE)
-configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_tests.h")
+configure_file(headers/osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/headers/osvr_compiler_tests.h")
 
 #
 # Third-party libraries
@@ -61,15 +61,15 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 #
 
 set(HEADER_FILES
-	ClientDriver_OSVR.h
-	identity.h
-	make_unique.h
-	matrix_cast.h
-	osvr_device_properties.h
-	osvr_dll_export.h
-	osvr_tracked_device.h
-	ServerDriver_OSVR.h
-	driver_osvr.h
+	headers/ClientDriver_OSVR.h
+	headers/identity.h
+	headers/make_unique.h
+	headers/matrix_cast.h
+	headers/osvr_device_properties.h
+	headers/osvr_dll_export.h
+	headers/osvr_tracked_device.h
+	headers/ServerDriver_OSVR.h
+	headers/driver_osvr.h
 )
 
 set(SOURCE_FILES
@@ -116,10 +116,15 @@ if(WIN32)
 	endforeach()
 endif()
 
+set(TEST_SOURCES
+	src/test_hmd_driver/test_hmd_driver.cpp
+)
+
 #
 # Test program
 #
-add_executable(test_hmd_driver test_hmd_driver.cpp)
+add_executable(test_hmd_driver
+	${TEST_SOURCES})
 target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib driver_osvr)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)

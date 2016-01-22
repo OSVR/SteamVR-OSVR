@@ -22,7 +22,7 @@ Sensics, Inc.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <osvr_tracked_device.h>
+#include <headers/osvr_tracked_device.h>
 
 OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {

@@ -22,7 +22,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ClientDriver_OSVR.h>
+#include "headers/ClientDriver_OSVR.h"
 
 vr::EVRInitError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
 {
