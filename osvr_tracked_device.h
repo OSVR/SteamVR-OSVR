@@ -776,10 +776,6 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_DisplayFirmwareVersion_String: // TODO
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
     case vr::Prop_AttachedDeviceId_String: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
