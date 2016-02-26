@@ -706,7 +706,7 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty( vr::ETrackedDevic
     case vr::Prop_ModelNumber_String: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+        return "OSVR HMD";
     case vr::Prop_SerialNumber_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
