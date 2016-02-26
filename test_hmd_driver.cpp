@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 
     // Grab first tracker
     std::cout << "Acquiring first detected tracker..." << std::endl;
-    vr::ITrackedDeviceServerDriver* tracker = tracker_driver->GetTrackedDeviceDriver(0);
+    vr::ITrackedDeviceServerDriver* tracker = tracker_driver->GetTrackedDeviceDriver(0, vr::ITrackedDeviceServerDriver_Version);
 
     tracker_driver->Cleanup();
 

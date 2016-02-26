@@ -30,6 +30,7 @@
 #include "make_unique.h"
 #include "matrix_cast.h"
 #include "osvr_device_properties.h"
+#include "ValveStrCpy.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -46,8 +47,9 @@
 #include <string>
 #include <iostream>
 
-class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver
+class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent
 {
+friend class ServerDriver_OSVR;
 public:
     OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
 
@@ -71,12 +73,12 @@ public:
      */
     virtual void Deactivate() OSVR_OVERRIDE;
 
-    /**
-     * Returns the ID of this particular HMD. This value is opaque to the VR
-     * system itself, but should be unique within the driver because it will be
-     * passed back in via FindHmd().
-     */
-    virtual const char* GetId() OSVR_OVERRIDE;
+	/** Handles a request from the system to power off this device */
+	virtual void PowerOff() OSVR_OVERRIDE;
+
+	/** Requests a component interface of the driver for device-specific functionality. The driver should return NULL
+	* if the requested interface or version is not supported. */
+	virtual void *GetComponent( const char *pchComponentNameAndVersion ) OSVR_OVERRIDE;
 
     /**
      * A VR Client has made this debug request of the driver. The set of valid
@@ -130,29 +132,6 @@ public:
      */
     virtual vr::DistortionCoordinates_t ComputeDistortion(vr::EVREye eye, float u, float v) OSVR_OVERRIDE;
 
-    // -----------------------------------
-    // Assorted capability methods
-    // -----------------------------------
-
-    /**
-     * Returns all the static information that will be reported to the clients.
-     */
-    virtual vr::TrackedDeviceDriverInfo_t GetTrackedDeviceDriverInfo() OSVR_OVERRIDE;
-
-    // -----------------------------------
-    // Administrative Methods
-    // -----------------------------------
-
-    /**
-     * Returns the model number of this tracked device.
-     */
-    virtual const char* GetModelNumber() OSVR_OVERRIDE;
-
-    /**
-     * Returns the serial number of this tracked device.
-     */
-    virtual const char* GetSerialNumber() OSVR_OVERRIDE;
-
     // ------------------------------------
     // Tracking Methods
     // ------------------------------------
@@ -203,47 +182,11 @@ public:
      */
     virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
-    // ------------------------------------
-    // Controller Methods
-    // ------------------------------------
-
-    /**
-     * Gets the current state of a controller.
-     */
-    virtual vr::VRControllerState_t GetControllerState() OSVR_OVERRIDE;
-
-    /**
-     * Returns a uint64 property. If the property is not available this function will return 0.
-     */
-    virtual bool TriggerHapticPulse(uint32_t axis_id, uint16_t pulse_duration_microseconds) OSVR_OVERRIDE;
-
-    // Camera Methods
-    // ------------------------------------
-    virtual bool HasCamera() OSVR_OVERRIDE;
-	virtual bool GetCameraFirmwareDescription( char *pBuffer, uint32_t nBufferLen ) OSVR_OVERRIDE;
-	virtual bool GetCameraFrameDimensions( vr::ECameraVideoStreamFormat nVideoStreamFormat, uint32_t *pWidth, uint32_t *pHeight ) OSVR_OVERRIDE;
-    virtual bool GetCameraFrameBufferingRequirements( int *pDefaultFrameQueueSize, uint32_t *pFrameBufferDataSize ) OSVR_OVERRIDE;
-    virtual bool SetCameraFrameBuffering( int nFrameBufferCount, void **ppFrameBuffers, uint32_t nFrameBufferDataSize ) OSVR_OVERRIDE;
-	virtual bool SetCameraVideoStreamFormat( vr::ECameraVideoStreamFormat nVideoStreamFormat ) OSVR_OVERRIDE;
-	virtual vr::ECameraVideoStreamFormat GetCameraVideoStreamFormat() OSVR_OVERRIDE;
-    virtual bool StartVideoStream() OSVR_OVERRIDE;
-    virtual void StopVideoStream() OSVR_OVERRIDE;
-    virtual bool IsVideoStreamActive() OSVR_OVERRIDE;
-    virtual float GetVideoStreamElapsedTime() OSVR_OVERRIDE;
-	virtual const vr::CameraVideoStreamFrame_t *GetVideoStreamFrame() OSVR_OVERRIDE;
-	virtual void ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage ) OSVR_OVERRIDE;
-	virtual bool SetAutoExposure( bool bEnable ) OSVR_OVERRIDE;
-	virtual bool PauseVideoStream() OSVR_OVERRIDE;
-	virtual bool ResumeVideoStream() OSVR_OVERRIDE;
-	virtual bool IsVideoStreamPaused() OSVR_OVERRIDE;
-    virtual bool GetCameraDistortion( float flInputU, float flInputV, float *pflOutputU, float *pflOutputV ) OSVR_OVERRIDE;
-    virtual bool GetCameraProjection( float flWidthPixels, float flHeightPixels, float flZNear, float flZFar, vr::HmdMatrix44_t *pProjection ) OSVR_OVERRIDE;
-	virtual bool GetRecommendedCameraUndistortion( uint32_t *pUndistortionWidthPixels, uint32_t *pUndistortionHeightPixels ) OSVR_OVERRIDE;
-	virtual bool SetCameraUndistortion( uint32_t nUndistortionWidthPixels, uint32_t nUndistortionHeightPixels ) OSVR_OVERRIDE;
-	virtual bool GetCameraFirmwareVersion( uint64_t *pFirmwareVersion ) OSVR_OVERRIDE;
-	virtual bool SetFrameRate( int nISPFrameRate, int nSensorFrameRate ) OSVR_OVERRIDE;
+protected:
+    const char* GetId();
 
 private:
+    std::string GetStringTrackedDeviceProperty( vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error );
     static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     float GetIPD();
     const std::string m_DisplayDescription;
@@ -331,11 +274,21 @@ void OSVRTrackedDevice::Deactivate()
     }
 }
 
-const char* OSVRTrackedDevice::GetId()
+void OSVRTrackedDevice::PowerOff()
 {
-    /// @todo When available, return the actual unique ID of the HMD
-    return "OSVR HMD";
+    //FIXME Implement
 }
+
+void *OSVRTrackedDevice::GetComponent( const char *pchComponentNameAndVersion )
+	{
+		if ( !strcasecmp( pchComponentNameAndVersion, vr::IVRDisplayComponent_Version ) )
+		{
+			return (vr::IVRDisplayComponent*)this;
+		}
+
+		// override this to add a component to a driver
+		return NULL;
+	}
 
 void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size)
 {
@@ -412,7 +365,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     return coords;
 }
 
-vr::TrackedDeviceDriverInfo_t OSVRTrackedDevice::GetTrackedDeviceDriverInfo()
+/*vr::TrackedDeviceDriverInfo_t OSVRTrackedDevice::retainInfo()
 {
     vr::TrackedDeviceDriverInfo_t info;
     util::strcpy_safe(info.rchTrackingSystemId, "OSVR"); // TODO name of the underlying tracking system
@@ -427,31 +380,7 @@ vr::TrackedDeviceDriverInfo_t OSVRTrackedDevice::GetTrackedDeviceDriverInfo()
     info.fDisplayFrequency = 60.0;         // fps of display
 
     return info;
-}
-
-const char* OSVRTrackedDevice::GetModelNumber()
-{
-    /// @todo When available, return the actual model number of the HMD
-    return "OSVR HMD";
-}
-
-const char* OSVRTrackedDevice::GetSerialNumber()
-{
-    /// @todo When available, return the actual serial number of the HMD
-    return "0";
-}
-
-float OSVRTrackedDevice::GetIPD()
-{
-    OSVR_Pose3 leftEye, rightEye;
-    if(m_DisplayConfig.getViewer(0).getEye(0).getPose(leftEye) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!\n");
-    }
-    if(m_DisplayConfig.getViewer(0).getEye(1).getPose(rightEye) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n");
-    }
-    return (osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm();
-}
+}*/
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
 {
@@ -721,28 +650,50 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
 }
-
-uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error)
+uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty( vr::ETrackedDeviceProperty prop, char *pchValue, uint32_t unBufferSize, vr::ETrackedPropertyError *pError )
 {
-    const uint32_t default_value = 0;
-
-    if (isWrongDataType(prop, value)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDataType;
+    uint32_t default_value = 0;
+    if (isWrongDataType(prop, pchValue)) {
+        if (pError)
+            *pError = vr::TrackedProp_WrongDataType;
         return default_value;
     }
 
     if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
+        if (pError)
+            *pError = vr::TrackedProp_WrongDeviceClass;
         return default_value;
     }
 
     if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
+        if (pError)
+            *pError = vr::TrackedProp_InvalidDevice;
         return default_value;
     }
+
+	std::string sValue = GetStringTrackedDeviceProperty( prop, pError );
+	if ( *pError == vr::TrackedProp_Success )
+	{
+		if ( sValue.size( ) + 1 > unBufferSize )
+		{
+			*pError = vr::TrackedProp_BufferTooSmall;
+		}
+		else
+		{
+			valveStrCpy(sValue, pchValue, unBufferSize);
+		}
+		return (uint32_t)sValue.size( ) + 1;
+	}
+	return 0;
+}
+
+    // ------------------------------------
+    // Private Methods
+    // ------------------------------------
+
+std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty( vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error )
+{
+    std::string default_value = nullptr;
 
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
@@ -756,10 +707,10 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_SerialNumber_String: // TODO
+    case vr::Prop_SerialNumber_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+        return this->GetId();
     case vr::Prop_RenderModelName_String: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -795,126 +746,6 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
-}
-
-vr::VRControllerState_t OSVRTrackedDevice::GetControllerState()
-{
-    // TODO
-    vr::VRControllerState_t controller_state;
-
-#if 0
-    // If packet num matches that on your prior call, then the controller state hasn't been changed since
-    // your last call and there is no need to process it
-    uint32_t unPacketNum;
-
-    // bit flags for each of the buttons. Use ButtonMaskFromId to turn an ID into a mask
-    uint64_t ulButtonPressed;
-    uint64_t ulButtonTouched;
-
-    // Axis data for the controller's analog inputs
-    VRControllerAxis_t rAxis[ k_unControllerStateAxisCount ];
-
-    /** contains information about one axis on the controller */
-    struct VRControllerAxis_t
-    {
-        float x; // Ranges from -1.0 to 1.0 for joysticks and track pads. Ranges from 0.0 to 1.0 for triggers were 0 is fully released.
-        float y; // Ranges from -1.0 to 1.0 for joysticks and track pads. Is always 0.0 for triggers.
-    };
-    /** the number of axes in the controller state */
-    static const uint32_t k_unControllerStateAxisCount = 5;
-#endif
-
-    return controller_state;
-}
-
-bool OSVRTrackedDevice::TriggerHapticPulse(uint32_t axis_id, uint16_t pulse_duration_microseconds)
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-
-bool OSVRTrackedDevice::HasCamera()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::GetCameraFirmwareDescription( char *pBuffer, uint32_t nBufferLen )
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::GetCameraFrameDimensions( vr::ECameraVideoStreamFormat nVideoStreamFormat, uint32_t *pWidth, uint32_t *pHeight )
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::GetCameraFrameBufferingRequirements( int *pDefaultFrameQueueSize, uint32_t *pFrameBufferDataSize )
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::SetCameraFrameBuffering( int nFrameBufferCount, void **ppFrameBuffers, uint32_t nFrameBufferDataSize )
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::SetCameraVideoStreamFormat( vr::ECameraVideoStreamFormat nVideoStreamFormat )
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-vr::ECameraVideoStreamFormat OSVRTrackedDevice::GetCameraVideoStreamFormat()
-{
-    /// @todo SteamVR drivers return 0 and do nothing else, doing the same here
-    return vr::CVS_FORMAT_UNKNOWN; // this maps to 0
-}
-bool OSVRTrackedDevice::StartVideoStream()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-void OSVRTrackedDevice::StopVideoStream()
-{
-    /// @todo SteamVR drivers does nothing, doing the same here
-}
-bool OSVRTrackedDevice::IsVideoStreamActive()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-float OSVRTrackedDevice::GetVideoStreamElapsedTime()
-{
-    /// @todo SteamVR drivers return 0 and do nothing else, doing the same here
-    return 0;
-}
-const vr::CameraVideoStreamFrame_t * OSVRTrackedDevice::GetVideoStreamFrame()
-{
-    /// @todo SteamVR drivers return NULL and do nothing else, doing the same here
-    return NULL;
-}
-void OSVRTrackedDevice::ReleaseVideoStreamFrame( const vr::CameraVideoStreamFrame_t *pFrameImage )
-{
-    /// @todo SteamVR drivers does nothing, doing the same here
-}
-bool OSVRTrackedDevice::SetAutoExposure( bool bEnable )
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::PauseVideoStream()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::ResumeVideoStream()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
-}
-bool OSVRTrackedDevice::IsVideoStreamPaused()
-{
-    /// @todo SteamVR drivers return false and do nothing else, doing the same here
-    return false;
 }
 
 void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
@@ -957,30 +788,24 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
 }
 
-bool OSVRTrackedDevice::GetCameraDistortion( float flInputU, float flInputV, float *pflOutputU, float *pflOutputV )
+float OSVRTrackedDevice::GetIPD()
 {
-    return false;
+    OSVR_Pose3 leftEye, rightEye;
+    if(m_DisplayConfig.getViewer(0).getEye(0).getPose(leftEye) != true) {
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!\n");
+    }
+    if(m_DisplayConfig.getViewer(0).getEye(1).getPose(rightEye) != true) {
+        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n");
+    }
+    return (osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm();
 }
-bool OSVRTrackedDevice::GetCameraProjection( float flWidthPixels, float flHeightPixels, float flZNear, float flZFar, vr::HmdMatrix44_t *pProjection )
+
+const char* OSVRTrackedDevice::GetId()
 {
-    return false;
+    /// @todo When available, return the actual unique ID of the HMD
+    return "OSVR HMD";
 }
-bool OSVRTrackedDevice::GetRecommendedCameraUndistortion( uint32_t *pUndistortionWidthPixels, uint32_t *pUndistortionHeightPixels )
-{
-    return false;
-}
-bool OSVRTrackedDevice::SetCameraUndistortion( uint32_t nUndistortionWidthPixels, uint32_t nUndistortionHeightPixels )
-{
-    return false;
-}
-bool OSVRTrackedDevice::GetCameraFirmwareVersion( uint64_t *pFirmwareVersion )
-{
-    return false;
-}
-bool OSVRTrackedDevice::SetFrameRate( int nISPFrameRate, int nSensorFrameRate )
-{
-    return false;
-}
+
 
 
 #endif // INCLUDED_osvr_tracked_device_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

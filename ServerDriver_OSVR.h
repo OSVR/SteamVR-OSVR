@@ -71,16 +71,17 @@ public:
     /**
      * Returns a single tracked device by its index.
      *
-     * @param index the index of the tracked device to return.
+     * @param unWhich the index of the tracked device to return.
+     * @param
      */
-    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index) OSVR_OVERRIDE;
+	virtual vr::ITrackedDeviceServerDriver *GetTrackedDeviceDriver( uint32_t unWhich, const char *pchInterfaceVersion ) OSVR_OVERRIDE;
 
     /**
      * Returns a single HMD by its name.
      *
-     * @param hmd_id the C string name of the HMD.
+     * @param pchId the C string name of the HMD.
      */
-    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id) OSVR_OVERRIDE;
+	virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver( const char *pchId, const char *pchInterfaceVersion ) OSVR_OVERRIDE;
 
     /**
      * Allows the driver do to some work in the main loop of the server.
@@ -130,30 +131,42 @@ uint32_t ServerDriver_OSVR::GetTrackedDeviceCount()
     return trackedDevices_.size();
 }
 
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t index)
+vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t unWhich, const char *pchInterfaceVersion)
 {
-    if (index >= trackedDevices_.size()) {
-        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " + std::to_string(index) + " is out of range [0.." + std::to_string(trackedDevices_.size()) + "].\n";
+    if ( 0 != strcasecmp( pchInterfaceVersion, vr::ITrackedDeviceServerDriver_Version ) ) {
+        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
         logger_->Log(msg.c_str());
         return NULL;
     }
 
-    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device " + std::to_string(index) + ".\n";
+    if (unWhich >= trackedDevices_.size()) {
+        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " + std::to_string(unWhich) + " is out of range [0.." + std::to_string(trackedDevices_.size()) + "].\n";
+        logger_->Log(msg.c_str());
+        return NULL;
+    }
+
+    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device " + std::to_string(unWhich) + ".\n";
     logger_->Log(msg.c_str());
-    return trackedDevices_[index].get();
+    return trackedDevices_[unWhich].get();
 }
 
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id)
+vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char *pchId, const char *pchInterfaceVersion)
 {
+    if ( 0 != strcasecmp( pchInterfaceVersion, vr::ITrackedDeviceServerDriver_Version ) ) {
+        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
+        logger_->Log(msg.c_str());
+        return NULL;
+    }
+
     for (auto& tracked_device : trackedDevices_) {
-        if (0 == std::strcmp(id, tracked_device->GetId())) {
-            std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " + std::string(id) + ".\n";
+        if (0 == std::strcmp(pchId, tracked_device->GetId())) {
+            std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " + std::string(pchId) + ".\n";
             logger_->Log(msg.c_str());
             return tracked_device.get();
         }
     }
 
-    std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Failed to locate device named '" + std::string(id) + "'.\n";
+    std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Failed to locate device named '" + std::string(pchId) + "'.\n";
     logger_->Log(msg.c_str());
     return NULL;
 }
