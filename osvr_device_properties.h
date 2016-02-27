@@ -128,6 +128,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
@@ -222,6 +224,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
@@ -316,6 +320,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
@@ -410,6 +416,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
@@ -504,6 +512,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
@@ -599,6 +609,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_ModeLabel_String:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDeviceClass device_class)
@@ -699,6 +711,8 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_VendorSpecific_Reserved_End:
         return true;
     }
+
+    return true;
 }
 
 #endif // INCLUDED_osvr_device_properties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
