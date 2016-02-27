@@ -694,7 +694,7 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty( vr::ETrackedDevicePr
 
 std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty( vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error )
 {
-    std::string default_value = nullptr;
+    std::string default_value = "";
 
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
