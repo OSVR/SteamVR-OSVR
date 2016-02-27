@@ -49,6 +49,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_ContainsProximitySensor_Bool:
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
     case vr::Prop_DeviceCanPowerOff_Bool:
+    case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
     // could be any type
@@ -78,6 +79,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_TrackingRangeMinimumMeters_Float:
     case vr::Prop_TrackingRangeMaximumMeters_Float:
     // Int32
+    case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
     case vr::Prop_EdidVendorID_Int32:
     case vr::Prop_EdidProductID_Int32:
@@ -99,6 +101,9 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_DisplayFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_DisplayFPGAVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
     case vr::Prop_SupportedButtons_Uint64:
     // String
     case vr::Prop_TrackingSystemName_String:
@@ -123,6 +128,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
@@ -164,9 +171,11 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_ContainsProximitySensor_Bool:
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
     case vr::Prop_DeviceCanPowerOff_Bool:
+    case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
     // Int32
+    case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
     case vr::Prop_EdidVendorID_Int32:
     case vr::Prop_EdidProductID_Int32:
@@ -188,6 +197,9 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_DisplayFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_DisplayFPGAVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
     case vr::Prop_SupportedButtons_Uint64:
     // String
     case vr::Prop_TrackingSystemName_String:
@@ -212,11 +224,14 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
 {
     switch (prop) {
+    case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
     case vr::Prop_EdidVendorID_Int32:
     case vr::Prop_EdidProductID_Int32:
@@ -241,6 +256,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_ContainsProximitySensor_Bool:
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
     case vr::Prop_DeviceCanPowerOff_Bool:
+    case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
     // Float
@@ -277,6 +293,9 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_DisplayFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_DisplayFPGAVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
     case vr::Prop_SupportedButtons_Uint64:
     // String
     case vr::Prop_TrackingSystemName_String:
@@ -301,6 +320,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
@@ -317,6 +338,9 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_DisplayFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_DisplayFPGAVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
     case vr::Prop_SupportedButtons_Uint64:
     // could be any type
     case vr::Prop_VendorSpecific_Reserved_Start:
@@ -333,6 +357,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_ContainsProximitySensor_Bool:
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
     case vr::Prop_DeviceCanPowerOff_Bool:
+    case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
     // Float
@@ -358,6 +383,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_TrackingRangeMinimumMeters_Float:
     case vr::Prop_TrackingRangeMaximumMeters_Float:
     // Int32
+    case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
     case vr::Prop_EdidVendorID_Int32:
     case vr::Prop_EdidProductID_Int32:
@@ -390,6 +416,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
@@ -427,6 +455,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_ContainsProximitySensor_Bool:
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
     case vr::Prop_DeviceCanPowerOff_Bool:
+    case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
     // Float
@@ -452,6 +481,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_TrackingRangeMinimumMeters_Float:
     case vr::Prop_TrackingRangeMaximumMeters_Float:
     // Int32
+    case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
     case vr::Prop_EdidVendorID_Int32:
     case vr::Prop_EdidProductID_Int32:
@@ -473,12 +503,17 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_DisplayFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_DisplayFPGAVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
     case vr::Prop_SupportedButtons_Uint64:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
@@ -502,6 +537,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_ContainsProximitySensor_Bool:
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
     case vr::Prop_DeviceCanPowerOff_Bool:
+    case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
     // Float
@@ -527,6 +563,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_TrackingRangeMinimumMeters_Float:
     case vr::Prop_TrackingRangeMaximumMeters_Float:
     // Int32
+    case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
     case vr::Prop_EdidVendorID_Int32:
     case vr::Prop_EdidProductID_Int32:
@@ -548,6 +585,9 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_DisplayFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_DisplayFPGAVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
     case vr::Prop_SupportedButtons_Uint64:
     // String
     case vr::Prop_TrackingSystemName_String:
@@ -569,6 +609,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_ModeLabel_String:
         return true;
     }
+
+    return true;
 }
 
 inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDeviceClass device_class)
@@ -604,6 +646,8 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
     case vr::Prop_DeviceCanPowerOff_Bool:
     case vr::Prop_Firmware_ProgrammingTarget_String:
+    case vr::Prop_DeviceClass_Int32:
+    case vr::Prop_HasCamera_Bool:
         return false;
 
     // Properties that are unique to TrackedDeviceClass_HMD
@@ -637,6 +681,9 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_DisplayFPGAVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
         return (vr::TrackedDeviceClass_HMD != device_class);
 
     // Properties that are unique to TrackedDeviceClass_Controller
@@ -659,11 +706,13 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_ModeLabel_String:
         return (vr::TrackedDeviceClass_TrackingReference != device_class);
 
-	// Vendors are free to expose private debug data in this reserved region
+    // Vendors are free to expose private debug data in this reserved region
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return true;
     }
+
+    return true;
 }
 
 #endif // INCLUDED_osvr_device_properties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
