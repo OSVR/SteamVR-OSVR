@@ -669,9 +669,9 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_CameraFirmwareVersion_Uint64:
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_DisplayFPGAVersion_Uint64:
-	case vr::Prop_DisplayBootloaderVersion_Uint64:
-	case vr::Prop_DisplayHardwareVersion_Uint64:
-	case vr::Prop_AudioFirmwareVersion_Uint64:
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+    case vr::Prop_AudioFirmwareVersion_Uint64:
         return (vr::TrackedDeviceClass_HMD != device_class);
 
     // Properties that are unique to TrackedDeviceClass_Controller
@@ -694,7 +694,7 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_ModeLabel_String:
         return (vr::TrackedDeviceClass_TrackingReference != device_class);
 
-	// Vendors are free to expose private debug data in this reserved region
+    // Vendors are free to expose private debug data in this reserved region
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return true;

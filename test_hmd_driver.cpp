@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
     }
     std::cout << " - Tracker driver instantiated successfully." << std::endl;
 
-	Logger logger;
+    Logger logger;
 
     // Initialize the tracker driver
     std::cout << "Initializing the tracker driver..." << std::endl;

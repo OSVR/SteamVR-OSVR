@@ -27,6 +27,7 @@
 
 // Internal Includes
 #include "osvr_tracked_device.h" // for OSVRTrackedDevice
+#include "platform_fixes.h" // strcasecmp
 
 // Library/third-party includes
 #include <openvr_driver.h> // for everything in vr namespace
