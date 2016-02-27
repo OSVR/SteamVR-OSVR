@@ -23,6 +23,7 @@
 
 // Standard includes
 #include <string>
+#include <cstdint>
 
 /// Tries to copy a string into the buffer of the size given, if it will fit
 /// entirely. If it won't fit, don't do anything.
