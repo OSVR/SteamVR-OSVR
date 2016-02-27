@@ -476,6 +476,10 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
         if (error)
             *error = vr::TrackedProp_Success;
         return GetIPD();
+    case vr::Prop_UserHeadToEyeDepthMeters_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
     case vr::Prop_FieldOfViewLeftDegrees_Float: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -535,6 +539,10 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
 #include "ignore-warning/switch-enum"
 
     switch (prop) {
+    case vr::Prop_DeviceClass_Int32:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return deviceClass_;
     case vr::Prop_Axis0Type_Int32: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -706,11 +714,11 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty( vr::ETrackedDevic
         return default_value;
     case vr::Prop_ModelNumber_String: // TODO
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+            *error = vr::TrackedProp_Success;
         return "OSVR HMD";
     case vr::Prop_SerialNumber_String:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+            *error = vr::TrackedProp_Success;
         return this->GetId();
     case vr::Prop_RenderModelName_String: // TODO
         if (error)
