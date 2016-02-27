@@ -73,12 +73,12 @@ public:
      */
     virtual void Deactivate() OSVR_OVERRIDE;
 
-	/** Handles a request from the system to power off this device */
-	virtual void PowerOff() OSVR_OVERRIDE;
+    /** Handles a request from the system to power off this device */
+    virtual void PowerOff() OSVR_OVERRIDE;
 
-	/** Requests a component interface of the driver for device-specific functionality. The driver should return NULL
-	* if the requested interface or version is not supported. */
-	virtual void *GetComponent( const char *pchComponentNameAndVersion ) OSVR_OVERRIDE;
+    /** Requests a component interface of the driver for device-specific functionality. The driver should return NULL
+    * if the requested interface or version is not supported. */
+    virtual void *GetComponent( const char *pchComponentNameAndVersion ) OSVR_OVERRIDE;
 
     /**
      * A VR Client has made this debug request of the driver. The set of valid
@@ -280,15 +280,15 @@ void OSVRTrackedDevice::PowerOff()
 }
 
 void *OSVRTrackedDevice::GetComponent( const char *pchComponentNameAndVersion )
-	{
-		if ( !strcasecmp( pchComponentNameAndVersion, vr::IVRDisplayComponent_Version ) )
-		{
-			return (vr::IVRDisplayComponent*)this;
-		}
+    {
+        if ( !strcasecmp( pchComponentNameAndVersion, vr::IVRDisplayComponent_Version ) )
+        {
+            return (vr::IVRDisplayComponent*)this;
+        }
 
-		// override this to add a component to a driver
-		return NULL;
-	}
+        // override this to add a component to a driver
+        return NULL;
+    }
 
 void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size)
 {
@@ -671,20 +671,20 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty( vr::ETrackedDevicePr
         return default_value;
     }
 
-	std::string sValue = GetStringTrackedDeviceProperty( prop, pError );
-	if ( *pError == vr::TrackedProp_Success )
-	{
-		if ( sValue.size( ) + 1 > unBufferSize )
-		{
-			*pError = vr::TrackedProp_BufferTooSmall;
-		}
-		else
-		{
-			valveStrCpy(sValue, pchValue, unBufferSize);
-		}
-		return (uint32_t)sValue.size( ) + 1;
-	}
-	return 0;
+    std::string sValue = GetStringTrackedDeviceProperty( prop, pError );
+    if ( *pError == vr::TrackedProp_Success )
+    {
+        if ( sValue.size( ) + 1 > unBufferSize )
+        {
+            *pError = vr::TrackedProp_BufferTooSmall;
+        }
+        else
+        {
+            valveStrCpy(sValue, pchValue, unBufferSize);
+        }
+        return (uint32_t)sValue.size( ) + 1;
+    }
+    return 0;
 }
 
     // ------------------------------------
