@@ -259,10 +259,19 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     m_TrackerInterface = m_Context.getInterface("/me/head");
     m_TrackerInterface.registerCallback(&OSVRTrackedDevice::HmdTrackerCallback, this);
 
-    auto const configString =
+    auto configString =
         m_Context.getStringParameter("/renderManagerConfig");
+    if(configString.empty()) {
+        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Render Manager config is empty, using default values.\n");
+        configString = "{}";
+    }
+    try {
+        m_RenderManagerConfig.parse(configString);
+    } catch(const std::exception& e) {
+        std::string msg = "OSVRTrackedDevice::OSVRTrackedDevice(): Exception parsing Render Manager config: " + std::string(e.what()) + "\n";
+        logger_->Log(msg.c_str());
 
-    m_RenderManagerConfig.parse(configString);
+    }
 
     return vr::VRInitError_None;
 }
