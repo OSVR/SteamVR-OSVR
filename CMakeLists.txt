@@ -71,6 +71,7 @@ add_library(driver_osvr
 	osvr_tracked_device.h
 	ServerDriver_OSVR.h
 	ValveStrCpy.h
+	platform_fixes.h
 )
 target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})

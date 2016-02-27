@@ -31,6 +31,7 @@
 #include "matrix_cast.h"
 #include "osvr_device_properties.h"
 #include "ValveStrCpy.h"
+#include "platform_fixes.h" // strcasecmp
 
 // OpenVR includes
 #include <openvr_driver.h>
