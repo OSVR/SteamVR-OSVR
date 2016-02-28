@@ -28,9 +28,19 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 add_library(driver_osvr
 	SHARED
 	ClientDriver_OSVR.cpp
+	ClientDriver_OSVR.h
 	driver_osvr.cpp
+	identity.h
+	make_unique.h
+	matrix_cast.h
+	osvr_device_properties.h
+	osvr_dll_export.h
 	OSVRTrackedDevice.cpp
+	OSVRTrackedDevice.h
+	platform_fixes.h
 	ServerDriver_OSVR.cpp
+	ServerDriver_OSVR.h
+	ValveStrCpy.h
 )
 target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
