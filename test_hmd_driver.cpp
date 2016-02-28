@@ -25,6 +25,7 @@
 // Internal Includes
 #include "driver_osvr.cpp"
 #include "make_unique.h"
+#include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 
 // Library/third-party includes
 // - none

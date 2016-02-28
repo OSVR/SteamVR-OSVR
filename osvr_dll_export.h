@@ -32,7 +32,8 @@
 #define OSVR_DLL_EXPORT extern "C" __attribute__((visibility("default")))
 #define OSVR_DLL_IMPORT extern "C"
 #else
-#error "Unsupported Platform."
+#error "Unsupported platform."
 #endif
 
 #endif // INCLUDED_osvr_dll_export_h_GUID_86142D80_1F9B_45D5_9C6C_04FA424822B0
+

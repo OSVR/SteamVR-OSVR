@@ -36,7 +36,7 @@
 // - none
 
 // http://stackoverflow.com/questions/3694723/error-c3861-strcasecmp-identifier-not-found-in-visual-studio-2008
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
 #endif

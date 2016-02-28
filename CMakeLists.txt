@@ -62,14 +62,17 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 add_library(driver_osvr
 	SHARED
 	ClientDriver_OSVR.h
+	ClientDriver_OSVR.cpp
 	driver_osvr.cpp
 	identity.h
 	make_unique.h
 	matrix_cast.h
 	osvr_device_properties.h
 	osvr_dll_export.h
-	osvr_tracked_device.h
+	OSVRTrackedDevice.h
+	OSVRTrackedDevice.cpp
 	ServerDriver_OSVR.h
+	ServerDriver_OSVR.cpp
 	ValveStrCpy.h
 	platform_fixes.h
 )
@@ -109,7 +112,7 @@ endif()
 # Test program
 #
 add_executable(test_hmd_driver test_hmd_driver.cpp)
-target_link_libraries(test_hmd_driver PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+target_link_libraries(test_hmd_driver PRIVATE driver_osvr osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
 endif()

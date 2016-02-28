@@ -40,3 +40,4 @@ struct identity {
 };
 
 #endif // INCLUDED_identity_h_GUID_7E0DD26F_6F5E_4B46_92EB_AE134E79D7DC
+

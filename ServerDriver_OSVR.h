@@ -26,29 +26,32 @@
 #define INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
 
 // Internal Includes
-#include "osvr_tracked_device.h" // for OSVRTrackedDevice
-#include "platform_fixes.h" // strcasecmp
+#include "OSVRTrackedDevice.h"          // for OSVRTrackedDevice
+#include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 
 // Library/third-party includes
-#include <openvr_driver.h> // for everything in vr namespace
+#include <openvr_driver.h>              // for everything in vr namespace
 
-#include <osvr/ClientKit/Context.h> // for osvr::clientkit::ClientContext
+#include <osvr/ClientKit/Context.h>     // for osvr::clientkit::ClientContext
 
 // Standard includes
-#include <vector>  // for std::vector
-#include <cstring> // for std::strcmp
-#include <string>  // for std::string, std::to_string
+#include <vector>                       // for std::vector
+#include <cstring>                      // for std::strcmp
+#include <string>                       // for std::string, std::to_string
+#include <memory>                       // for std::unique_ptr
 
-class ServerDriver_OSVR : public vr::IServerTrackedDeviceProvider
-{
+class ServerDriver_OSVR : public vr::IServerTrackedDeviceProvider {
 public:
+    ServerDriver_OSVR() = default;
+    virtual ~ServerDriver_OSVR() = default;
+
     /**
      * Initializes the driver.
      *
      * This is called when the driver is first loaded.
      *
-     * @param user_config_dir the absoluate path of the directory where the
-     *     driver should store any user configuration files.
+     * @param user_driver_config_dir the absoluate path of the directory where
+     *     the driver should store any user configuration files.
      * @param driver_install_dir the absolute path of the driver's root
      *     directory.
      *
@@ -72,33 +75,43 @@ public:
     /**
      * Returns a single tracked device by its index.
      *
-     * @param unWhich the index of the tracked device to return.
-     * @param
+     * @param index the index of the tracked device to return.
+     * @param interface_version the version of the tracked device server driver interface
      */
-	virtual vr::ITrackedDeviceServerDriver *GetTrackedDeviceDriver( uint32_t unWhich, const char *pchInterfaceVersion ) OSVR_OVERRIDE;
+    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index, const char* interface_version) OSVR_OVERRIDE;
 
     /**
      * Returns a single HMD by its name.
      *
-     * @param pchId the C string name of the HMD.
+     * @param id the C string name of the HMD.
+     * @param interface_version the version of the tracked device server driver interface
      */
-	virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver( const char *pchId, const char *pchInterfaceVersion ) OSVR_OVERRIDE;
+    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id, const char* interface_version) OSVR_OVERRIDE;
 
     /**
      * Allows the driver do to some work in the main loop of the server.
      */
     virtual void RunFrame() OSVR_OVERRIDE;
 
-	/** Returns true if the driver wants to block Standby mode. */
-	virtual bool ShouldBlockStandbyMode() OSVR_OVERRIDE;
+    /**
+     * Returns @c true if the driver wants to block Standby mode.
+     */
+    virtual bool ShouldBlockStandbyMode() OSVR_OVERRIDE;
 
-	/** Called when the system is entering Standby mode. The driver should switch itself into whatever sort of low-power
-	* state it has. */
-	virtual void EnterStandby() OSVR_OVERRIDE;
+    /**
+     * Called when the system is entering Standby mode.
+     * 
+     * The driver should switch itself into whatever sort of low-power state it
+     * has.
+     */
+    virtual void EnterStandby() OSVR_OVERRIDE;
 
-	/** Called when the system is leaving Standby mode. The driver should switch itself back to
-	full operation. */
-	virtual void LeaveStandby() OSVR_OVERRIDE;
+    /**
+     * Called when the system is leaving Standby mode.
+     *
+     * The driver should switch itself back to full operation.
+     */
+    virtual void LeaveStandby() OSVR_OVERRIDE;
 
 private:
     std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
@@ -106,89 +119,5 @@ private:
     vr::IDriverLog* logger_;
 };
 
-vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
-{
-    logger_ = driver_log;
-
-    logger_->Log("ServerDriver_OSVR::Init() called.\n");
-    context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
-
-    const std::string display_description = context_->getStringParameter("/display");
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), driver_host, logger_));
-
-    return vr::VRInitError_None;
-}
-
-void ServerDriver_OSVR::Cleanup()
-{
-    trackedDevices_.clear();
-    context_.reset();
-}
-
-uint32_t ServerDriver_OSVR::GetTrackedDeviceCount()
-{
-    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceCount(): Detected " + std::to_string(trackedDevices_.size()) + " tracked devices.\n";
-    logger_->Log(msg.c_str());
-    return trackedDevices_.size();
-}
-
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t unWhich, const char *pchInterfaceVersion)
-{
-    if ( 0 != strcasecmp( pchInterfaceVersion, vr::ITrackedDeviceServerDriver_Version ) ) {
-        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
-        logger_->Log(msg.c_str());
-        return NULL;
-    }
-
-    if (unWhich >= trackedDevices_.size()) {
-        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " + std::to_string(unWhich) + " is out of range [0.." + std::to_string(trackedDevices_.size()) + "].\n";
-        logger_->Log(msg.c_str());
-        return NULL;
-    }
-
-    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device " + std::to_string(unWhich) + ".\n";
-    logger_->Log(msg.c_str());
-    return trackedDevices_[unWhich].get();
-}
-
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char *pchId, const char *pchInterfaceVersion)
-{
-    if ( 0 != strcasecmp( pchInterfaceVersion, vr::ITrackedDeviceServerDriver_Version ) ) {
-        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
-        logger_->Log(msg.c_str());
-        return NULL;
-    }
-
-    for (auto& tracked_device : trackedDevices_) {
-        if (0 == std::strcmp(pchId, tracked_device->GetId())) {
-            std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " + std::string(pchId) + ".\n";
-            logger_->Log(msg.c_str());
-            return tracked_device.get();
-        }
-    }
-
-    std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Failed to locate device named '" + std::string(pchId) + "'.\n";
-    logger_->Log(msg.c_str());
-    return NULL;
-}
-
-void ServerDriver_OSVR::RunFrame()
-{
-    context_->update();
-}
-
-bool ServerDriver_OSVR::ShouldBlockStandbyMode()
-{
-    return false;
-}
-
-void ServerDriver_OSVR::EnterStandby()
-{
-}
-
-void ServerDriver_OSVR::LeaveStandby()
-{
-}
-
-
 #endif // INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
+

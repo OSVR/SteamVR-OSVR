@@ -26,29 +26,39 @@
 #define INCLUDED_ClientDriver_OSVR_h_GUID_7C0E8547_F8CF_4186_B637_9488CD6E3663
 
 // Internal Includes
-// - none
+#include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 
 // Library/third-party includes
 #include <openvr_driver.h>
 
 // Standard includes
-// - none
+#include <string>
 
-class ClientDriver_OSVR : public vr::IClientTrackedDeviceProvider
-{
+class ClientDriver_OSVR : public vr::IClientTrackedDeviceProvider {
 public:
+    ClientDriver_OSVR() = default;
+    virtual ~ClientDriver_OSVR() = default;
+
     /**
      * Initializes the driver.
      *
      * This will be called before any other methods are called, except
-     * BIsHmdPresent(). BIsHmdPresent() is called outside of the Init/Cleanup
-     * pair.  If Init() returns anything other than HmdError_None the driver DLL
-     * will be unloaded.
+     * BIsHmdPresent(). BIsHmdPresent() is called outside of the Init() /
+     * Cleanup() pair.
+     *
+     * If Init() returns anything other than vr::EVRInitError::VRInitError_None
+     * the driver DLL will be unloaded.
+     *
+     * @param driver_log a (potentially NULL) pointer to a vr::IDriverLog.
+     *
+     * @param driver_host will never be NULL, and will always be a pointer to a
+     * vr::IServerDriverHost interface
      *
      * @param user_driver_config_dir The absolute path of the directory where
-     *     the driver should store user config files.
+     * the driver should store user config files.
+     *
      * @param driver_install_dir The absolute path of the root directory for the
-     *     driver.
+     * driver.
      */
     virtual vr::EVRInitError Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
 
@@ -65,6 +75,9 @@ public:
      * effects such as hooking process functions or leaving resources loaded.
      * Init() will not be called before this method and Cleanup() will not be called
      * after it.
+     *
+     * @param user_config_dir The absolute path of the directory where
+     * the driver should store user config files.
      */
     virtual bool BIsHmdPresent(const char* user_config_dir) OSVR_OVERRIDE;
 
@@ -88,10 +101,12 @@ public:
      */
     virtual vr::HiddenAreaMesh_t GetHiddenAreaMesh(vr::EVREye eye) OSVR_OVERRIDE;
 
-	/** Get the MC image for the current HMD.
-	 * Returns the size in bytes of the buffer required to hold the specified resource.
+    /**
+     * Get the MC image for the current HMD.
+     *
+     * @return Returns the size in bytes of the buffer required to hold the specified resource.
      */
-	virtual uint32_t GetMCImage( uint32_t *pImgWidth, uint32_t *pImgHeight, uint32_t *pChannels, void *pDataBuffer, uint32_t unBufferLen ) OSVR_OVERRIDE;
+    virtual uint32_t GetMCImage(uint32_t* img_width, uint32_t* img_height, uint32_t* channels, void* data_buffer, uint32_t buffer_len) OSVR_OVERRIDE;
 
 private:
     vr::IDriverLog* logger_ = nullptr;
@@ -100,51 +115,5 @@ private:
     std::string driverInstallDir_;
 };
 
-vr::EVRInitError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
-{
-    logger_ = driver_log;
-    driverHost_ = driver_host;
-    userDriverConfigDir_ = user_driver_config_dir;
-    driverInstallDir_ = driver_install_dir;
-
-    // TODO ?
-
-    return vr::VRInitError_None;
-}
-
-void ClientDriver_OSVR::Cleanup()
-{
-    logger_ = nullptr;
-    driverHost_ = nullptr;
-    userDriverConfigDir_.clear();
-    driverInstallDir_.clear();
-}
-
-bool ClientDriver_OSVR::BIsHmdPresent(const char* user_config_dir)
-{
-    // TODO
-    return true;
-}
-
-vr::EVRInitError ClientDriver_OSVR::SetDisplayId(const char* display_id)
-{
-    // TODO
-    return vr::VRInitError_None;
-}
-
-vr::HiddenAreaMesh_t ClientDriver_OSVR::GetHiddenAreaMesh(vr::EVREye eye)
-{
-    vr::HiddenAreaMesh_t hidden_area_mesh;
-    hidden_area_mesh.pVertexData = nullptr;
-    hidden_area_mesh.unTriangleCount = 0;
-
-    return hidden_area_mesh;
-}
-
-uint32_t ClientDriver_OSVR::GetMCImage(uint32_t *pImgWidth, uint32_t *pImgHeight, uint32_t *pChannels, void *pDataBuffer, uint32_t unBufferLen )
-{
-    // what is this function for? SteamVR drivers return 0, doing the same here.
-    return 0;
-}
-
 #endif // INCLUDED_ClientDriver_OSVR_h_GUID_7C0E8547_F8CF_4186_B637_9488CD6E3663
+

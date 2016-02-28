@@ -716,3 +716,4 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
 }
 
 #endif // INCLUDED_osvr_device_properties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
+

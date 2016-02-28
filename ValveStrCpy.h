@@ -56,3 +56,4 @@ inline std::size_t valveStrCpy(std::string const &src, char *dest,
 }
 
 #endif // INCLUDED_ValveStrCpy_h_GUID_E8F022B2_8826_40B2_E94E_AA1F2A33ED74
+
