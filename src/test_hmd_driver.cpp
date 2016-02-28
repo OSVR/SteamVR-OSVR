@@ -23,12 +23,12 @@
 // limitations under the License.
 
 // Internal Includes
-#include "driver_osvr.cpp"
-#include "make_unique.h"
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
+#include "ServerDriver_OSVR.h"          // for ServerDriver_OSVR
+#include "driver_osvr.h"                // for factories
 
 // Library/third-party includes
-// - none
+#include <openvr_driver.h>              // for vr::IDriverLog
 
 // Standard includes
 #include <cstdlib> // for EXIT_SUCCESS

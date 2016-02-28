@@ -30,6 +30,7 @@ add_library(driver_osvr
 	ClientDriver_OSVR.cpp
 	ClientDriver_OSVR.h
 	driver_osvr.cpp
+	driver_osvr.h
 	identity.h
 	make_unique.h
 	matrix_cast.h

@@ -23,6 +23,8 @@
 // limitations under the License.
 
 // Internal Includes
+#include "driver_osvr.h"
+
 #include "ServerDriver_OSVR.h"  // for ServerDriver_OSVR
 #include "ClientDriver_OSVR.h"  // for ClientDriver_OSVR
 
