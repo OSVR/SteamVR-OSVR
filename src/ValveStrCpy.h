@@ -24,6 +24,7 @@
 // Standard includes
 #include <string>
 #include <cstdint>
+#include <cstdlib>  // for std::size_t
 
 /// Tries to copy a string into the buffer of the size given, if it will fit
 /// entirely. If it won't fit, don't do anything.
