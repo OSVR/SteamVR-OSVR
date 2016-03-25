@@ -35,6 +35,13 @@ before_install:
         mkdir -p deps-dbg;
         cd deps-dbg;
       fi;
+      if [ -d CMake ]; then
+        pushd CMake;
+        git pull;
+        popd;
+      else
+        git clone --recursive https://github.com/Kitware/CMake.git;
+      fi;
       if [ -d jsoncpp ]; then
         pushd jsoncpp;
         git pull;
@@ -68,6 +75,12 @@ install:
       else
         pushd $HOME/deps-dbg;
       fi;
+      mkdir -p CMake/build;
+      pushd CMake/build;
+      ./bootstrap.sh --prefix="${INSTPRF}" --parallel=2;
+      make -j2 install;
+      popd;
+      export PATH=${PATH}:${INSTPRF}/bin;
       mkdir -p jsoncpp/build;
       pushd jsoncpp/build;
       cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
@@ -116,7 +129,5 @@ addons:
     - libboost-program-options1.55-dev
     - libboost-filesystem1.55-dev
     - libusb-1.0-0-dev
-    - cmake-data
-    - cmake
     - gcc-5
     - g++-5
