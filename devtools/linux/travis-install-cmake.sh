@@ -33,7 +33,7 @@ if [ -d CMake ]; then
     git pull
     popd
 else
-    git clone --recursive https://github.com/Kitware/CMake.git
+    git clone --branch latest --recursive https://github.com/Kitware/CMake.git
 fi
 
 # Build cmake
