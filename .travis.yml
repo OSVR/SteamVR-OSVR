@@ -26,45 +26,53 @@ before_install:
   - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew update; fi
   - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap homebrew/science; fi
   - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap osvr/osvr; fi
-  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      pushd $HOME;
+  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
+      pushd $HOME
       if [ $CONFIG = 'Release' ]; then
-        mkdir -p deps-rel;
-        cd deps-rel;
+        mkdir -p deps-rel
+        cd deps-rel
       else
-        mkdir -p deps-dbg;
-        cd deps-dbg;
-      fi;
+        mkdir -p deps-dbg
+        cd deps-dbg
+      fi
+    fi
+  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
       if [ -d CMake ]; then
-        pushd CMake;
-        git pull;
-        popd;
+        pushd CMake
+        git pull
+        popd
       else
-        git clone --recursive https://github.com/Kitware/CMake.git;
-      fi;
+        git clone --recursive --branch release https://github.com/Kitware/CMake.git
+      fi
+    fi
+  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
       if [ -d jsoncpp ]; then
-        pushd jsoncpp;
-        git pull;
-        popd;
+        pushd jsoncpp
+        git pull
+        popd
       else
-        git clone https://github.com/open-source-parsers/jsoncpp.git;
-      fi;
+        git clone https://github.com/open-source-parsers/jsoncpp.git
+      fi
+    fi
+  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
       if [ -d libfunctionality ]; then
-        pushd libfunctionality;
-        git pull;
-        popd;
+        pushd libfunctionality
+        git pull
+        popd
       else
-        git clone https://github.com/OSVR/libfunctionality.git;
-      fi;
+        git clone https://github.com/OSVR/libfunctionality.git
+      fi
+    fi
+  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
       if [ -d OSVR-Core ]; then
-        pushd OSVR-Core;
-        git pull;
-        popd;
+        pushd OSVR-Core
+        git pull
+        popd
       else
-        git clone https://github.com/OSVR/OSVR-Core.git;
-      fi;
-      popd;
-    fi"
+        git clone https://github.com/OSVR/OSVR-Core.git
+      fi
+      popd
+    fi
 install:
   - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew uninstall json-c; fi
   - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install jsoncpp --HEAD; fi
