@@ -1,134 +1,45 @@
 language: cpp
+
 compiler:
   - clang
   - gcc
+
 os:
   - osx
   - linux
+
 env:
   - CONFIG=Release
   - CONFIG=Debug
+
 matrix:
   exclude:
   - os: osx
     compiler: gcc
-  - os: linux
-    compiler: clang
+
 cache:
   directories:
-    $HOME/deps-rel
-    $HOME/deps-dbg
-before_install:
-  - if [ $CC = gcc ]; then export CXX="g++-5" CC="gcc-5"; fi
-  - if [ $TRAVIS_OS_NAME = 'linux' -a $CC = 'clang' ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
-  - $CC -v
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then export INSTPRF=$HOME/p; mkdir -p $INSTPRF; fi
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew update; fi
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap homebrew/science; fi
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew tap osvr/osvr; fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      pushd $HOME
-      if [ $CONFIG = 'Release' ]; then
-        mkdir -p deps-rel
-        cd deps-rel
-      else
-        mkdir -p deps-dbg
-        cd deps-dbg
-      fi
-    fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      if [ -d CMake ]; then
-        pushd CMake
-        git pull
-        popd
-      else
-        git clone --recursive --branch release https://github.com/Kitware/CMake.git
-      fi
-    fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      if [ -d jsoncpp ]; then
-        pushd jsoncpp
-        git pull
-        popd
-      else
-        git clone https://github.com/open-source-parsers/jsoncpp.git
-      fi
-    fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      if [ -d libfunctionality ]; then
-        pushd libfunctionality
-        git pull
-        popd
-      else
-        git clone https://github.com/OSVR/libfunctionality.git
-      fi
-    fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      if [ -d OSVR-Core ]; then
-        pushd OSVR-Core
-        git pull
-        popd
-      else
-        git clone https://github.com/OSVR/OSVR-Core.git
-      fi
-      popd
-    fi
+    $HOME/osvr
+
 install:
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew uninstall json-c; fi
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install jsoncpp --HEAD; fi
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then brew install osvr-core --HEAD; fi
-  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
-      if [ $CONFIG = 'Release' ]; then
-        pushd $HOME/deps-rel;
-      else
-        pushd $HOME/deps-dbg;
-      fi;
-      mkdir -p CMake/build;
-      pushd CMake/build;
-      ./bootstrap.sh --prefix="${INSTPRF}" --parallel=2;
-      make -j2 install;
-      popd;
-      export PATH=${PATH}:${INSTPRF}/bin;
-      mkdir -p jsoncpp/build;
-      pushd jsoncpp/build;
-      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DJSONCPP_WITH_CMAKE_PACKAGE=on -DCMAKE_BUILD_TYPE=${CONFIG};
-      make -j2 install;
-      popd;
-      mkdir -p libfunctionality/build;
-      pushd libfunctionality/build;
-      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG};
-      make -j2 install;
-      popd;
-      mkdir -p OSVR-Core/build;
-      pushd OSVR-Core/build;
-      git submodule update --init --recursive;
-      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTPRF -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF -DBUILD_CLIENT=ON -DBUILD_CLIENT_APPS=OFF -DBUILD_CLIENT_EXAMPLES=OFF -DBUILD_DEV_VERBOSE=OFF -DBUILD_EXPERIMENTAL_APPS=OFF -DBUILD_HEADER_DEPENDENCY_TESTS=OFF -DBUILD_SERVER=ON -DBUILD_SERVER_APP=ON -DBUILD_SERVER_EXAMPLES=ON -DBUILD_SERVER_PLUGINS=OFF -DBUILD_TESTING=OFF -DBUILD_WITH_OPENCV=OFF;
-      make -j2 install;
-      popd;
-      popd;
-    fi"
+  - export PATH=$HOME/osvr/bin:$PATH
+  - pushd devtools
+  - ./travis-install-dependencies.sh "${HOME}/osvr"
+  - popd
+
 script:
   - git submodule update --init --recursive
-  - "if [ $TRAVIS_OS_NAME = 'linux' ]; then
-       curl -L https://raw.githubusercontent.com/Kitware/CMake/65e6b1152fad1b8282761abdfcc389ea4fd4747e/Modules/WriteCompilerDetectionHeader.cmake > cmake/WriteCompilerDetectionHeader.cmake;
-       sed -i -- 's/${CMAKE_CURRENT_LIST_DIR}/${CMAKE_ROOT}\\/Modules/g' ./cmake/WriteCompilerDetectionHeader.cmake;
-       sed -i -- 's/WriteCompilerDetectionHeader/cmake\\/WriteCompilerDetectionHeader.cmake/g' CMakeLists.txt;
-     fi"
-  - mkdir build
-  - cd build
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_OSX_ARCHITECTURES=x86_64; fi
-  - if [ $TRAVIS_OS_NAME = 'linux' ]; then cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH=$INSTPRF; fi
-  - make all -j2
-  - ./src/test_hmd_driver
-# TODO need to sort out false-failures due to container/platform issues.
-#  - "ctest -V"
+  - ./devtools/travis-build.sh "${HOME}/osvr"
+
 sudo: false
+
 addons:
   apt:
     sources:
     - boost-latest
     - george-edison55-precise-backports
     - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-3.7
     packages:
     - libboost-thread1.55-dev
     - libboost-system1.55-dev
@@ -137,5 +48,11 @@ addons:
     - libboost-program-options1.55-dev
     - libboost-filesystem1.55-dev
     - libusb-1.0-0-dev
+    - cmake-data
+    - cmake
     - gcc-5
     - g++-5
+    - clang-3.7
+    - libudev1
+    - libudev-dev
+
