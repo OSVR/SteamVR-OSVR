@@ -125,7 +125,7 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     try {
         m_RenderManagerConfig.parse(configString);
     } catch(const std::exception& e) {
-        std::string msg = "OSVRTrackedDevice::OSVRTrackedDevice(): Exception parsing Render Manager config: " + std::string(e.what()) + "\n";
+        const std::string msg = "OSVRTrackedDevice::OSVRTrackedDevice(): Exception parsing Render Manager config: " + std::string(e.what()) + "\n";
         logger_->Log(msg.c_str());
     }
 
@@ -230,23 +230,6 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     return coords;
 }
 
-/*vr::TrackedDeviceDriverInfo_t OSVRTrackedDevice::retainInfo()
-{
-    vr::TrackedDeviceDriverInfo_t info;
-    util::strcpy_safe(info.rchTrackingSystemId, "OSVR"); // TODO name of the underlying tracking system
-    util::strcpy_safe(info.rchSerialNumber, GetSerialNumber());
-    util::strcpy_safe(info.rchModelNumber, GetModelNumber());
-    info.rchRenderModelName[0] = '\0';        // TODO pass this to GetRenderModel to get the mesh and texture to render this device
-    info.eClass = vr::TrackedDeviceClass_HMD; // TODO adjust accordingly
-    info.bDeviceIsConnected = true;           // false if user unplugs device
-    info.bWillDriftInYaw = true;              // true if gyro-only tracking system
-    info.bReportsTimeSinceVSync = false;
-    info.fSecondsFromVsyncToPhotons = 0.0; // seconds between vsync and photons hitting wearer's eyes
-    info.fDisplayFrequency = 60.0;         // fps of display
-
-    return info;
-}*/
-
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
 {
     return pose_;
@@ -276,6 +259,9 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
+
+    const std::string msg = "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
+    logger_->Log(msg.c_str());
 
     switch (prop) {
     case vr::Prop_WillDriftInYaw_Bool: // TODO
@@ -326,6 +312,9 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
 
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
+
+    const std::string msg = "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
+    logger_->Log(msg.c_str());
 
     switch (prop) {
     case vr::Prop_SecondsFromVsyncToPhotons_Float: // TODO
@@ -402,6 +391,9 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+    const std::string msg = "OSVRTrackedDevice::GetInt32TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
+    logger_->Log(msg.c_str());
+
     switch (prop) {
     case vr::Prop_DeviceClass_Int32:
         if (error)
@@ -461,6 +453,9 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+    const std::string msg = "OSVRTrackedDevice::GetUint64TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
+    logger_->Log(msg.c_str());
+
     switch (prop) {
     case vr::Prop_CurrentUniverseId_Uint64: // TODO
         if (error)
@@ -510,6 +505,9 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+    const std::string msg = "OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
+    logger_->Log(msg.c_str());
+
     switch (prop) {
     case vr::Prop_StatusDisplayTransform_Matrix34: // TODO
         if (error)
@@ -544,6 +542,9 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
             *pError = vr::TrackedProp_InvalidDevice;
         return default_value;
     }
+
+    const std::string msg = "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
+    logger_->Log(msg.c_str());
 
     std::string sValue = GetStringTrackedDeviceProperty(prop, pError);
     if (*pError == vr::TrackedProp_Success) {
