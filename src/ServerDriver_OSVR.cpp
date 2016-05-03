@@ -44,6 +44,13 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServer
     logger_ = driver_log;
 
     logger_->Log("ServerDriver_OSVR::Init() called.\n");
+
+    std::string msg = "user_driver_config_dir = " + std::string(user_driver_config_dir);
+    logger_->Log(msg.c_str());
+
+    msg = "driver_install_dir = " + std::string(driver_install_dir);
+    logger_->Log(msg.c_str());
+
     context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
 
     const std::string display_description = context_->getStringParameter("/display");
