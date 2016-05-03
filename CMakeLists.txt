@@ -15,6 +15,9 @@ list(APPEND CMAKE_PREFIX_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/openvr"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../openvr")
 
+include(EnableExtraCompilerWarnings)
+globally_enable_extra_compiler_warnings()
+
 #
 # Dependencies
 #
