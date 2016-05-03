@@ -264,11 +264,63 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
     logger_->Log(msg.c_str());
 
     switch (prop) {
-    case vr::Prop_WillDriftInYaw_Bool: // TODO
+    // Properties that apply to all device classes
+    case vr::Prop_WillDriftInYaw_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return true;
+        break;
+    case vr::Prop_DeviceIsWireless_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    case vr::Prop_DeviceIsCharging_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    case vr::Prop_Firmware_UpdateAvailable_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    case vr::Prop_Firmware_ManualUpdate_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    case vr::Prop_BlockServerShutdown_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    case vr::Prop_CanUnifyCoordinateSystemWithHmd_Bool: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
         break;
+    case vr::Prop_ContainsProximitySensor_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    case vr::Prop_DeviceProvidesBatteryStatus_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    case vr::Prop_DeviceCanPowerOff_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return true;
+        break;
+    case vr::Prop_HasCamera_Bool:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return false;
+        break;
+    // Properties that apply to HMDs
     case vr::Prop_ReportsTimeSinceVSync_Bool: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -317,6 +369,12 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
     logger_->Log(msg.c_str());
 
     switch (prop) {
+    // General properties that apply to all device classes
+    case vr::Prop_DeviceBatteryPercentage_Float:
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return 1.0f; // full battery
+    // Properties that are unique to TrackedDeviceClass_HMD
     case vr::Prop_SecondsFromVsyncToPhotons_Float: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -329,10 +387,51 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
         if (error)
             *error = vr::TrackedProp_Success;
         return GetIPD();
+    case vr::Prop_DisplayMCOffset_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayMCScale_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayGCBlackClamp_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayGCOffset_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayGCScale_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayGCPrescale_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_LensCenterLeftU_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_LensCenterLeftV_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_LensCenterRightU_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_LensCenterRightV_Float:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
     case vr::Prop_UserHeadToEyeDepthMeters_Float:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
+    // Properties that are unique to TrackedDeviceClass_TrackingReference
     case vr::Prop_FieldOfViewLeftDegrees_Float: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -395,27 +494,50 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
     logger_->Log(msg.c_str());
 
     switch (prop) {
+    // General properties that apply to all device classes
     case vr::Prop_DeviceClass_Int32:
         if (error)
             *error = vr::TrackedProp_Success;
         return deviceClass_;
-    case vr::Prop_Axis0Type_Int32: // TODO
+    // Properties that are unique to TrackedDeviceClass_HMD
+    case vr::Prop_DisplayMCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_Axis1Type_Int32: // TODO
+    case vr::Prop_EdidVendorID_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_Axis2Type_Int32: // TODO
+    case vr::Prop_EdidProductID_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_Axis3Type_Int32: // TODO
+    case vr::Prop_DisplayGCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_Axis4Type_Int32: // TODO
+    case vr::Prop_CameraCompatibilityMode_Int32:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    // Properties that are unique to TrackedDeviceClass_Controller
+    case vr::Prop_Axis0Type_Int32:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis1Type_Int32:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis2Type_Int32:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis3Type_Int32:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Axis4Type_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
@@ -457,6 +579,32 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
     logger_->Log(msg.c_str());
 
     switch (prop) {
+    // General properties that apply to all device classes
+    case vr::Prop_HardwareRevision_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_FirmwareVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_FPGAVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_VRCVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_RadioVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DongleVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    // Properties that are unique to TrackedDeviceClass_HMD
     case vr::Prop_CurrentUniverseId_Uint64: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -465,6 +613,31 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
+    case vr::Prop_DisplayFirmwareVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_CameraFirmwareVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayFPGAVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayBootloaderVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayHardwareVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_AudioFirmwareVersion_Uint64:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    // Properties that are unique to TrackedDeviceClass_Controller
     case vr::Prop_SupportedButtons_Uint64: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -509,7 +682,13 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
     logger_->Log(msg.c_str());
 
     switch (prop) {
-    case vr::Prop_StatusDisplayTransform_Matrix34: // TODO
+    // General properties that apply to all device classes
+    case vr::Prop_StatusDisplayTransform_Matrix34:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    // Properties that are unique to TrackedDeviceClass_HMD
+    case vr::Prop_CameraToHeadTransform_Matrix34:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
@@ -571,6 +750,7 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
 #include "ignore-warning/switch-enum"
 
     switch (prop) {
+    // General properties that apply to all device classes
     case vr::Prop_TrackingSystemName_String: // TODO
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -611,6 +791,9 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
+    // Properties that are unique to TrackedDeviceClass_HMD
+    // Properties that are unique to TrackedDeviceClass_Controller
+    // Properties that are unique to TrackedDeviceClass_TrackingReference
     }
 
 #include "ignore-warning/pop"
