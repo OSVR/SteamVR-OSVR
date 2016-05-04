@@ -18,12 +18,6 @@ list(APPEND CMAKE_PREFIX_PATH
 include(EnableExtraCompilerWarnings)
 globally_enable_extra_compiler_warnings()
 
-#
-# Configuration options
-#
-
-option(VERBOSE_LOGGING "Enables verbose logging (e.g., logging each property request)" OFF)
-
 
 #
 # Dependencies
@@ -52,18 +46,18 @@ add_subdirectory(vendor)
 # Default installation directories
 #
 
-# Set the default installation directories based on the current platform
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Library/Application Support/Steam/steamapps/common/SteamVR/")
-	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-		set(CMAKE_INSTALL_PREFIX "$ENV{ProgramFiles(x86)}/Steam/steamapps/common/SteamVR/")
-	elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.steam/steam/SteamApps/common/SteamVR/")
-	else()
-		message(WARNING "Unknown system type (not Windows, Linux, or OS X). Please file an issue at <https://github.com/OSVR/SteamVR-OSVR/issues> and report the operating system you're using.")
-	endif()
-endif()
+include(SteamVRPaths)
+message(STATUS "STEAMVR_RUNTIME_DIR = ${STEAMVR_RUNTIME_DIR}")
+message(STATUS "STEAMVR_LOG_DIR = ${STEAMVR_LOG_DIR}")
+message(STATUS "STEAMVR_CONFIG_DIR = ${STEAMVR_CONFIG_DIR}")
+message(STATUS "STEAMVR_DRIVER_DIR = ${STEAMVR_DRIVER_DIR}")
+
+# Configuration file destination
+install(FILES
+	osvr.json
+	DESTINATION
+	${STEAMVR_CONFIG_DIR}/osvr
+)
 
 
 #

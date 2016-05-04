@@ -21,6 +21,9 @@ set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX11_STANDARD_COMPILE_OPTION})
 check_cxx_source_compiles("#include <memory>\nint main(int, char**) { std::unique_ptr<int> i = std::make_unique<int>(0); }" OSVR_HAS_STD_MAKE_UNIQUE)
 configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_tests.h")
 
+include(PlatformDefinitions)
+define_platform_macros(OSVR)
+configure_file(osvr_platform.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_platform.h")
 
 # Disable 'lib' prefix on POSIX systems
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
@@ -50,18 +53,15 @@ target_compile_features(driver_osvr PRIVATE cxx_override)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
 endif()
-if(VERBOSE_LOGGING)
-	target_compile_definitions(driver_osvr PUBLIC VERBOSE_LOGGING=1)
-endif()
 
 install(TARGETS driver_osvr
-	DESTINATION "drivers/osvr/bin/${OPENVR_PLATFORM}")
+	DESTINATION "${STEAMVR_DRIVER_DIR}/osvr/bin/${STEAMVR_PLATFORM}")
 
 if(WIN32)
 	include(CopyImportedTarget)
 	foreach(target osvr::osvrClientKit osvr::osvrClient osvr::osvrCommon osvr::osvrUtil)
 		copy_imported_targets(${target}) # for use in build tree
-		install_imported_target(${target} DESTINATION "drivers/osvr/bin/${OPENVR_PLATFORM}") # in installed directory
+		install_imported_target(${target} DESTINATION "${STEAMVR_DRIVER_DIR}/osvr/bin/${STEAMVR_PLATFORM}") # in installed directory
 	endforeach()
 endif()
 
