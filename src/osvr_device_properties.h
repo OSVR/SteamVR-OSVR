@@ -52,6 +52,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
+    case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     // could be any type
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
@@ -124,6 +125,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
+    case vr::Prop_DriverVersion_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -175,6 +177,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
+    case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     // Int32
     case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
@@ -221,6 +224,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
+    case vr::Prop_DriverVersion_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -262,6 +266,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
+    case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -318,6 +323,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
+    case vr::Prop_DriverVersion_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -363,6 +369,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
+    case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -415,6 +422,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
+    case vr::Prop_DriverVersion_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -444,6 +452,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
+    case vr::Prop_DriverVersion_String:
     // could be any type
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
@@ -462,6 +471,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
+    case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -545,6 +555,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_HasCamera_Bool:
     case vr::Prop_ReportsTimeSinceVSync_Bool:
     case vr::Prop_IsOnDesktop_Bool:
+    case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -613,6 +624,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_CameraFirmwareDescription_String:
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
+    case vr::Prop_DriverVersion_String:
         return true;
     }
 
@@ -654,6 +666,8 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_Firmware_ProgrammingTarget_String:
     case vr::Prop_DeviceClass_Int32:
     case vr::Prop_HasCamera_Bool:
+    case vr::Prop_Firmware_ForceUpdateRequired_Bool:
+    case vr::Prop_DriverVersion_String:
         return false;
 
     // Properties that are unique to TrackedDeviceClass_HMD
