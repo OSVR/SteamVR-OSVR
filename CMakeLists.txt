@@ -19,6 +19,13 @@ include(EnableExtraCompilerWarnings)
 globally_enable_extra_compiler_warnings()
 
 #
+# Configuration options
+#
+
+option(VERBOSE_LOGGING "Enables verbose logging (e.g., logging each property request)" OFF)
+
+
+#
 # Dependencies
 #
 find_package(OpenVR REQUIRED)

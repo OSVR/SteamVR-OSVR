@@ -44,11 +44,14 @@ add_library(driver_osvr
 	ValveStrCpy.h
 )
 target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
-target_include_directories(driver_osvr PRIVATE ${OPENVR_INCLUDE_DIRS})
+target_include_directories(driver_osvr SYSTEM PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
+endif()
+if(VERBOSE_LOGGING)
+	target_compile_definitions(driver_osvr PUBLIC VERBOSE_LOGGING=1)
 endif()
 
 install(TARGETS driver_osvr
@@ -70,7 +73,7 @@ target_link_libraries(test_hmd_driver PRIVATE driver_osvr osvr::osvrClientKitCpp
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
 endif()
-target_include_directories(test_hmd_driver PRIVATE ${OPENVR_INCLUDE_DIRS})
+target_include_directories(test_hmd_driver SYSTEM PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
 target_compile_features(test_hmd_driver PRIVATE cxx_override)
 

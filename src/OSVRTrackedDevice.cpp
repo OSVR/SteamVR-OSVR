@@ -260,8 +260,10 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+#ifdef VERBOSE_LOGGING
     const std::string msg = "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
     logger_->Log(msg.c_str());
+#endif
 
     switch (prop) {
     // Properties that apply to all device classes
@@ -365,8 +367,10 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+#ifdef VERBOSE_LOGGING
     const std::string msg = "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
     logger_->Log(msg.c_str());
+#endif
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -490,8 +494,10 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+#ifdef VERBOSE_LOGGING
     const std::string msg = "OSVRTrackedDevice::GetInt32TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
     logger_->Log(msg.c_str());
+#endif
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -575,8 +581,10 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+#ifdef VERBOSE_LOGGING
     const std::string msg = "OSVRTrackedDevice::GetUint64TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
     logger_->Log(msg.c_str());
+#endif
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -678,8 +686,10 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
+#ifdef VERBOSE_LOGGING
     const std::string msg = "OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
     logger_->Log(msg.c_str());
+#endif
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -722,8 +732,10 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
         return default_value;
     }
 
+#ifdef VERBOSE_LOGGING
     const std::string msg = "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
     logger_->Log(msg.c_str());
+#endif
 
     std::string sValue = GetStringTrackedDeviceProperty(prop, pError);
     if (*pError == vr::TrackedProp_Success) {
