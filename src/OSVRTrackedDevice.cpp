@@ -55,8 +55,8 @@ OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osv
 
 OSVRTrackedDevice::~OSVRTrackedDevice()
 {
-    vr::IDriverLog* logger_ = nullptr;
-    vr::IServerDriverHost* driver_host_ = nullptr;
+    logger_ = nullptr;
+    driver_host_ = nullptr;
 }
 
 vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
