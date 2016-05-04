@@ -28,6 +28,7 @@
 #include "OSVRTrackedDevice.h"      // for OSVRTrackedDevice
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
+#include "osvr_platform.h"          // for OSVR_PATH_SEPARATOR
 
 // Library/third-party includes
 #include <openvr_driver.h>          // for everything in vr namespace
@@ -45,16 +46,17 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServer
 
     logger_->Log("ServerDriver_OSVR::Init() called.\n");
 
-    std::string msg = "user_driver_config_dir = " + std::string(user_driver_config_dir);
+    std::string msg = "user_driver_config_dir = " + std::string(user_driver_config_dir) + "\n";
     logger_->Log(msg.c_str());
 
-    msg = "driver_install_dir = " + std::string(driver_install_dir);
+    msg = "driver_install_dir = " + std::string(driver_install_dir) + "\n";
     logger_->Log(msg.c_str());
 
     context_ = std::make_unique<osvr::clientkit::ClientContext>("com.osvr.SteamVR");
 
+    const auto config_filename = std::string(user_driver_config_dir) + OSVR_PATH_SEPARATOR + "osvr.json";
     const std::string display_description = context_->getStringParameter("/display");
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), driver_host, logger_));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), driver_host, logger_, config_filename));
 
     return vr::VRInitError_None;
 }

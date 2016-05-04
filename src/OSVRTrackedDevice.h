@@ -41,7 +41,7 @@
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr, const std::string& config_file = "");
 
     virtual ~OSVRTrackedDevice();
     // ------------------------------------
@@ -192,6 +192,11 @@ private:
 
     float GetIPD();
 
+    /**
+     * Read configuration settings from configuration file.
+     */
+    void configure();
+
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
     osvr::clientkit::DisplayConfig m_DisplayConfig;
@@ -201,7 +206,10 @@ private:
     osvr::clientkit::Interface m_TrackerInterface;
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
+    std::string configFile_;
 
+    // Settings
+    bool verboseLogging_ = false;
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
