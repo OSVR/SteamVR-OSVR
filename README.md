@@ -1,3 +1,18 @@
+## Introduction
+This is a fork of the original SteamVR driver for OSVR. It is just an extension of the original driver for supporting the Hand-Controllers.
+
+I don't have the time to continue this for the moment.
+
+## Known Problems
+1. You can use it together with the Rift, but you need to activate multidriver support in SteamVR (there is a tutorial on this for the Hydra SteamVR drivers).
+2. The second hand controller is detected but the data is not send to SteamVR (the code is there, seems to be a bug)
+3. The touchpad is not implemented. (Most should work with the joysticks, so touchpad was not needed so far.)
+4. Left FGamepadKeyNames::MotionController_Left_Thumbstick(name from UE4 OSVR plugin) is not mapped to /controller/left/joystick/button (same for right one). But you can it as buttons mapped to e.g. /controller/left/5 .
+5. Same for FGamepadKeyNames::MotionController_Left_Shoulder(name from UE4 OSVR plugin) mapped to /controller/left/bumper
+6. And FGamepadKeyNames::SpecialLeft(name from UE4 OSVR plugin) /controller/left/middle
+
+Here is the original text:
+
 # SteamVR Driver Using OSVR
 
 [![Join the chat at https://gitter.im/OSVR/SteamVR-OSVR](https://badges.gitter.im/OSVR/SteamVR-OSVR.svg)](https://gitter.im/OSVR/SteamVR-OSVR?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)

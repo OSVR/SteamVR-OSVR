@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.1)
 #
 # OpenVR OSVR driver
 #
@@ -38,6 +39,8 @@ add_library(driver_osvr
 	osvr_dll_export.h
 	OSVRTrackedDevice.cpp
 	OSVRTrackedDevice.h
+	OSVRTrackedDeviceController.cpp
+	OSVRTrackedDeviceController.h
 	platform_fixes.h
 	ServerDriver_OSVR.cpp
 	ServerDriver_OSVR.h
@@ -58,7 +61,7 @@ install(TARGETS driver_osvr
 	DESTINATION "drivers/osvr/bin/${OPENVR_PLATFORM}")
 
 if(WIN32)
-	include(CopyImportedTarget)
+	include(../cmake/CopyImportedTarget.cmake)
 	foreach(target osvr::osvrClientKit osvr::osvrClient osvr::osvrCommon osvr::osvrUtil)
 		copy_imported_targets(${target}) # for use in build tree
 		install_imported_target(${target} DESTINATION "drivers/osvr/bin/${OPENVR_PLATFORM}") # in installed directory

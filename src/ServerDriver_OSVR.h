@@ -27,6 +27,7 @@
 
 // Internal Includes
 #include "OSVRTrackedDevice.h"          // for OSVRTrackedDevice
+#include "OSVRTrackedDeviceController.h"          // for OSVRTrackedDeviceController
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 
 // Library/third-party includes
@@ -115,6 +116,7 @@ public:
 
 private:
     std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
+	std::vector<std::unique_ptr<OSVRTrackedDeviceController>> trackedControllerDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
     vr::IDriverLog* logger_;
 };
