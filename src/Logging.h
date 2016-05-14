@@ -46,6 +46,11 @@ public:
     {
         // do nothing
     }
+
+    virtual ~NullLogger()
+    {
+        // do nothing
+    }
 };
 
 /**
@@ -93,6 +98,11 @@ protected:
 class NullLineLogger : public LineLogger {
 public:
     NullLineLogger(LogLevel severity, vr::IDriverLog* driver_log) : LineLogger(severity, driver_log)
+    {
+        // do nothing
+    }
+
+    virtual ~NullLineLogger()
     {
         // do nothing
     }

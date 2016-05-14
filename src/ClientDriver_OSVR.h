@@ -111,7 +111,6 @@ public:
     virtual uint32_t GetMCImage(uint32_t* img_width, uint32_t* img_height, uint32_t* channels, void* data_buffer, uint32_t buffer_len) OSVR_OVERRIDE;
 
 private:
-    vr::IDriverLog* logger_ = nullptr;
     vr::IClientDriverHost* driverHost_ = nullptr;
     std::string userDriverConfigDir_;
     std::string driverInstallDir_;
