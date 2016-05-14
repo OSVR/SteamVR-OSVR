@@ -54,8 +54,12 @@ if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
 endif()
 
+set(DRIVER_INSTALL_DIR "${CMAKE_INSTALL_FULL_BINDIR}/${STEAMVR_PLATFORM}")
 install(TARGETS driver_osvr
-	DESTINATION "${STEAMVR_DRIVER_DIR}/osvr/bin/${STEAMVR_PLATFORM}")
+	DESTINATION "${DRIVER_INSTALL_DIR}")
+
+# Tell SteamVR where to find our driver
+install(CODE "execute_process(COMMAND \"${VRPATHREG}\" adddriver \"${DRIVER_INSTALL_DIR}\")")
 
 if(WIN32)
 	include(CopyImportedTarget)

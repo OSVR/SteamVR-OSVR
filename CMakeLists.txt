@@ -46,11 +46,8 @@ add_subdirectory(vendor)
 # Default installation directories
 #
 
+include(GNUInstallDirs)
 include(SteamVRPaths)
-message(STATUS "STEAMVR_RUNTIME_DIR = ${STEAMVR_RUNTIME_DIR}")
-message(STATUS "STEAMVR_LOG_DIR = ${STEAMVR_LOG_DIR}")
-message(STATUS "STEAMVR_CONFIG_DIR = ${STEAMVR_CONFIG_DIR}")
-message(STATUS "STEAMVR_DRIVER_DIR = ${STEAMVR_DRIVER_DIR}")
 
 # Configuration file destination
 #install(FILES
