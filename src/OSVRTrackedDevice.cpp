@@ -24,6 +24,7 @@
 
 // Internal Includes
 #include "OSVRTrackedDevice.h"
+#include "Logging.h"
 
 #include "osvr_compiler_detection.h"
 #include "make_unique.h"
@@ -51,15 +52,17 @@
 #include <fstream>
 
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
     settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
+    if (driver_log) {
+        Logging::instance().setDriverLog(driver_log);
+    }
     configure();
 }
 
 OSVRTrackedDevice::~OSVRTrackedDevice()
 {
-    logger_ = nullptr;
     driver_host_ = nullptr;
 }
 
@@ -73,12 +76,12 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     }
 
     // Ensure context is fully started up
-    logger_->Log("Waiting for the context to fully start up...\n");
+    OSVR_LOG(trace) << "Waiting for the context to fully start up...\n";
     std::time_t startTime = std::time(nullptr);
     while (!m_Context.checkStatus()) {
         m_Context.update();
         if (std::time(nullptr) > startTime + waitTime) {
-            logger_->Log("Context startup timed out!\n");
+            OSVR_LOG(err) << "Context startup timed out!\n";
             return vr::VRInitError_Driver_Failed;
         }
     }
@@ -86,28 +89,28 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     m_DisplayConfig = osvr::clientkit::DisplayConfig(m_Context);
 
     // Ensure display is fully started up
-    logger_->Log("Waiting for the display to fully start up, including receiving initial pose update...\n");
+    OSVR_LOG(trace) << "Waiting for the display to fully start up, including receiving initial pose update...\n";
     startTime = std::time(nullptr);
     while (!m_DisplayConfig.checkStartup()) {
         m_Context.update();
         if (std::time(nullptr) > startTime + waitTime) {
-            logger_->Log("Display startup timed out!\n");
+            OSVR_LOG(err) << "Display startup timed out!\n";
             return vr::VRInitError_Driver_Failed;
         }
     }
 
     // Verify valid display config
     if ((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
-        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n");
+        OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n";
 
         if (m_DisplayConfig.getNumViewers() < 1) {
-            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least one viewer must exist.\n");
+            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least one viewer must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         } else if (m_DisplayConfig.getViewer(0).getNumEyes() < 2) {
-            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least two eyes must exist.\n");
+            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least two eyes must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         } else if ((m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
-            logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): At least one surface must exist for each eye.\n");
+            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least one surface must exist for each eye.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         }
     }
@@ -122,15 +125,14 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     // file, use an empty dictionary instead. This allows the render manager
     // config to zero out its values.
     if (configString.empty()) {
-        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Render Manager config is empty, using default values.\n");
+        OSVR_LOG(info) << "OSVRTrackedDevice::OSVRTrackedDevice(): Render Manager config is empty, using default values.\n";
         configString = "{}";
     }
 
     try {
         m_RenderManagerConfig.parse(configString);
     } catch(const std::exception& e) {
-        const std::string msg = "OSVRTrackedDevice::OSVRTrackedDevice(): Exception parsing Render Manager config: " + std::string(e.what()) + "\n";
-        logger_->Log(msg.c_str());
+        OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
     return vr::VRInitError_None;
@@ -169,7 +171,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
 {
     int nDisplays = m_DisplayConfig.getNumDisplayInputs();
     if (nDisplays != 1) {
-        logger_->Log("OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!\n");
+        OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!\n";
     }
     osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
     *x = m_RenderManagerConfig.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
@@ -264,10 +266,7 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    if (verboseLogging_) {
-        const std::string msg = "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
-        logger_->Log(msg.c_str());
-    }
+    OSVR_LOG(trace) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // Properties that apply to all device classes
@@ -371,10 +370,7 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    if (verboseLogging_) {
-        const std::string msg = "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
-        logger_->Log(msg.c_str());
-    }
+    OSVR_LOG(trace) << "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -498,10 +494,7 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    if (verboseLogging_) {
-        const std::string msg = "OSVRTrackedDevice::GetInt32TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
-        logger_->Log(msg.c_str());
-    }
+    OSVR_LOG(trace) << "OSVRTrackedDevice::GetInt32TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -585,10 +578,7 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    if (verboseLogging_) {
-        const std::string msg = "OSVRTrackedDevice::GetUint64TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
-        logger_->Log(msg.c_str());
-    }
+    OSVR_LOG(trace) << "OSVRTrackedDevice::GetUint64TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -690,10 +680,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    if (verboseLogging_) {
-        const std::string msg = "OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
-        logger_->Log(msg.c_str());
-    }
+    OSVR_LOG(trace) << "OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -736,10 +723,7 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
         return default_value;
     }
 
-    if (verboseLogging_) {
-        const std::string msg = "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " + std::to_string(prop) + "\n";
-        logger_->Log(msg.c_str());
-    }
+    OSVR_LOG(trace) << "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     std::string sValue = GetStringTrackedDeviceProperty(prop, pError);
     if (*pError == vr::TrackedProp_Success) {
@@ -864,11 +848,11 @@ float OSVRTrackedDevice::GetIPD()
     OSVR_Pose3 leftEye, rightEye;
 
     if (m_DisplayConfig.getViewer(0).getEye(0).getPose(leftEye) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!\n");
+        OSVR_LOG(err) << "OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!\n";
     }
 
     if (m_DisplayConfig.getViewer(0).getEye(1).getPose(rightEye) != true) {
-        logger_->Log("OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n");
+        OSVR_LOG(err) << "OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n";
     }
 
     return (osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm();

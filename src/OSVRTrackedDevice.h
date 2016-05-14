@@ -204,7 +204,6 @@ private:
     osvr::clientkit::DisplayConfig m_DisplayConfig;
     osvr::client::RenderManagerConfig m_RenderManagerConfig;
     vr::IServerDriverHost* driver_host_ = nullptr;
-    vr::IDriverLog* logger_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
