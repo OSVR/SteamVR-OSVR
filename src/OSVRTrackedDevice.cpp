@@ -613,14 +613,14 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     // Properties that are unique to TrackedDeviceClass_HMD
-    case vr::Prop_CurrentUniverseId_Uint64: // TODO
+    case vr::Prop_CurrentUniverseId_Uint64:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_PreviousUniverseId_Uint64: // TODO
+            *error = vr::TrackedProp_Success;
+        return 0;
+    case vr::Prop_PreviousUniverseId_Uint64:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return 0;
     case vr::Prop_DisplayFirmwareVersion_Uint64:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
