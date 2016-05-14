@@ -24,6 +24,7 @@
 
 // Internal Includes
 #include "ClientDriver_OSVR.h"
+#include "make_unique.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
@@ -37,6 +38,7 @@ vr::EVRInitError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClient
     driverHost_ = driver_host;
     userDriverConfigDir_ = user_driver_config_dir;
     driverInstallDir_ = driver_install_dir;
+    settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
 
     // TODO ?
 
@@ -49,6 +51,7 @@ void ClientDriver_OSVR::Cleanup()
     driverHost_ = nullptr;
     userDriverConfigDir_.clear();
     driverInstallDir_.clear();
+    settings_.reset();
 }
 
 bool ClientDriver_OSVR::BIsHmdPresent(const char* user_config_dir)

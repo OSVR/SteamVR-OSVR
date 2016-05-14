@@ -31,6 +31,7 @@
 #include "osvr_device_properties.h"
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
+#include "make_unique.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -40,8 +41,6 @@
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>
-#include <json/value.h>
-#include <json/reader.h>
 
 // Standard includes
 #include <cstring>
@@ -52,8 +51,9 @@
 #include <fstream>
 
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log, const std::string& config_file) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD), configFile_(config_file)
+OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), logger_(driver_log), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
+    settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
     configure();
 }
 
@@ -152,7 +152,7 @@ void OSVRTrackedDevice::PowerOff()
 void* OSVRTrackedDevice::GetComponent(const char* component_name_and_version)
 {
     if (!strcasecmp(component_name_and_version, vr::IVRDisplayComponent_Version)) {
-        return (vr::IVRDisplayComponent*)this;
+        return static_cast<vr::IVRDisplayComponent*>(this);
     }
 
     // Override this to add a component to a driver
@@ -882,26 +882,7 @@ const char* OSVRTrackedDevice::GetId()
 
 void OSVRTrackedDevice::configure()
 {
-    std::ifstream config(configFile_);
-    if (!config.good()) {
-        const auto msg = "Failed to open configuration file [" + configFile_ + "]. Using default settings.";
-        logger_->Log(msg.c_str());
-    }
-
-    Json::Reader reader;
-    Json::Value root;
-
-    const bool parsing_successful = reader.parse(config, root);
-    if (!parsing_successful) {
-        const auto msg = "Error in parsing JSON: " + reader.getFormattedErrorMessages();
-        logger_->Log(msg.c_str());
-    }
-
     // Get settings from config file
-    if (root.isMember("verbose")) {
-        if (root["verbose"].isBool()) {
-            verboseLogging_ = root["verbose"].asBool();
-        }
-    }
+    verboseLogging_ = settings_->getSetting<bool>("verbose", false);
 }
 

@@ -27,12 +27,14 @@
 
 // Internal Includes
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
+#include "Settings.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
 
 // Standard includes
 #include <string>
+#include <memory>
 
 class ClientDriver_OSVR : public vr::IClientTrackedDeviceProvider {
 public:
@@ -113,6 +115,7 @@ private:
     vr::IClientDriverHost* driverHost_ = nullptr;
     std::string userDriverConfigDir_;
     std::string driverInstallDir_;
+    std::unique_ptr<Settings> settings_;
 };
 
 #endif // INCLUDED_ClientDriver_OSVR_h_GUID_7C0E8547_F8CF_4186_B637_9488CD6E3663
