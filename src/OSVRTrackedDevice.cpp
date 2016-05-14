@@ -751,11 +751,11 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
 
     switch (prop) {
     // General properties that apply to all device classes
-    case vr::Prop_TrackingSystemName_String: // TODO
+    case vr::Prop_TrackingSystemName_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_ModelNumber_String: // TODO
+    case vr::Prop_ModelNumber_String:
         if (error)
             *error = vr::TrackedProp_Success;
         return "OSVR HMD";
@@ -763,23 +763,19 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
         if (error)
             *error = vr::TrackedProp_Success;
         return this->GetId();
-    case vr::Prop_RenderModelName_String: // TODO
+    case vr::Prop_RenderModelName_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_ManufacturerName_String: // TODO
+    case vr::Prop_ManufacturerName_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_TrackingFirmwareVersion_String: // TODO
+    case vr::Prop_TrackingFirmwareVersion_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_HardwareRevision_String: // TODO
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_AttachedDeviceId_String: // TODO
+    case vr::Prop_HardwareRevision_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
@@ -791,9 +787,54 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
+    case vr::Prop_Firmware_ManualUpdateURL_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_Firmware_ProgrammingTarget_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DriverVersion_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+
     // Properties that are unique to TrackedDeviceClass_HMD
+    case vr::Prop_DisplayMCImageLeft_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayMCImageRight_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_DisplayGCImage_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    case vr::Prop_CameraFirmwareDescription_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+
     // Properties that are unique to TrackedDeviceClass_Controller
+    case vr::Prop_AttachedDeviceId_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+
     // Properties that are unique to TrackedDeviceClass_TrackingReference
+    case vr::Prop_ModeLabel_String:
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+
+    default:
+        OSVR_LOG(warn) << "Unknown property " << prop << " requested.\n";
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
     }
 
 #include "ignore-warning/pop"
