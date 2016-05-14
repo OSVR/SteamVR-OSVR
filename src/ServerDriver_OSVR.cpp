@@ -26,6 +26,7 @@
 #include "ServerDriver_OSVR.h"
 
 #include "OSVRTrackedDevice.h"      // for OSVRTrackedDevice
+#include "OSVRTrackedDeviceController.h"      // for OSVRTrackedDeviceController
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
 
@@ -56,40 +57,47 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServer
     const std::string display_description = context_->getStringParameter("/display");
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), driver_host, logger_));
 
+	trackedControllerDevices_.emplace_back(std::make_unique<OSVRTrackedDeviceController>(0, *(context_.get()), driver_host, logger_));
+	trackedControllerDevices_.emplace_back(std::make_unique<OSVRTrackedDeviceController>(1, *(context_.get()), driver_host, logger_));
+
     return vr::VRInitError_None;
 }
 
 void ServerDriver_OSVR::Cleanup()
 {
     trackedDevices_.clear();
+	trackedControllerDevices_.clear();
     context_.reset();
 }
 
 uint32_t ServerDriver_OSVR::GetTrackedDeviceCount()
 {
-    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceCount(): Detected " + std::to_string(trackedDevices_.size()) + " tracked devices.\n";
-    logger_->Log(msg.c_str());
-    return trackedDevices_.size();
+	std::string msg = "ServerDriver_OSVR::GetTrackedDeviceCount(): Detected " + std::to_string(trackedDevices_.size() + trackedControllerDevices_.size()) + " tracked devices.\n";
+	logger_->Log(msg.c_str());
+	return trackedDevices_.size() + trackedControllerDevices_.size();
 }
 
 vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t index, const char* interface_version)
 {
-    if (0 != strcasecmp(interface_version, vr::ITrackedDeviceServerDriver_Version)) {
-        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
-        logger_->Log(msg.c_str());
-        return NULL;
-    }
+	if (0 != strcasecmp(interface_version, vr::ITrackedDeviceServerDriver_Version)) {
+		std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
+		logger_->Log(msg.c_str());
+		return NULL;
+	}
 
-    if (index >= trackedDevices_.size()) {
-        std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " + std::to_string(index) + " is out of range [0.." + std::to_string(trackedDevices_.size()) + "].\n";
-        logger_->Log(msg.c_str());
-        return NULL;
-    }
+	if (index >= trackedDevices_.size() + trackedControllerDevices_.size()) {
+		std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " + std::to_string(index) + " is out of range [0.." + std::to_string(trackedDevices_.size() + trackedControllerDevices_.size()) + "].\n";
+		logger_->Log(msg.c_str());
+		return NULL;
+	}
 
-    std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device " + std::to_string(index) + ".\n";
-    logger_->Log(msg.c_str());
+	std::string msg = "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device " + std::to_string(index) + ".\n";
+	logger_->Log(msg.c_str());
 
-    return trackedDevices_[index].get();
+	if (index >= trackedDevices_.size())
+		return trackedControllerDevices_[index - trackedDevices_.size()].get();
+
+	return trackedDevices_[index].get();
 }
 
 vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id, const char* interface_version)
@@ -107,6 +115,14 @@ vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const
             return tracked_device.get();
         }
     }
+
+	for (auto& tracked_device : trackedControllerDevices_) {
+		if (0 == std::strcmp(id, tracked_device->GetId())) {
+			std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " + std::string(id) + ".\n";
+			logger_->Log(msg.c_str());
+			return tracked_device.get();
+		}
+	}
 
     std::string msg = "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Failed to locate device named '" + std::string(id) + "'.\n";
     logger_->Log(msg.c_str());
