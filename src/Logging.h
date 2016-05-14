@@ -28,6 +28,7 @@
 
 // Internal Includes
 #include "make_unique.h"
+#include "pretty_print.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
