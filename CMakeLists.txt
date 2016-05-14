@@ -53,11 +53,11 @@ message(STATUS "STEAMVR_CONFIG_DIR = ${STEAMVR_CONFIG_DIR}")
 message(STATUS "STEAMVR_DRIVER_DIR = ${STEAMVR_DRIVER_DIR}")
 
 # Configuration file destination
-install(FILES
-	osvr.json
-	DESTINATION
-	${STEAMVR_CONFIG_DIR}/osvr
-)
+#install(FILES
+#	osvr.json
+#	DESTINATION
+#	${STEAMVR_CONFIG_DIR}/osvr
+#)
 
 
 #
