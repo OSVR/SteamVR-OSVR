@@ -82,9 +82,27 @@ public:
         return *this;
     }
 
-private:
+protected:
     LogLevel severity_ = LogLevel::info;
     vr::IDriverLog* driverLog_;
+};
+
+/**
+ * @brief A line logger that doesn't actually log anything.
+ */
+class NullLineLogger : public LineLogger {
+public:
+    NullLineLogger(LogLevel severity, vr::IDriverLog* driver_log) : LineLogger(severity, driver_log)
+    {
+        // do nothing
+    }
+
+    template <typename T>
+    LineLogger& operator<<(const T&)
+    {
+        // do nothing
+        return *this;
+    }
 };
 
 /**
@@ -105,31 +123,36 @@ public:
     Logging& operator=(Logging const&) = delete;  // Copy assign
     Logging& operator=(Logging &&) = delete;      // Move assign
 
-    // Any other public methods
     void setDriverLog(vr::IDriverLog* driver_log)
     {
         driverLog_ = driver_log;
     }
 
+    void setLogLevel(LogLevel severity)
+    {
+        severity_ = severity;
+    }
+
+    LogLevel getLogLevel() const
+    {
+        return severity_;
+    }
+
     LineLogger log(LogLevel severity)
     {
-        LineLogger logger(severity, driverLog_);
-        return logger;
+        if (severity >= severity_) {
+            LineLogger logger(severity, driverLog_);
+            return logger;
+        } else {
+            NullLineLogger logger(severity, driverLog_);
+            return logger;
+        }
     }
 
     template <typename T>
     LineLogger log(LogLevel severity, const T& msg)
     {
         return (log(severity) << msg);
-    }
-
-    template <typename T>
-    Logging& operator<<(const T& msg)
-    {
-        std::ostringstream oss;
-        oss << msg;
-        driverLog_->Log(msg.str().c_str());
-        return *this;
     }
 
 protected:
@@ -147,6 +170,7 @@ protected:
 
     std::unique_ptr<NullLogger> nullLogger_;
     vr::IDriverLog* driverLog_;
+    LogLevel severity_ = LogLevel::info;
 };
 
 #define OSVR_LOG(x) Logging::instance().log(x)

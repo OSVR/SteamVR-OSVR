@@ -867,6 +867,12 @@ const char* OSVRTrackedDevice::GetId()
 void OSVRTrackedDevice::configure()
 {
     // Get settings from config file
-    verboseLogging_ = settings_->getSetting<bool>("verbose", false);
+    const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
+
+    if (verbose_logging) {
+        Logging::instance().setLogLevel(trace);
+    } else {
+        Logging::instance().setLogLevel(info);
+    }
 }
 
