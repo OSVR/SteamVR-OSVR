@@ -340,6 +340,7 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 
 #include "ignore-warning/pop"
 
+    OSVR_LOG(warn) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
@@ -464,6 +465,7 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
 
 #include "ignore-warning/pop"
 
+    OSVR_LOG(warn) << "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
@@ -548,6 +550,7 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
 
 #include "ignore-warning/pop"
 
+    OSVR_LOG(warn) << "OSVRTrackedDevice::GetInt32TrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
@@ -648,6 +651,7 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
 
 #include "ignore-warning/pop"
 
+    OSVR_LOG(warn) << "OSVRTrackedDevice::GetUint64TrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
@@ -697,6 +701,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
 
 #include "ignore-warning/pop"
 
+    OSVR_LOG(warn) << "OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
@@ -723,7 +728,7 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
         return default_value;
     }
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(trace) << "OSVRTrackedDevice::GetStringTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     std::string sValue = GetStringTrackedDeviceProperty(prop, pError);
     if (*pError == vr::TrackedProp_Success) {
@@ -830,15 +835,11 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
 
-    default:
-        OSVR_LOG(warn) << "Unknown property " << prop << " requested.\n";
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
     }
 
 #include "ignore-warning/pop"
 
+    OSVR_LOG(warn) << "OSVRTrackedDevice::GetStringTrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
     if (error)
         *error = vr::TrackedProp_UnknownProperty;
     return default_value;
