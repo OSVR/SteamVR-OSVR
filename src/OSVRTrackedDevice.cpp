@@ -130,6 +130,9 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     }
 
     return vr::VRInitError_None;
+    
+        /// @fixme figure out ID correctly, don't hardcode to zero
+    driver_host_->ProximitySensorState(0, true);
 }
 
 void OSVRTrackedDevice::Deactivate()
@@ -305,7 +308,7 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
     case vr::Prop_ContainsProximitySensor_Bool:
         if (error)
             *error = vr::TrackedProp_Success;
-        return false;
+        return true;
         break;
     case vr::Prop_DeviceProvidesBatteryStatus_Bool:
         if (error)
