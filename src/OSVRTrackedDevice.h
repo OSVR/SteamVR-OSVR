@@ -37,7 +37,10 @@
 
 // Standard includes
 #include <string>
+
+#ifdef _WINDOWS
 #include <dxgi.h>
+#endif
 
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
