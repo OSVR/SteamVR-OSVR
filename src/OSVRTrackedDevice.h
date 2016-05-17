@@ -37,6 +37,7 @@
 
 // Standard includes
 #include <string>
+#include <dxgi.h>
 
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
@@ -180,6 +181,12 @@ public:
 
 protected:
     const char* GetId();
+
+#ifdef _WINDOWS
+	// Copyright Razer LLC 2016
+	// Note: Need a general cross platform solution. This may be something that needs to be subsumed into the server functionality
+	bool findHMDMonitor(const char *HMDName, DXGI_OUTPUT_DESC *pOutputDesc);
+#endif
 
 private:
     std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);

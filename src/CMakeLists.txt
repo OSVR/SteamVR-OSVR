@@ -43,7 +43,13 @@ add_library(driver_osvr
 	ServerDriver_OSVR.h
 	ValveStrCpy.h
 )
+
+if (WIN32)
+target_link_libraries(driver_osvr PRIVATE dxgi osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+else()
 target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+endif()
+
 target_include_directories(driver_osvr SYSTEM PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
