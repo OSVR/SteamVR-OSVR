@@ -129,10 +129,11 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
         logger_->Log(msg.c_str());
     }
 
-    return vr::VRInitError_None;
-    
         /// @fixme figure out ID correctly, don't hardcode to zero
     driver_host_->ProximitySensorState(0, true);
+    
+    return vr::VRInitError_None;
+    
 }
 
 void OSVRTrackedDevice::Deactivate()
