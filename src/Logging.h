@@ -81,28 +81,20 @@ public:
     ~LineLogger()
     {
         // Log the queued message
-        driverLog_->Log(stream_->str().c_str());
-    }
-
-    LineLogger(LineLogger&& other)
-    {
-        using std::swap;
-        severity_ = other.severity_;
-        driverLog_ = other.driverLog_;
-        swap(stream_, other.stream_);
+        driverLog_->Log(stream_.str().c_str());
     }
 
     template <typename T>
     LineLogger& operator<<(const T& msg)
     {
-        *stream_ << msg;
+        stream_ << msg;
         return *this;
     }
 
 protected:
     LogLevel severity_ = LogLevel::info;
     vr::IDriverLog* driverLog_;
-    std::unique_ptr<std::ostringstream> stream_;
+    std::ostringstream stream_;
 };
 
 /**
@@ -173,7 +165,7 @@ public:
     }
 
     template <typename T>
-    LineLogger log(LogLevel severity, const T& msg)
+    LineLogger& log(LogLevel severity, const T& msg)
     {
         return (log(severity) << msg);
     }
