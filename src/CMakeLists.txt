@@ -32,6 +32,13 @@ add_library(driver_osvr
 	SHARED
 	ClientDriver_OSVR.cpp
 	ClientDriver_OSVR.h
+	Logging.h
+	OSVRTrackedDevice.cpp
+	OSVRTrackedDevice.h
+	ServerDriver_OSVR.cpp
+	ServerDriver_OSVR.h
+	Settings.h
+	ValveStrCpy.h
 	driver_osvr.cpp
 	driver_osvr.h
 	identity.h
@@ -39,12 +46,8 @@ add_library(driver_osvr
 	matrix_cast.h
 	osvr_device_properties.h
 	osvr_dll_export.h
-	OSVRTrackedDevice.cpp
-	OSVRTrackedDevice.h
 	platform_fixes.h
-	ServerDriver_OSVR.cpp
-	ServerDriver_OSVR.h
-	ValveStrCpy.h
+	pretty_print.h
 )
 target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
 target_include_directories(driver_osvr SYSTEM PRIVATE ${OPENVR_INCLUDE_DIRS})
