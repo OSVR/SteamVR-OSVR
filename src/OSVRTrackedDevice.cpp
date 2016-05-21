@@ -912,8 +912,10 @@ void OSVRTrackedDevice::configure()
     const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
 
     if (verbose_logging) {
+        OSVR_LOG(info) << "Verbose logging enabled.";
         Logging::instance().setLogLevel(trace);
     } else {
+        OSVR_LOG(info) << "Verbose logging disabled.";
         Logging::instance().setLogLevel(info);
     }
 }
