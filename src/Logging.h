@@ -73,7 +73,7 @@ enum LogLevel {
  */
 class LineLogger {
 public:
-    LineLogger(LogLevel severity, vr::IDriverLog* driver_log) : severity_(severity), driverLog_(driver_log)
+    LineLogger(LogLevel severity, vr::IDriverLog* driver_log) : severity_(severity), driverLog_(driver_log), message_()
     {
         // do nothing
     }
@@ -81,20 +81,32 @@ public:
     ~LineLogger()
     {
         // Log the queued message
-        driverLog_->Log(stream_.str().c_str());
+        if (message_.empty()) {
+            driverLog_->Log("\n");
+        } else {
+            if (message_.at(message_.size() - 1) != '\n')
+                message_ += "\n";
+            driverLog_->Log(message_.c_str());
+        }
+    }
+
+    LineLogger& operator<<(const char msg[])
+    {
+        message_ += msg;
+        return *this;
     }
 
     template <typename T>
-    LineLogger& operator<<(const T& msg)
+    LineLogger& operator<<(T&& msg)
     {
-        stream_ << msg;
+        message_ += to_string(std::forward<T>(msg));
         return *this;
     }
 
 protected:
     LogLevel severity_ = LogLevel::info;
     vr::IDriverLog* driverLog_;
-    std::ostringstream stream_;
+    std::string message_;
 };
 
 /**
@@ -153,19 +165,17 @@ public:
         return severity_;
     }
 
-    LineLogger& log(LogLevel severity)
+    LineLogger log(LogLevel severity)
     {
         if (severity >= severity_) {
-            LineLogger logger(severity, driverLog_);
-            return logger;
+            return LineLogger{ severity, driverLog_ };
         } else {
-            NullLineLogger logger(severity, driverLog_);
-            return logger;
+            return NullLineLogger{ severity, driverLog_ };
         }
     }
 
     template <typename T>
-    LineLogger& log(LogLevel severity, const T& msg)
+    LineLogger log(LogLevel severity, const T& msg)
     {
         return (log(severity) << msg);
     }

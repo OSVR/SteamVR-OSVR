@@ -36,6 +36,16 @@
 #include <ostream>
 #include <sstream>
 
+using std::to_string;
+
+/**
+ * Simple loopback to make to_string more generic.
+ */
+inline std::string to_string(const std::string& str)
+{
+    return str;
+}
+
 inline std::string to_string(const vr::ETrackedDeviceProperty& value)
 {
     switch (value) {
