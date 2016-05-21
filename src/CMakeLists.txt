@@ -57,19 +57,20 @@ if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
 endif()
 
-file(TO_NATIVE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr" DRIVER_ROOT_DIR)
-file(TO_NATIVE_PATH "${DRIVER_ROOT_DIR}/bin/${STEAMVR_PLATFORM}" DRIVER_INSTALL_DIR)
+file(TO_CMAKE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/bin/${STEAMVR_PLATFORM}" DRIVER_INSTALL_DIR)
 install(TARGETS driver_osvr
 	DESTINATION "${DRIVER_INSTALL_DIR}")
 
 # Tell SteamVR where to find our driver
+file(TO_NATIVE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr" DRIVER_ROOT_DIR)
+string(REPLACE "\\" "\\\\" DRIVER_ROOT_DIR "${DRIVER_ROOT_DIR}")
 install(CODE "execute_process(COMMAND \"${VRPATHREG}\" adddriver \"${DRIVER_ROOT_DIR}\")")
 
 if(WIN32)
 	include(CopyImportedTarget)
 	foreach(target osvr::osvrClientKit osvr::osvrClient osvr::osvrCommon osvr::osvrUtil)
 		copy_imported_targets(${target}) # for use in build tree
-		install_imported_target(${target} DESTINATION "${STEAMVR_DRIVER_DIR}/osvr/bin/${STEAMVR_PLATFORM}") # in installed directory
+		install_imported_target(${target} DESTINATION "${DRIVER_INSTALL_DIR}") # in installed directory
 	endforeach()
 endif()
 
