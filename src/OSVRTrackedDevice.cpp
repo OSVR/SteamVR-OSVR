@@ -138,6 +138,7 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     /// @fixme figure out ID correctly, don't hardcode to zero
     driver_host_->ProximitySensorState(0, true);
 
+    OSVR_LOG(trace) << "OSVRTrackedDevice::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
 }
 
@@ -170,6 +171,82 @@ void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer,
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
 }
 
+#ifdef _WINDOWS
+// Copyright Razer LLC 2016
+// Note: Need a general cross platform solution. This may be something that needs to be subsumed into the server functionality
+bool OSVRTrackedDevice::findHMDMonitor(const char *HMDName, DXGI_OUTPUT_DESC *pOutputDesc){
+	IDXGIFactory * pFactory;
+	HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&pFactory));
+
+	IDXGIAdapter *pAdapter;
+	IDXGIOutput *pOutput;
+
+	bool found = false;
+
+	DISPLAY_DEVICE adapterDevice, monitorDevice;
+
+	// Setup adapter data structure
+	memset(&adapterDevice, 0, sizeof(DISPLAY_DEVICE));
+	adapterDevice.cb = sizeof(adapterDevice);
+
+	// setup up monitor data structure
+	memset(&monitorDevice, 0, sizeof(DISPLAY_DEVICE));
+	monitorDevice.cb = sizeof(monitorDevice);
+
+	int i = 0;
+	int adapterIndex = 0;
+	int monitorIndex = 0;
+	char deviceString[256];
+
+	while (EnumDisplayDevices(NULL, i, &adapterDevice, 0))
+	{
+
+#ifdef VERBOSE_LOGGING
+		{const std::string msg = "OSVRTrackedDevice::findHMDMonitor(" + std::string(HMDName) + ",...): Adapter Name: " + adapterDevice.DeviceName +
+			" Adapter String: " + adapterDevice.DeviceString + "\n";
+		logger_->Log(msg.c_str()); }
+#endif
+		if (EnumDisplayDevices(adapterDevice.DeviceName, 0, &monitorDevice, 0)) // 
+		{
+
+#ifdef VERBOSE_LOGGING
+			{const std::string msg = "OSVRTrackedDevice::findHMDMonitor(" + std::string(HMDName) + ",...): Monitor Name: " + monitorDevice.DeviceName + 
+				" Monitor String: " + monitorDevice.DeviceString + 
+				" Monitor DeviceID: " + monitorDevice.DeviceID + 
+				" Monitor State: " + std::to_string(monitorDevice.StateFlags) + "\n" ;
+			logger_->Log(msg.c_str());}
+#endif
+			sprintf_s(deviceString, "%s", monitorDevice.DeviceString);
+			if (strstr(deviceString, HMDName)){
+				if (pFactory->EnumAdapters(adapterIndex, &pAdapter) != DXGI_ERROR_NOT_FOUND){
+					if (pAdapter->EnumOutputs(monitorIndex, &pOutput) != DXGI_ERROR_NOT_FOUND)
+					{
+						pOutput->GetDesc(pOutputDesc);
+#ifdef VERBOSE_LOGGING
+						{const std::string msg = "OSVRTrackedDevice::findHMDMonitor(" + std::string(HMDName) + 
+							" FOUND!!! monitorIndex: " + std::to_string(monitorIndex) + "\n";
+						logger_->Log(msg.c_str());}
+#endif
+						found = true;
+						return found;
+					}
+				}
+			}
+			else // we didn't find the right card yet
+			{
+				monitorIndex++;
+			}
+		}
+		else {
+			adapterIndex++; // move to next adapter
+			monitorIndex = 0; // reset displayIndex 
+		}
+		i++;
+	}
+	return found; // should be false
+}
+#endif
+
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
 {
     int nDisplays = m_DisplayConfig.getNumDisplayInputs();
@@ -181,12 +258,40 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     *y = m_RenderManagerConfig.getWindowYPosition();
     *width = displayDims.width;
     *height = displayDims.height;
+
+#ifdef _WINDOWS
+	// Copyright Razer LLC 2016
+	// Note: Need a general cross platform solution. This may be something that needs to be subsumed into the server functionality
+	DXGI_OUTPUT_DESC pOutputDesc;
+
+	// NAME OF HMD IS HARDCODED...THIS SHOULD BE PASSED IN VIA RENDERMANAGERCONFIG
+	if (findHMDMonitor("OSVR", &pOutputDesc)){
+		*x = pOutputDesc.DesktopCoordinates.left;
+		*y = pOutputDesc.DesktopCoordinates.top;
+		*height = pOutputDesc.DesktopCoordinates.bottom - pOutputDesc.DesktopCoordinates.top;
+		*width = pOutputDesc.DesktopCoordinates.right - pOutputDesc.DesktopCoordinates.left;
+	}
+		{const std::string msg = "OSVRTrackedDevice::GetWindowBounds(): x: " + std::to_string(*x) +
+			" y: " + std::to_string(*y) +
+			" height: " + std::to_string(*height) +
+			" width: " + std::to_string(*width) + "\n";
+		logger_->Log(msg.c_str()); }
+#endif
 }
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
 {
-    // TODO get this info from display description?
-    return true;
+	bool onDesktop = true;
+
+#ifdef _WINDOWS
+	DXGI_OUTPUT_DESC pOutputDesc;
+	if (findHMDMonitor("OSVR", &pOutputDesc))
+		onDesktop = pOutputDesc.AttachedToDesktop;
+	{const std::string msg = "OSVRTrackedDevice::IsDisplayOnDesktop(): " + std::to_string(onDesktop) + "\n";
+	logger_->Log(msg.c_str()); }
+#endif
+
+	return onDesktop;
 }
 
 bool OSVRTrackedDevice::IsDisplayRealDisplay()
@@ -198,12 +303,14 @@ bool OSVRTrackedDevice::IsDisplayRealDisplay()
 void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
     /// @todo calculate overfill factor properly
-    double overfillFactor = 1.0;
+	double overfillFactor = 1.0;
     int32_t x, y;
     uint32_t w, h;
     GetWindowBounds(&x, &y, &w, &h);
-    *width = w * overfillFactor;
-    *height = h * overfillFactor;
+
+	// conversion to avoid compiler warnings
+    *width = uint32_t(w * overfillFactor);
+	*height = uint32_t(h * overfillFactor);
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
@@ -336,8 +443,8 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
         break;
     case vr::Prop_IsOnDesktop_Bool: // TODO
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+			*error = vr::TrackedProp_Success;
+        return this->IsDisplayOnDesktop();
         break;
     }
 
@@ -388,9 +495,12 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     case vr::Prop_DisplayFrequency_Float: // TODO
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+		// Copyright Razer LLC 2016
+		// HARDCODED
+		// This needs to be read from the Render Manager Config
+		if (error)
+			*error = vr::TrackedProp_Success;
+        return 60.0;
     case vr::Prop_UserIpdMeters_Float:
         if (error)
             *error = vr::TrackedProp_Success;
@@ -512,14 +622,19 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
+
+	// Copyright Razer LLC 2016
+	// Note: Currently hardcoded and needs to be returned from the server
     case vr::Prop_EdidVendorID_Int32:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_EdidProductID_Int32:
+			*error = vr::TrackedProp_Success;
+		return (0xD24E);
+	// Copyright Razer LLC 2016
+	// Note: Currently hardcoded and needs to be returned from the server
+	case vr::Prop_EdidProductID_Int32:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+			*error = vr::TrackedProp_Success;
+        return (0x1019);
     case vr::Prop_DisplayGCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -622,9 +737,12 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
             *error = vr::TrackedProp_Success;
         return 0;
     case vr::Prop_DisplayFirmwareVersion_Uint64:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+		// Copyright Razer LLC 2016
+		// HARDCODED...
+		// This really should be read from the server
+		if (error)
+			*error = vr::TrackedProp_Success;
+        return 192;
     case vr::Prop_CameraFirmwareVersion_Uint64:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
