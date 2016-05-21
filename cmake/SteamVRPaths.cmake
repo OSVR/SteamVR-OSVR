@@ -107,11 +107,19 @@ if(VRPATHREG)
 	)
 
 	if(_vrpathreg_result EQUAL 0)
+	    # Append a dummy path in case of null output
+		set(_vrpathreg_output "${_vrpathreg_output}\nDummy path = C:")
+
+		# Replace backslashes with slashes because a line ending in a backslash
+		# causes it to be concatenated with the following line in the list.
+		string(REGEX REPLACE "\\\\" "/" _vrpathreg_output "${_vrpathreg_output}")
+
 		# Turn output into CMake list (one line per item)
 		string(REGEX REPLACE "\n" ";" _vrpathreg_output_list "${_vrpathreg_output}")
+		list(LENGTH _vrpathreg_output_list _size)
 
 		# Parse list and set variables
-		foreach(_line ${_vrpathreg_output_list})
+		foreach(_line IN LISTS _vrpathreg_output_list)
 			string(REPLACE "path = " "" _line "${_line}")
 			string(FIND "${_line}" " " _pos)
 			if (_pos EQUAL -1)
@@ -122,6 +130,7 @@ if(VRPATHREG)
 			math(EXPR _pos "${_pos} + 1")
 			string(SUBSTRING "${_line}" ${_pos} -1 _path)
 			set(STEAMVR_${_name}_DIR "${_path}")
+			file(TO_CMAKE_PATH "${STEAMVR_${_name}_DIR}" STEAMVR_${_name}_DIR)
 		endforeach()
 	else()
 		_read_openvrpaths_file()
