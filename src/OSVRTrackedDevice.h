@@ -27,6 +27,7 @@
 
 // Internal Includes
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
+#include "Settings.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -37,6 +38,7 @@
 
 // Standard includes
 #include <string>
+#include <memory>
 
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
@@ -192,16 +194,23 @@ private:
 
     float GetIPD();
 
+    /**
+     * Read configuration settings from configuration file.
+     */
+    void configure();
+
     const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
     osvr::clientkit::DisplayConfig m_DisplayConfig;
     osvr::client::RenderManagerConfig m_RenderManagerConfig;
     vr::IServerDriverHost* driver_host_ = nullptr;
-    vr::IDriverLog* logger_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
+    std::unique_ptr<Settings> settings_;
 
+    // Settings
+    bool verboseLogging_ = false;
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
