@@ -101,16 +101,16 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 
     // Verify valid display config
     if ((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
-        OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n";
+        OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Unexpected display parameters!\n";
 
         if (m_DisplayConfig.getNumViewers() < 1) {
-            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least one viewer must exist.\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least one viewer must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         } else if (m_DisplayConfig.getViewer(0).getNumEyes() < 2) {
-            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least two eyes must exist.\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least two eyes must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         } else if ((m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
-            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least one surface must exist for each eye.\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least one surface must exist for each eye.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         }
     }
@@ -125,14 +125,14 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     // file, use an empty dictionary instead. This allows the render manager
     // config to zero out its values.
     if (configString.empty()) {
-        OSVR_LOG(info) << "OSVRTrackedDevice::OSVRTrackedDevice(): Render Manager config is empty, using default values.\n";
+        OSVR_LOG(info) << "OSVRTrackedDevice::Activate(): Render Manager config is empty, using default values.\n";
         configString = "{}";
     }
 
     try {
         m_RenderManagerConfig.parse(configString);
     } catch(const std::exception& e) {
-        OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Exception parsing Render Manager config: " << e.what() << "\n";
+        OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
     /// @fixme figure out ID correctly, don't hardcode to zero
