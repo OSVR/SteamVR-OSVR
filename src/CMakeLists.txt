@@ -50,10 +50,16 @@ add_library(driver_osvr
 	pretty_print.h
 )
 
+target_link_libraries(driver_osvr
+	PRIVATE
+	osvr::osvrClientKitCpp
+	eigen-headers
+	util-headers
+	jsoncpp_lib
+)
+
 if (WIN32)
-target_link_libraries(driver_osvr PRIVATE dxgi osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
-else()
-target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+	target_link_libraries(driver_osvr PRIVATE dxgi)
 endif()
 
 target_include_directories(driver_osvr SYSTEM PRIVATE ${OPENVR_INCLUDE_DIRS})
