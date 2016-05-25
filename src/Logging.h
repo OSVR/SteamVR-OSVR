@@ -81,13 +81,13 @@ public:
     ~LineLogger()
     {
         // Log the queued message
-        if (message_.empty()) {
-            driverLog_->Log("\n");
-        } else {
-            if (message_.at(message_.size() - 1) != '\n')
-                message_ += "\n";
-            driverLog_->Log(message_.c_str());
-        }
+        if (message_.empty())
+            return;
+
+        if (message_.at(message_.size() - 1) != '\n')
+            message_ += "\n";
+
+        driverLog_->Log(message_.c_str());
     }
 
     LineLogger& operator<<(const char msg[])
@@ -172,12 +172,6 @@ public:
         } else {
             return NullLineLogger{ severity, driverLog_ };
         }
-    }
-
-    template <typename T>
-    LineLogger log(LogLevel severity, const T& msg)
-    {
-        return (log(severity) << msg);
     }
 
 protected:
