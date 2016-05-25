@@ -18,6 +18,10 @@ list(APPEND CMAKE_PREFIX_PATH
 include(EnableExtraCompilerWarnings)
 globally_enable_extra_compiler_warnings()
 
+#
+# Options
+#
+option(BUILD_TESTS "Build test programs and unit tests." OFF)
 
 #
 # Dependencies
@@ -62,3 +66,9 @@ include(SteamVRPaths)
 #
 add_subdirectory(src)
 
+#
+# Tests
+#
+if(BUILD_TESTS)
+	add_subdirectory(test)
+endif()
