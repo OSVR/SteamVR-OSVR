@@ -34,6 +34,7 @@
 
 // Standard includes
 #include <string>
+#include <cstdint>
 
 namespace osvr {
 namespace display {
