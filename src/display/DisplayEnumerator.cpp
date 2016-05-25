@@ -1,5 +1,5 @@
 /** @file
-    @brief Header
+    @brief Implementations of getDisplays().
 
     @date 2016
 
@@ -24,39 +24,32 @@
 // limitations under the License.
 
 // Internal Includes
-#include "osvr_platform.h"
+#include "DisplayEnumerator.h"
+#include "Display.h"
 
 // Library/third-party includes
-// - none
+#include <osvr/Util/PlatformConfig.h>
 
 // Standard includes
-// - none
+#include <vector>
 
-// Platform-specific includes
 #if defined(OSVR_WINDOWS)
 #include "DisplayEnumerator_Windows.h"
 #elif defined(OSVR_LINUX)
-#include "DisplayEnumerator_Linux.cpp"
+#include "DisplayEnumerator_Linux.h"
 #elif defined(OSVR_MACOSX)
-#include "DisplayEnumerator_OSX.cpp"
-#endif
+#include "DisplayEnumerator_MacOSX.h"
+#else
+#error "getDisplays() not yet implemented for this platform!"
+namespace osvr {
+namespace display {
 
-// Return platform-specific implementations of DisplayEnumator.
-#if defined(OSVR_WINDOWS)
-DisplayEnumerator make_display_enumerator()
+std::vector<Display> getDisplays()
 {
-    return DisplayEnumerator_Windows();
+    return {};
 }
-#elif defined(OSVR_LINUX)
-DisplayEnumerator make_display_enumerator()
-{
-    return DisplayEnumerator_Linux();
-}
-#elif defined(OSVR_MACOSX)
-DisplayEnumerator make_display_enumerator()
-{
-    return DisplayEnumerator_OSX();
-}
-#endif
 
+} // namespace display
+} // namespace osvr
+#endif
 

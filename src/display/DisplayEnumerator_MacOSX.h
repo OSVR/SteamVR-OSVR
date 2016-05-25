@@ -1,5 +1,5 @@
 /** @file
-    @brief Linux-specific implementation of DisplayEnumerator.
+    @brief OS X-specific implementation of getDisplays().
 
     @date 2016
 
@@ -23,8 +23,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef INCLUDED_DisplayEnumerator_MacOSX_h_GUID_C1F03499_42F5_4CD5_AECF_F9CAFD07E99F
+#define INCLUDED_DisplayEnumerator_MacOSX_h_GUID_C1F03499_42F5_4CD5_AECF_F9CAFD07E99F
+
 // Internal Includes
 #include "DisplayEnumerator.h"
+#include "Display.h"
 
 // Library/third-party includes
 // - none
@@ -35,41 +39,13 @@
 namespace osvr {
 namespace display {
 
-DisplayEnumerator_Linux::DisplayEnumerator_Linux()
+std::vector<Display> getDisplays()
 {
-    // do nothing
-}
-
-DisplayEnumerator_Linux::~DisplayEnumerator_Linux()
-{
-    // do nothing
-}
-
-std::vector<Display> DisplayEnumerator_Linux::getDisplays()
-{
-    std::vector<Display> displays;
-#if 0
-    // TODO
-
-    char* display_name = nullptr;
-    Display* dpy = XOpenDisplay(display_name);
-    if (!dpy) {
-        // Unable to open display (XDisplayName(displayname))
-        return;
-    }
-
-    print_display_info(dpy);
-    for (i = 0; i < ScreenCount(dpy); i++) {
-        print_screen_info(dpy, i);
-    }
-
-    print_marked_extensions(dpy);
-
-    XCloseDisplay(dpy);
-#endif
-    return displays;
+    return {};
 }
 
 } // end namespace display
 } // end namespace osvr
+
+#endif // INCLUDED_DisplayEnumerator_MacOSX_h_GUID_C1F03499_42F5_4CD5_AECF_F9CAFD07E99F
 

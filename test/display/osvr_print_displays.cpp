@@ -48,8 +48,7 @@ inline std::string to_string(osvr::display::Rotation rotation)
 
 int main(int argc, char* argv[])
 {
-    auto display_enumerator = osvr::display::make_display_enumerator();
-    auto displays = display_enumerator.getDisplays();
+    auto displays = osvr::display::getDisplays();
 
     for (const auto& display : displays) {
         std::cout << "Display: " << display.name << std::endl;

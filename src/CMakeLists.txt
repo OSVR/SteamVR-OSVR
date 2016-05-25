@@ -25,6 +25,11 @@ include(PlatformDefinitions)
 define_platform_macros(OSVR)
 configure_file(osvr_platform.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_platform.h")
 
+#
+# Display detection and enumeration
+#
+add_subdirectory(display)
+
 # Disable 'lib' prefix on POSIX systems
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 

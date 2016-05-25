@@ -1,5 +1,5 @@
 /** @file
-    @brief Linux-specific implementation of DisplayEnumerator.
+    @brief Linux-specific implementation of getDisplays().
 
     @date 2016
 
@@ -28,6 +28,7 @@
 
 // Internal Includes
 #include "DisplayEnumerator.h"
+#include "Display.h"
 
 // Library/third-party includes
 // - none
@@ -38,19 +39,10 @@
 namespace osvr {
 namespace display {
 
-// Forward declarations
-class Display;
-
-class DisplayEnumerator_Linux : public DisplayEnumerator {
-public:
-    DisplayEnumerator_Linux();
-    virtual ~DisplayEnumerator_Linux();
-
-    std::vector<Display> getDisplays() OSVR_OVERRIDE;
-
-private:
-
-};
+std::vector<Display> getDisplays()
+{
+    return {};
+}
 
 } // end namespace display
 } // end namespace osvr
