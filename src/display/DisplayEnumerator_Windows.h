@@ -50,7 +50,7 @@ public:
     DisplayEnumerator_Windows();
     virtual ~DisplayEnumerator_Windows();
 
-    std::vector<Display> getDisplays() OSVR_OVERRIDE;
+    void update() OSVR_OVERRIDE;
 
 private:
     std::pair<UINT32, UINT32> getBufferSizes();
@@ -82,11 +82,6 @@ inline void DisplayEnumerator_Windows::update()
         const auto display = getDisplay(path, mode_info);
         displays_.emplace_back(display);
     }
-}
-
-inline std::vector<Display> DisplayEnumerator_Windows::getDisplayAdapters()
-{
-    return displays_;
 }
 
 inline std::pair<UINT32, UINT32> DisplayEnumerator_Windows::getBufferSizes(const UINT32 query_flags)

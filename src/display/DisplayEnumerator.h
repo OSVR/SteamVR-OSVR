@@ -40,14 +40,28 @@ namespace display {
 
 class DisplayEnumerator {
 public:
-    DisplayEnumerator();
+    DisplayEnumerator() : displays_()
+    {
+        // do nothing
+    }
+
     virtual ~DisplayEnumerator()
     {
         // do nothing
     }
 
-    virtual void update();
-    virtual std::vector<Display> getDisplays();
+    virtual void update()
+    {
+        // do nothing
+    }
+
+    virtual std::vector<Display> getDisplays()
+    {
+        return displays_;
+    }
+
+protected:
+    std::vector<Display> displays_;
 };
 
 DisplayEnumerator make_display_enumerator();
