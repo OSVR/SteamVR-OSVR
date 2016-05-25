@@ -211,7 +211,7 @@ bool OSVRTrackedDevice::findHMDMonitor(const char *HMDName, DXGI_OUTPUT_DESC *pO
                 IDXGIOutput* output;
                 if (adapter->EnumOutputs(monitor_index, &output) != DXGI_ERROR_NOT_FOUND) {
                     output->GetDesc(pOutputDesc);
-                    OSVR_LOG(debug) << "OSVRTrackedDevice::findHMDMonitor(" << HMDName + 
+                    OSVR_LOG(debug) << "OSVRTrackedDevice::findHMDMonitor(" << HMDName <<
                         " FOUND!!! monitor_index: " << std::to_string(monitor_index) << "\n";
                     found = true;
                     break;
