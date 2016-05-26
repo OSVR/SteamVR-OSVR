@@ -31,11 +31,15 @@
 #include "Display.h"
 
 // Library/third-party includes
-// - none
+#include <Windows.h>
 
 // Standard includes
 #include <vector>
 #include <utility>
+#include <iostream>
+#include <string>
+#include <codecvt>
+#include <locale>
 
 namespace osvr {
 namespace display {
@@ -44,6 +48,14 @@ using PathInfoList = std::vector<DISPLAYCONFIG_PATH_INFO>;
 using ModeInfoList = std::vector<DISPLAYCONFIG_MODE_INFO>;
 
 namespace {
+
+    // Forward declarations
+    std::pair<UINT32, UINT32> getBufferSizes(const UINT32 query_flags);
+    std::pair<PathInfoList, ModeInfoList> getDisplayInformation();
+    Display getDisplay(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info);
+    DisplayAdapter getDisplayAdapter(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info);
+    std::string getAdapterName(const DISPLAYCONFIG_PATH_INFO& path_info);
+    std::string to_string(const std::wstring& s);
 
     std::pair<UINT32, UINT32> getBufferSizes(const UINT32 query_flags)
     {
@@ -136,7 +148,7 @@ namespace {
     {
         // TODO
         Display display;
-        display.adapter = getAdapter(const DISPLAYCONFIG_PATH_INFO& path, mode_info);;
+        display.adapter = getDisplayAdapter(path_info, mode_info);
 
         return display;
     }
@@ -166,7 +178,13 @@ namespace {
         const auto ret = DisplayConfigGetDeviceInfo(&adapter_name.header);
         // TODO check ret value
 
-        return adapter_name.adapterDevicePath;
+        return to_string(adapter_name.adapterDevicePath);
+    }
+
+    std::string to_string(const std::wstring& s)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+        return converter.to_bytes(s);
     }
 
 } // end anonymous namespace
@@ -179,7 +197,7 @@ std::vector<Display> getDisplays()
     const auto info = getDisplayInformation();
 
     auto path_info = info.first;
-    auto mode_info = info.sescond;
+    auto mode_info = info.second;
 
     for (const auto& path : path_info) {
         const auto display = getDisplay(path, mode_info);
