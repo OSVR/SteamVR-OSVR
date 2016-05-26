@@ -149,6 +149,14 @@ namespace {
         // TODO
         Display display;
         display.adapter = getDisplayAdapter(path_info, mode_info);
+        display.name = "";
+        display.size = {0, 0};
+        display.position = {0, 0};
+        display.rotation = osvr::display::Rotation::Zero;
+        display.verticalRefreshRate = 0.0;
+        display.attachedToDesktop = true;
+        display.edidVendorId = 0x00;
+        display.edidProductId = 0x00;
 
         return display;
     }
