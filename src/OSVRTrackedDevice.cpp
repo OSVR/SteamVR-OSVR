@@ -34,6 +34,7 @@
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
 #include "osvr_platform.h"
+#include "display/DisplayEnumerator.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -172,64 +173,6 @@ void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer,
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
 }
 
-#ifdef OSVR_WINDOWS
-/// @todo Need a general cross platform solution. This may be something that needs to be subsumed into the server functionality
-bool OSVRTrackedDevice::findHMDMonitor(const char *HMDName, DXGI_OUTPUT_DESC *pOutputDesc)
-{
-    IDXGIFactory* factory;
-    HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&factory));
-    // TODO check hr result
-
-    int adapter_index = 0;
-    int monitor_index = 0;
-
-    DISPLAY_DEVICE adapter_device = {};
-    adapter_device.cb = sizeof(adapter_device);
-
-    DISPLAY_DEVICE monitor_device = {};
-    monitor_device.cb = sizeof(monitor_device);
-
-    bool found = false;
-    int i = 0;
-    while (EnumDisplayDevices(nullptr, i, &adapter_device, 0)) {
-        OSVR_LOG(debug) << "OSVRTrackedDevice::findHMDMonitor(" << HMDName << ",...): Adapter Name: " << adapter_device.DeviceName << " Adapter String: " << adapter_device.DeviceString << "\n";
-
-        if (EnumDisplayDevices(adapter_device.DeviceName, monitor_index, &monitor_device, 0)) {
-            OSVR_LOG(debug) << "OSVRTrackedDevice::findHMDMonitor(" << HMDName << ",...): Monitor Name: " << monitor_device.DeviceName <<
-                " Monitor String: " << monitor_device.DeviceString <<
-                " Monitor DeviceID: " << monitor_device.DeviceID <<
-                " Monitor State: " << monitor_device.StateFlags << "\n";
-            const std::string device_string = monitor_device.DeviceString;
-            if (device_string.find(HMDName) == std::string::npos) {
-                // We didn't find the right card yet
-                monitor_index++;
-                continue;
-            }
-
-            IDXGIAdapter* adapter;
-            if (factory->EnumAdapters(adapter_index, &adapter) != DXGI_ERROR_NOT_FOUND) {
-                IDXGIOutput* output;
-                if (adapter->EnumOutputs(monitor_index, &output) != DXGI_ERROR_NOT_FOUND) {
-                    output->GetDesc(pOutputDesc);
-                    OSVR_LOG(debug) << "OSVRTrackedDevice::findHMDMonitor(" << HMDName <<
-                        " FOUND!!! monitor_index: " << std::to_string(monitor_index) << "\n";
-                    found = true;
-                    break;
-                }
-            }
-        } else {
-            adapter_index++; // move to next adapter
-            monitor_index = 0; // reset index
-        }
-        i++;
-    }
-
-    factory->Release();
-
-    return found;
-}
-#endif
-
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
 {
     int nDisplays = m_DisplayConfig.getNumDisplayInputs();
@@ -243,38 +186,17 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     *height = displayDims.height;
 
 #ifdef OSVR_WINDOWS
-    /// @todo Need a general cross platform solution. This may be something that
-    /// needs to be subsumed into the server functionality
-    DXGI_OUTPUT_DESC pOutputDesc;
-
-    /// @todo Name of HMD is hard-coded...this should be passed in via
-    /// RenderManager config
-    if (findHMDMonitor("OSVR", &pOutputDesc)) {
-        *x = pOutputDesc.DesktopCoordinates.left;
-        *y = pOutputDesc.DesktopCoordinates.top;
-        *height = pOutputDesc.DesktopCoordinates.bottom - pOutputDesc.DesktopCoordinates.top;
-        *width = pOutputDesc.DesktopCoordinates.right - pOutputDesc.DesktopCoordinates.left;
-    }
-
-    OSVR_LOG(debug) << "OSVRTrackedDevice::GetWindowBounds():" <<
-        " x: " << *x <<
-        " y: " << *y <<
-        " height: " << *height <<
-        " width: " << *width << "\n";
+    // ... until we've added code for other platforms, this is Windows-only
+    *x = display_.position.x;
+    *y = display_.position.y;
+    *height = display_.size.height;
+    *width = display_.size.width;
 #endif
 }
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
 {
     bool on_desktop = true;
-
-#ifdef OSVR_WINDOWS
-    DXGI_OUTPUT_DESC pOutputDesc;
-    if (findHMDMonitor("OSVR", &pOutputDesc))
-        on_desktop = pOutputDesc.AttachedToDesktop;
-
-    OSVR_LOG(debug) << "OSVRTrackedDevice::IsDisplayOnDesktop(): " << on_desktop;
-#endif
 
     return on_desktop;
 }
@@ -1009,7 +931,6 @@ void OSVRTrackedDevice::configure()
 {
     // Get settings from config file
     const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
-
     if (verbose_logging) {
         OSVR_LOG(info) << "Verbose logging enabled.";
         Logging::instance().setLogLevel(trace);
@@ -1017,4 +938,19 @@ void OSVRTrackedDevice::configure()
         OSVR_LOG(info) << "Verbose logging disabled.";
         Logging::instance().setLogLevel(info);
     }
+
+    // The name of the display we want to use
+    const std::string display_name = settings_->getSetting<std::string>("displayName", "OSVR");
+
+
+    // Detect displays and find the one we're using as an HMD
+    auto displays = osvr::display::getDisplays();
+    for (const auto& display : displays) {
+        if (std::string::npos == display.name.find(display_name))
+            continue;
+
+        display_ = display;
+        break;
+    }
 }
+
