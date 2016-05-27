@@ -62,6 +62,7 @@ namespace {
     Rotation getRotation(const DISPLAYCONFIG_PATH_INFO& path_info);
     double getRefreshRate(const DISPLAYCONFIG_PATH_INFO& path_info);
     std::pair<uint32_t, uint32_t> getEDIDInfo(const DISPLAYCONFIG_PATH_INFO& path_info);
+    void checkResult(const std::string& function_name, LONG result);
 
     std::pair<UINT32, UINT32> getBufferSizes(const UINT32 query_flags)
     {
@@ -266,6 +267,7 @@ namespace {
             throw std::runtime_error(function_name + ": An unspecified error occurred.");
         default:
             // do nothing
+            break;
         }
     }
 
@@ -310,8 +312,13 @@ std::vector<Display> getDisplays()
     auto mode_info = info.second;
 
     for (const auto& path : path_info) {
-        const auto display = getDisplay(path, mode_info);
-        displays.emplace_back(std::move(display));
+        try {
+            const auto display = getDisplay(path, mode_info);
+            displays.emplace_back(std::move(display));
+        } catch (const std::exception& e) {
+            std::cout << "Caught exception: " << e.what() << ".";
+            std::cout << "Ignoring this display." << std::endl;
+        }
     }
 
     return displays;
