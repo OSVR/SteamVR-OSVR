@@ -149,9 +149,9 @@ namespace {
         // TODO
         Display display;
         display.adapter = getDisplayAdapter(path_info, mode_info);
-        display.name = "";
-        display.size = {0, 0};
-        display.position = {0, 0};
+        display.name = getMonitorName(path_info);
+        display.size = getCurrentResolution(path_info, mode_info);
+        display.position = getPosition(path_info, mode_info);
         display.rotation = osvr::display::Rotation::Zero;
         display.verticalRefreshRate = 0.0;
         display.attachedToDesktop = true;
@@ -159,6 +159,43 @@ namespace {
         display.edidProductId = 0x00;
 
         return display;
+    }
+
+    DisplaySize getCurrentResolution(const DISPLAYCONFIG_PATH_INFO& path_info, const std::vector<DISPLAYCONFIG_MODE_INFO>& mode_info)
+    {
+        const auto source_info = path_info.sourceInfo;
+        if (DISPLAYCONFIG_PATH_MODE_IDX_INVALID != source_info.modeInfoIdx) {
+            const auto source_info = mode_info.at(source_info.modeInfoIdx);
+            const auto source_mode = source_info.sourceMode;
+            return {source_mode.width, source_mode.height};
+        }
+
+        return {0, 0};
+    }
+
+    DisplayPosition getPosition(const DISPLAYCONFIG_PATH_INFO& path_info, const std::vector<DISPLAYCONFIG_MODE_INFO>& mode_info)
+    {
+        const auto source_info = path_info.sourceInfo;
+        if (DISPLAYCONFIG_PATH_MODE_IDX_INVALID != source_info.modeInfoIdx) {
+            const auto source_info = mode_info.at(source_info.modeInfoIdx);
+            const auto source_mode = source_info.sourceMode;
+            return {source_mode.position.x, source_mode.position.y};
+        }
+
+        return {0, 0};
+    }
+
+    std::string getMonitorName(const DISPLAYCONFIG_PATH_INFO& path_info)
+    {
+        DISPLAYCONFIG_TARGET_DEVICE_NAME target_name = {};
+        target_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+        target_name.header.size = sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
+        target_name.header.adapterId = path_info.sourceInfo.adapterId;
+        target_name.header.id = path_info.targetInfo.target_id;
+        const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
+        // TODO check return value
+
+        return to_string(target_name.monitorFriendlyDeviceName);
     }
 
     DisplayAdapter getDisplayAdapter(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info)
