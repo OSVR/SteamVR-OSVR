@@ -105,46 +105,51 @@ namespace {
     std::pair<PathInfoList, ModeInfoList> getDisplayInformation()
     {
         const UINT32 query_flags = QDC_ONLY_ACTIVE_PATHS;
-        const auto buffer_sizes = getBufferSizes(query_flags);
+        auto buffer_sizes = getBufferSizes(query_flags);
 
         auto num_path = buffer_sizes.first;
         auto num_mode_info = buffer_sizes.second;
 
         std::vector<DISPLAYCONFIG_PATH_INFO> path_info(num_path);
         std::vector<DISPLAYCONFIG_MODE_INFO> mode_info(num_mode_info);
-        const auto query_display_config_ret = QueryDisplayConfig(query_flags, &num_path, path_info.data(), &num_mode_info, mode_info.data(), nullptr);
-        switch (query_display_config_ret) {
-        case ERROR_INVALID_PARAMETER:
-            {
-                const std::string msg = "The combination of parameters and flags that are specified is invalid.";
-                std::cerr << msg << std::endl;
-                throw std::runtime_error(msg);
+
+        const int max_retries = 3;
+        for (int retry = 0; retry < max_retries; ++retry) {
+            const auto query_display_config_ret = QueryDisplayConfig(query_flags, &num_path, path_info.data(), &num_mode_info, mode_info.data(), nullptr);
+            switch (query_display_config_ret) {
+            case ERROR_INVALID_PARAMETER:
+                {
+                    const std::string msg = "The combination of parameters and flags that are specified is invalid.";
+                    std::cerr << msg << std::endl;
+                    throw std::runtime_error(msg);
+                }
+            case ERROR_NOT_SUPPORTED:
+                {
+                    const std::string msg = "The system is not running a graphics driver that was written according to the Windows Display Driver Model (WDDM). The function is only supported on a system with a WDDM driver running.";
+                    std::cerr << msg << std::endl;
+                    throw std::runtime_error(msg);
+                }
+            case ERROR_ACCESS_DENIED:
+                {
+                    const std::string msg = "The caller does not have access to the console session. This error occurs if the calling process does not have access to the current desktop or is running on a remote session.";
+                    std::cerr << msg << std::endl;
+                    throw std::runtime_error(msg);
+                }
+            case ERROR_GEN_FAILURE:
+                {
+                    const std::string msg = "An unspecified error occurred.";
+                    std::cerr << msg << std::endl;
+                    throw std::runtime_error(msg);
+                }
+            case ERROR_INSUFFICIENT_BUFFER:
+                {
+                    // Retry...
+                    buffer_sizes = getBufferSizes(query_flags);
+                    continue;
+                }
             }
-        case ERROR_NOT_SUPPORTED:
-            {
-                const std::string msg = "The system is not running a graphics driver that was written according to the Windows Display Driver Model (WDDM). The function is only supported on a system with a WDDM driver running.";
-                std::cerr << msg << std::endl;
-                throw std::runtime_error(msg);
-            }
-        case ERROR_ACCESS_DENIED:
-            {
-                const std::string msg = "The caller does not have access to the console session. This error occurs if the calling process does not have access to the current desktop or is running on a remote session.";
-                std::cerr << msg << std::endl;
-                throw std::runtime_error(msg);
-            }
-        case ERROR_GEN_FAILURE:
-            {
-                const std::string msg = "An unspecified error occurred.";
-                std::cerr << msg << std::endl;
-                throw std::runtime_error(msg);
-            }
-        case ERROR_INSUFFICIENT_BUFFER:
-            {
-                const std::string msg = "The supplied path and mode buffer are too small.";
-                // TODO call GetDisplayConfigBufferSizes() again and adjust the size of the vectors
-                std::cerr << msg << std::endl;
-                throw std::runtime_error(msg);
-            }
+
+            break;
         }
 
         return {std::move(path_info), std::move(mode_info)};
@@ -175,7 +180,7 @@ namespace {
         target_name.header.adapterId = path_info.targetInfo.adapterId;
         target_name.header.id = path_info.targetInfo.id;
         const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
-        // TODO check ret value
+        checkResult("getEDIDInfo()", ret);
 
         return {target_name.edidManufactureId, target_name.edidProductCodeId};
     }
@@ -238,8 +243,7 @@ namespace {
         target_name.header.adapterId = path_info.sourceInfo.adapterId;
         target_name.header.id = path_info.sourceInfo.id;
         const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
-        std::cout << "getMonitorName(): ret = " << ret << std::endl;
-        checkResult("getMonitorName", ret);
+        checkResult("getMonitorName()", ret);
 
         return to_string(target_name.monitorFriendlyDeviceName);
     }
@@ -251,15 +255,15 @@ namespace {
             // do nothing
             break;
         case ERROR_INVALID_PARAMETER:
-            throw std::runtime_error(function_name + "The combination of parameters and flags specified are invalid.");
+            throw std::runtime_error(function_name + ": The combination of parameters and flags specified are invalid.");
         case ERROR_NOT_SUPPORTED:
-            throw std::runtime_error(function_name + "The system is not running a graphics driver that was written according to the Windows Display Driver Model (WDDM). The function is only supported on a system with a WDDM driver running.");
+            throw std::runtime_error(function_name + ": The system is not running a graphics driver that was written according to the Windows Display Driver Model (WDDM). The function is only supported on a system with a WDDM driver running.");
         case ERROR_ACCESS_DENIED:
-            throw std::runtime_error(function_name + "The caller does not have access to the console session. This error occurs if the calling process does not have access to the current desktop or is running on a remote session.");
+            throw std::runtime_error(function_name + ": The caller does not have access to the console session. This error occurs if the calling process does not have access to the current desktop or is running on a remote session.");
         case ERROR_INSUFFICIENT_BUFFER:
-            throw std::runtime_error(function_name + "The size of the packet that the caller passes is not big enough for the information that the caller requests.");
+            throw std::runtime_error(function_name + ": The size of the packet that the caller passes is not big enough for the information that the caller requests.");
         case ERROR_GEN_FAILURE:
-            throw std::runtime_error(function_name + "An unspecified error occurred.");
+            throw std::runtime_error(function_name + ": An unspecified error occurred.");
         default:
             // do nothing
         }
@@ -283,7 +287,7 @@ namespace {
         adapter_name.header.adapterId = adapter_id;
         adapter_name.header.size = sizeof(DISPLAYCONFIG_ADAPTER_NAME);
         const auto ret = DisplayConfigGetDeviceInfo(&adapter_name.header);
-        // TODO check ret value
+        checkResult("getAdapterName()", ret);
 
         return to_string(adapter_name.adapterDevicePath);
     }
@@ -300,7 +304,6 @@ std::vector<Display> getDisplays()
 {
     std::vector<Display> displays;
 
-    // TODO catch exceptions and retry if we need to resize buffers
     const auto info = getDisplayInformation();
 
     auto path_info = info.first;
