@@ -183,7 +183,11 @@ namespace {
         const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
         checkResult("getEDIDInfo()", ret);
 
-        return {target_name.edidManufactureId, target_name.edidProductCodeId};
+        if (target_name.flags.edidIdsValid) {
+            return {target_name.edidManufactureId, target_name.edidProductCodeId};
+        } else {
+            return {0x00, 0x00};
+        }
     }
 
     double getRefreshRate(const DISPLAYCONFIG_PATH_INFO& path_info)
@@ -197,8 +201,7 @@ namespace {
 
     Rotation getRotation(const DISPLAYCONFIG_PATH_INFO& path_info)
     {
-        const auto target_info = path_info.targetInfo;
-        switch (target_info.rotation) {
+        switch (path_info.targetInfo.rotation) {
         case DISPLAYCONFIG_ROTATION_IDENTITY:
             return Rotation::Zero;
         case DISPLAYCONFIG_ROTATION_ROTATE90:
@@ -246,7 +249,11 @@ namespace {
         const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
         checkResult("getMonitorName()", ret);
 
-        return to_string(target_name.monitorFriendlyDeviceName);
+        if (target_name.flags.monitorFriendlyDeviceName) {
+            return to_string(target_name.monitorFriendlyDeviceName);
+        } else {
+            return "";
+        }
     }
 
     void checkResult(const std::string& function_name, LONG result)
