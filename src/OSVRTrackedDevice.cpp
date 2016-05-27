@@ -402,10 +402,9 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     case vr::Prop_DisplayFrequency_Float:
-        /// @todo This needs to be read from the Render Manager Config
         if (error)
             *error = vr::TrackedProp_Success;
-        return 60.0;
+        return display_.verticalRefreshRate;
     case vr::Prop_UserIpdMeters_Float:
         if (error)
             *error = vr::TrackedProp_Success;
@@ -528,15 +527,13 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     case vr::Prop_EdidVendorID_Int32:
-        /// @todo Currently hardcoded and needs to be returned from the server
         if (error)
             *error = vr::TrackedProp_Success;
-        return 0xD24E;
+        return display_.edidProductId;
     case vr::Prop_EdidProductID_Int32:
-        /// @todo Currently hardcoded and needs to be returned from the server
         if (error)
             *error = vr::TrackedProp_Success;
-        return 0x1019;
+        return display_.edidVendorId;
     case vr::Prop_DisplayGCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -923,8 +920,7 @@ float OSVRTrackedDevice::GetIPD()
 
 const char* OSVRTrackedDevice::GetId()
 {
-    /// @todo When available, return the actual unique ID of the HMD
-    return "OSVR HMD";
+    return display_.name.c_str();
 }
 
 void OSVRTrackedDevice::configure()
