@@ -244,12 +244,12 @@ namespace {
         DISPLAYCONFIG_TARGET_DEVICE_NAME target_name = {};
         target_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
         target_name.header.size = sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
-        target_name.header.adapterId = path_info.sourceInfo.adapterId;
-        target_name.header.id = path_info.sourceInfo.id;
+        target_name.header.adapterId = path_info.targetInfo.adapterId;
+        target_name.header.id = path_info.targetInfo.id;
         const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
         checkResult("getMonitorName()", ret);
 
-        if (target_name.flags.monitorFriendlyDeviceName) {
+        if (target_name.flags.friendlyNameFromEdid) {
             return to_string(target_name.monitorFriendlyDeviceName);
         } else {
             return "";
