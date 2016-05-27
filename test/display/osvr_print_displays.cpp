@@ -51,13 +51,20 @@ int main(int argc, char* argv[])
     auto displays = osvr::display::getDisplays();
 
     for (const auto& display : displays) {
-        std::cout << "Display: " << display.name << std::endl;
-        std::cout << "  Adapter: " << display.adapter.description << std::endl;
-        std::cout << "  Resolution: " << display.size.width << "x" << display.size.height << std::endl;
-        std::cout << "  Position: (" << display.position.x << ", " << display.position.y << ")" << std::endl;
-        std::cout << "  " << (display.attachedToDesktop ? "Extended mode" : "Direct mode") << std::endl;
-        std::cout << "  Rotation: " << to_string(display.rotation) << std::endl;
-        std::cout << "" << std::endl;
+        using std::cout;
+        using std::endl;
+
+        cout << "Display: " << display.name << endl;
+        cout << "  Adapter: " << display.adapter.description << endl;
+        cout << "  Monitor name: " << display.name << endl;
+        cout << "  Resolution: " << display.size.width << "x" << display.size.height << endl;
+        cout << "  Position: (" << display.position.x << ", " << display.position.y << ")" << endl;
+        cout << "  Rotation: " << to_string(display.rotation) << endl;
+        cout << "  Refresh rate: " << display.verticalRefreshRate << endl;
+        cout << "  " << (display.attachedToDesktop ? "Extended mode" : "Direct mode") << endl;
+        cout << "  EDID vendor ID: " << display.edidVendorId << endl;
+        cout << "  EDID product ID: " << display.edidProductId << endl;
+        cout << "" << endl;
     }
 
     return 0;
