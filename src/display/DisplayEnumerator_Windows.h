@@ -56,6 +56,9 @@ namespace {
     DisplayAdapter getDisplayAdapter(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info);
     std::string getAdapterName(const DISPLAYCONFIG_PATH_INFO& path_info);
     std::string to_string(const std::wstring& s);
+    Rotation getRotation(const DISPLAYCONFIG_PATH_INFO& path_info);
+    double getRefreshRate(const DISPLAYCONFIG_PATH_INFO& path_info);
+    std::pair<uint32_t, uint32_t> getEDIDInfo(const DISPLAYCONFIG_PATH_INFO& path_info);
 
     std::pair<UINT32, UINT32> getBufferSizes(const UINT32 query_flags)
     {
@@ -141,24 +144,59 @@ namespace {
             }
         }
 
-        return std::make_pair(std::move(path_info), std::move(mode_info));
+        return {std::move(path_info), std::move(mode_info)};
     }
 
     Display getDisplay(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info)
     {
-        // TODO
         Display display;
         display.adapter = getDisplayAdapter(path_info, mode_info);
         display.name = getMonitorName(path_info);
         display.size = getCurrentResolution(path_info, mode_info);
         display.position = getPosition(path_info, mode_info);
-        display.rotation = osvr::display::Rotation::Zero;
-        display.verticalRefreshRate = 0.0;
-        display.attachedToDesktop = true;
-        display.edidVendorId = 0x00;
-        display.edidProductId = 0x00;
+        display.rotation = getRotation(path_info);
+        display.verticalRefreshRate = getRefreshRate(path_info);
+        display.attachedToDesktop = true; // TODO
+        const auto edid_info = getEDIDInfo(path_info);
+        display.edidVendorId = edid_info.first;
+        display.edidProductId = edid_info.second;
 
         return display;
+    }
+
+    std::pair<uint32_t, uint32_t> getEDIDInfo(const DISPLAYCONFIG_PATH_INFO& path_info)
+    {
+        DISPLAYCONFIG_TARGET_DEVICE_NAME target_name = {};
+        target_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+        target_name.header.size = sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
+        target_name.header.adapterId = path_info.targetInfo.adapterId;
+        target_name.header.id = path_info.targetInfo.id;
+        const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
+        // TODO check ret value
+
+        return {target_name.edidManufactureId, target_name.edidProductCodeId};
+    }
+
+    double getRefreshRate(const DISPLAYCONFIG_PATH_INFO& path_info)
+    {
+        return path_info.targetInfo..RefreshRate;
+    }
+
+    Rotation getRotation(const DISPLAYCONFIG_PATH_INFO& path_info)
+    {
+        const auto target_info = path_info.targetInfo;
+        switch (target_info.rotation) {
+        case DISPLAYCONFIG_ROTATION_IDENTITY:
+            return Rotation::Zero;
+        case DISPLAYCONFIG_ROTATION_ROTATE90:
+            return Rotation::Ninety;
+        case DISPLAYCONFIG_ROTATION_ROTATE180:
+            return Rotation::OneEighty;
+        case DISPLAYCONFIG_ROTATION_ROTATE270:
+            return Rotation::TwoSeventy;
+        default:
+            return Rotation::Zero;
+        }
     }
 
     DisplaySize getCurrentResolution(const DISPLAYCONFIG_PATH_INFO& path_info, const std::vector<DISPLAYCONFIG_MODE_INFO>& mode_info)
