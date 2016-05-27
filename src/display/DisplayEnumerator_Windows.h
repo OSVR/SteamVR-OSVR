@@ -56,6 +56,9 @@ namespace {
     DisplayAdapter getDisplayAdapter(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info);
     std::string getAdapterName(const DISPLAYCONFIG_PATH_INFO& path_info);
     std::string to_string(const std::wstring& s);
+    std::string getMonitorName(const DISPLAYCONFIG_PATH_INFO& path_info);
+    DisplaySize getCurrentResolution(const DISPLAYCONFIG_PATH_INFO& path_info, const std::vector<DISPLAYCONFIG_MODE_INFO>& mode_info);
+    DisplayPosition getPosition(const DISPLAYCONFIG_PATH_INFO& path_info, const std::vector<DISPLAYCONFIG_MODE_INFO>& mode_info);
 
     std::pair<UINT32, UINT32> getBufferSizes(const UINT32 query_flags)
     {
@@ -165,8 +168,8 @@ namespace {
     {
         const auto source_info = path_info.sourceInfo;
         if (DISPLAYCONFIG_PATH_MODE_IDX_INVALID != source_info.modeInfoIdx) {
-            const auto source_info = mode_info.at(source_info.modeInfoIdx);
-            const auto source_mode = source_info.sourceMode;
+            const auto mode = mode_info.at(source_info.modeInfoIdx);
+            const auto source_mode = mode.sourceMode;
             return {source_mode.width, source_mode.height};
         }
 
@@ -177,8 +180,8 @@ namespace {
     {
         const auto source_info = path_info.sourceInfo;
         if (DISPLAYCONFIG_PATH_MODE_IDX_INVALID != source_info.modeInfoIdx) {
-            const auto source_info = mode_info.at(source_info.modeInfoIdx);
-            const auto source_mode = source_info.sourceMode;
+            const auto mode = mode_info.at(source_info.modeInfoIdx);
+            const auto source_mode = mode.sourceMode;
             return {source_mode.position.x, source_mode.position.y};
         }
 
@@ -191,7 +194,7 @@ namespace {
         target_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
         target_name.header.size = sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
         target_name.header.adapterId = path_info.sourceInfo.adapterId;
-        target_name.header.id = path_info.targetInfo.target_id;
+        target_name.header.id = path_info.sourceInfo.id;
         const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
         // TODO check return value
 
