@@ -948,5 +948,32 @@ void OSVRTrackedDevice::configure()
         display_ = display;
         break;
     }
+
+    OSVR_LOG(info) << "Detected display named [" << display_.name << "]:";
+    OSVR_LOG(info) << "  Adapter: " << display_.adapter.description;
+    OSVR_LOG(info) << "  Monitor name: " << display_.name;
+    OSVR_LOG(info) << "  Resolution: " << display_.size.width << "x" << display_.size.height;
+    OSVR_LOG(info) << "  Position: (" << display_.position.x << ", " << display_.position.y << ")";
+    switch (display_.rotation) {
+    case osvr::display::Rotation::Zero:
+        OSVR_LOG(info) << "  Rotation: Landscape";
+        break;
+    case osvr::display::Rotation::Ninety:
+        OSVR_LOG(info) << "  Rotation: Portrait";
+        break;
+    case osvr::display::Rotation::OneEighty:
+        OSVR_LOG(info) << "  Rotation: Landscape (flipped)";
+        break;
+    case osvr::display::Rotation::TwoSeventy:
+        OSVR_LOG(info) << "  Rotation: Portrait (flipped)";
+        break;
+    default:
+        OSVR_LOG(info) << "  Rotation: Landscape";
+        break;
+    }
+    OSVR_LOG(info) << "  Refresh rate: " << display_.verticalRefreshRate;
+    OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
+    OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
+    OSVR_LOG(info) << "  EDID product ID: " << display_.edidProductId;
 }
 
