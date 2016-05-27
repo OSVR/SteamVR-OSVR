@@ -238,9 +238,31 @@ namespace {
         target_name.header.adapterId = path_info.sourceInfo.adapterId;
         target_name.header.id = path_info.sourceInfo.id;
         const auto ret = DisplayConfigGetDeviceInfo(&target_name.header);
-        // TODO check return value
+        std::cout << "getMonitorName(): ret = " << ret << std::endl;
+        checkResult("getMonitorName", ret);
 
         return to_string(target_name.monitorFriendlyDeviceName);
+    }
+
+    void checkResult(const std::string& function_name, LONG result)
+    {
+        switch (result) {
+        case ERROR_SUCCESS:
+            // do nothing
+            break;
+        case ERROR_INVALID_PARAMETER:
+            throw std::runtime_error(function_name + "The combination of parameters and flags specified are invalid.");
+        case ERROR_NOT_SUPPORTED:
+            throw std::runtime_error(function_name + "The system is not running a graphics driver that was written according to the Windows Display Driver Model (WDDM). The function is only supported on a system with a WDDM driver running.");
+        case ERROR_ACCESS_DENIED:
+            throw std::runtime_error(function_name + "The caller does not have access to the console session. This error occurs if the calling process does not have access to the current desktop or is running on a remote session.");
+        case ERROR_INSUFFICIENT_BUFFER:
+            throw std::runtime_error(function_name + "The size of the packet that the caller passes is not big enough for the information that the caller requests.");
+        case ERROR_GEN_FAILURE:
+            throw std::runtime_error(function_name + "An unspecified error occurred.");
+        default:
+            // do nothing
+        }
     }
 
     DisplayAdapter getDisplayAdapter(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info)
