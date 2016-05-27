@@ -53,10 +53,6 @@ int main(int argc, char* argv[])
     for (const auto& display : displays) {
         std::cout << "Display: " << display.name << std::endl;
         std::cout << "  Adapter: " << display.adapter.description << std::endl;
-        std::cout << "    PCI vendor ID: " << display.adapter.vendor_id << std::endl;
-        std::cout << "    PCI device ID: " << display.adapter.device_id << std::endl;
-        std::cout << "    PCI subsystem ID: " << display.adapter.subsystem_id << std::endl;
-        std::cout << "    Revision: " << display.adapter.revision << std::endl;
         std::cout << "  Resolution: " << display.size.width << "x" << display.size.height << std::endl;
         std::cout << "  Position: (" << display.position.x << ", " << display.position.y << ")" << std::endl;
         std::cout << "  " << (display.attachedToDesktop ? "Extended mode" : "Direct mode") << std::endl;

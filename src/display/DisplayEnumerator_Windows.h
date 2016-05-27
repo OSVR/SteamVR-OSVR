@@ -245,13 +245,8 @@ namespace {
 
     DisplayAdapter getDisplayAdapter(const DISPLAYCONFIG_PATH_INFO& path_info, const ModeInfoList& mode_info)
     {
-        // TODO
         DisplayAdapter adapter;
         adapter.description = getAdapterName(path_info);
-        adapter.vendor_id = 0x00;
-        adapter.device_id = 0x00;
-        adapter.subsystem_id = 0x00;
-        adapter.revision = 0x00;
 
         return adapter;
     }

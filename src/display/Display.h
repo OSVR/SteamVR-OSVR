@@ -51,10 +51,6 @@ struct DisplayPosition {
 
 struct DisplayAdapter {
     std::string description;
-    unsigned int vendor_id;
-    unsigned int device_id;
-    unsigned int subsystem_id;
-    unsigned int revision;
 };
 
 enum class Rotation {
