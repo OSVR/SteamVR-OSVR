@@ -52,7 +52,7 @@
 #include <iostream>
 #include <exception>
 #include <fstream>
-
+#include <algorithm>        // for std::find
 
 OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
@@ -196,9 +196,12 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
 {
-    bool on_desktop = true;
-
-    return on_desktop;
+    // If the current display still appeara in the active displays list,
+    // then it's attached to the desktop.
+    const auto displays = osvr::display::getDisplays();
+    const auto display_on_desktop = (end(displays) != std::find(begin(displays), end(displays), display_));
+    OSVR_LOG(trace) << "OSVRTrackedDevice::IsDisplayOnDesktop(): " << (display_on_desktop ? "yes" : "no");
+    return display_on_desktop;
 }
 
 bool OSVRTrackedDevice::IsDisplayRealDisplay()
