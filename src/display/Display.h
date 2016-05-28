@@ -42,15 +42,53 @@ namespace display {
 struct DisplaySize {
     uint32_t width;
     uint32_t height;
+
+    bool operator==(const DisplaySize& other) const
+    {
+        if (width != other.width) return false;
+        if (height != other.height) return false;
+
+        return true;
+    }
+
+    bool operator!=(const DisplaySize& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 struct DisplayPosition {
     int32_t x;
     int32_t y;
+
+    bool operator==(const DisplayPosition& other) const
+    {
+        if (x != other.x) return false;
+        if (y != other.y) return false;
+
+        return true;
+    }
+
+    bool operator!=(const DisplayPosition& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 struct DisplayAdapter {
     std::string description;
+
+    bool operator==(const DisplayAdapter& other) const
+    {
+        if (description != other.description) return false;
+
+        return true;
+    }
+
+    bool operator!=(const DisplayAdapter& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 enum class Rotation {
@@ -70,6 +108,26 @@ struct Display {
     bool attachedToDesktop;
     uint32_t edidVendorId;
     uint32_t edidProductId;
+
+    bool operator==(const Display& other) const
+    {
+        if (adapter != other.adapter) return false;
+        if (name != other.name) return false;
+        if (size != other.size) return false;
+        if (position != other.position) return false;
+        if (rotation != other.rotation) return false;
+        if (verticalRefreshRate != other.verticalRefreshRate) return false;
+        if (attachedToDesktop != other.attachedToDesktop) return false;
+        if (edidProductId != other.edidProductId) return false;
+        if (edidVendorId != other.edidVendorId) return false;
+
+        return true;
+    }
+
+    bool operator!=(const Display& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 } // end namespace display
