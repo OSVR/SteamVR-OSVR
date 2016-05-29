@@ -73,7 +73,7 @@ enum LogLevel {
  */
 class LineLogger {
 public:
-    LineLogger(LogLevel severity, vr::IDriverLog* driver_log) : severity_(severity), driverLog_(driver_log), message_()
+    LineLogger(bool should_log, vr::IDriverLog* driver_log) : shouldLog_(should_log), driverLog_(driver_log), message_()
     {
         // do nothing
     }
@@ -92,44 +92,25 @@ public:
 
     LineLogger& operator<<(const char msg[])
     {
-        message_ += msg;
+        if (shouldLog_)
+            message_ += msg;
+ 
         return *this;
     }
 
     template <typename T>
     LineLogger& operator<<(T&& msg)
     {
-        message_ += to_string(std::forward<T>(msg));
+        if (shouldLog_)
+            message_ += to_string(std::forward<T>(msg));
+
         return *this;
     }
 
 protected:
-    LogLevel severity_ = LogLevel::info;
+    const bool shouldLog_;
     vr::IDriverLog* driverLog_;
     std::string message_;
-};
-
-/**
- * @brief A line logger that doesn't actually log anything.
- */
-class NullLineLogger : public LineLogger {
-public:
-    NullLineLogger(LogLevel severity, vr::IDriverLog* driver_log) : LineLogger(severity, driver_log)
-    {
-        // do nothing
-    }
-
-    virtual ~NullLineLogger()
-    {
-        // do nothing
-    }
-
-    template <typename T>
-    LineLogger& operator<<(const T&)
-    {
-        // do nothing
-        return *this;
-    }
 };
 
 /**
@@ -167,11 +148,8 @@ public:
 
     LineLogger log(LogLevel severity)
     {
-        if (severity >= severity_) {
-            return LineLogger{ severity, driverLog_ };
-        } else {
-            return NullLineLogger{ severity, driverLog_ };
-        }
+        const bool should_log = (severity >= severity_);
+        return LineLogger{ should_log, driverLog_ };
     }
 
 protected:
