@@ -943,16 +943,37 @@ void OSVRTrackedDevice::configure()
 
 
     // Detect displays and find the one we're using as an HMD
+    bool display_found = false;
     auto displays = osvr::display::getDisplays();
     for (const auto& display : displays) {
         if (std::string::npos == display.name.find(display_name))
             continue;
 
         display_ = display;
+        display_found = true;
         break;
     }
 
-    OSVR_LOG(info) << "Detected display named [" << display_.name << "]:";
+    if (!display_found) {
+        // Default to OSVR HDK display settings
+        display_.adapter.description = "Unknown";
+        display_.name = "OSVR HDK";
+        display_.size.width = 1920;
+        display_.size.height = 1080;
+        display_.position.x = 1920;
+        display_.position.y = 0;
+        display_.rotation = osvr::display::Rotation::Zero;
+        display_.verticalRefreshRate = 60.0;
+        display_.attachedToDesktop = true;
+        display_.edidVendorId = 53838;
+        display_.edidProductId = 4121;
+    }
+
+    if (display_found) {
+        OSVR_LOG(info) << "Detected display named [" << display_.name << "]:";
+    } else {
+        OSVR_LOG(info) << "Default display:";
+    }
     OSVR_LOG(info) << "  Adapter: " << display_.adapter.description;
     OSVR_LOG(info) << "  Monitor name: " << display_.name;
     OSVR_LOG(info) << "  Resolution: " << display_.size.width << "x" << display_.size.height;
