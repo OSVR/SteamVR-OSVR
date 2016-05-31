@@ -33,6 +33,8 @@
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
+#include "osvr_platform.h"
+#include "display/DisplayEnumerator.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -50,7 +52,7 @@
 #include <iostream>
 #include <exception>
 #include <fstream>
-
+#include <algorithm>        // for std::find
 
 OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
@@ -101,16 +103,16 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 
     // Verify valid display config
     if ((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
-        OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display parameters!\n";
+        OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Unexpected display parameters!\n";
 
         if (m_DisplayConfig.getNumViewers() < 1) {
-            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least one viewer must exist.\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least one viewer must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         } else if (m_DisplayConfig.getViewer(0).getNumEyes() < 2) {
-            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least two eyes must exist.\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least two eyes must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         } else if ((m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
-            OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): At least one surface must exist for each eye.\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least one surface must exist for each eye.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         }
     }
@@ -125,19 +127,20 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     // file, use an empty dictionary instead. This allows the render manager
     // config to zero out its values.
     if (configString.empty()) {
-        OSVR_LOG(info) << "OSVRTrackedDevice::OSVRTrackedDevice(): Render Manager config is empty, using default values.\n";
+        OSVR_LOG(info) << "OSVRTrackedDevice::Activate(): Render Manager config is empty, using default values.\n";
         configString = "{}";
     }
 
     try {
         m_RenderManagerConfig.parse(configString);
     } catch(const std::exception& e) {
-        OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Exception parsing Render Manager config: " << e.what() << "\n";
+        OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
     /// @fixme figure out ID correctly, don't hardcode to zero
     driver_host_->ProximitySensorState(0, true);
 
+    OSVR_LOG(trace) << "OSVRTrackedDevice::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
 }
 
@@ -181,12 +184,24 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     *y = m_RenderManagerConfig.getWindowYPosition();
     *width = displayDims.width;
     *height = displayDims.height;
+
+#ifdef OSVR_WINDOWS
+    // ... until we've added code for other platforms, this is Windows-only
+    *x = display_.position.x;
+    *y = display_.position.y;
+    *height = display_.size.height;
+    *width = display_.size.width;
+#endif
 }
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
 {
-    // TODO get this info from display description?
-    return true;
+    // If the current display still appeara in the active displays list,
+    // then it's attached to the desktop.
+    const auto displays = osvr::display::getDisplays();
+    const auto display_on_desktop = (end(displays) != std::find(begin(displays), end(displays), display_));
+    OSVR_LOG(trace) << "OSVRTrackedDevice::IsDisplayOnDesktop(): " << (display_on_desktop ? "yes" : "no");
+    return display_on_desktop;
 }
 
 bool OSVRTrackedDevice::IsDisplayRealDisplay()
@@ -198,12 +213,14 @@ bool OSVRTrackedDevice::IsDisplayRealDisplay()
 void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
     /// @todo calculate overfill factor properly
-    double overfillFactor = 1.0;
+    double overfill_factor = 1.0;
     int32_t x, y;
     uint32_t w, h;
     GetWindowBounds(&x, &y, &w, &h);
-    *width = w * overfillFactor;
-    *height = h * overfillFactor;
+
+    // conversion to avoid compiler warnings
+    *width = uint32_t(w * overfill_factor);
+    *height = uint32_t(h * overfill_factor);
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
@@ -334,10 +351,10 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
         break;
-    case vr::Prop_IsOnDesktop_Bool: // TODO
+    case vr::Prop_IsOnDesktop_Bool:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return this->IsDisplayOnDesktop();
         break;
     }
 
@@ -387,10 +404,10 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-    case vr::Prop_DisplayFrequency_Float: // TODO
+    case vr::Prop_DisplayFrequency_Float:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return display_.verticalRefreshRate;
     case vr::Prop_UserIpdMeters_Float:
         if (error)
             *error = vr::TrackedProp_Success;
@@ -514,12 +531,12 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
         return default_value;
     case vr::Prop_EdidVendorID_Int32:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return display_.edidVendorId;
     case vr::Prop_EdidProductID_Int32:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return display_.edidProductId;
     case vr::Prop_DisplayGCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -622,9 +639,10 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
             *error = vr::TrackedProp_Success;
         return 0;
     case vr::Prop_DisplayFirmwareVersion_Uint64:
+        /// @todo This really should be read from the server
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return 192;
     case vr::Prop_CameraFirmwareVersion_Uint64:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -905,15 +923,13 @@ float OSVRTrackedDevice::GetIPD()
 
 const char* OSVRTrackedDevice::GetId()
 {
-    /// @todo When available, return the actual unique ID of the HMD
-    return "OSVR HMD";
+    return display_.name.c_str();
 }
 
 void OSVRTrackedDevice::configure()
 {
     // Get settings from config file
     const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
-
     if (verbose_logging) {
         OSVR_LOG(info) << "Verbose logging enabled.";
         Logging::instance().setLogLevel(trace);
@@ -921,5 +937,67 @@ void OSVRTrackedDevice::configure()
         OSVR_LOG(info) << "Verbose logging disabled.";
         Logging::instance().setLogLevel(info);
     }
+
+    // The name of the display we want to use
+    const std::string display_name = settings_->getSetting<std::string>("displayName", "OSVR");
+
+
+    // Detect displays and find the one we're using as an HMD
+    bool display_found = false;
+    auto displays = osvr::display::getDisplays();
+    for (const auto& display : displays) {
+        if (std::string::npos == display.name.find(display_name))
+            continue;
+
+        display_ = display;
+        display_found = true;
+        break;
+    }
+
+    if (!display_found) {
+        // Default to OSVR HDK display settings
+        display_.adapter.description = "Unknown";
+        display_.name = "OSVR HDK";
+        display_.size.width = 1920;
+        display_.size.height = 1080;
+        display_.position.x = 1920;
+        display_.position.y = 0;
+        display_.rotation = osvr::display::Rotation::Zero;
+        display_.verticalRefreshRate = 60.0;
+        display_.attachedToDesktop = true;
+        display_.edidVendorId = 53838;
+        display_.edidProductId = 4121;
+    }
+
+    if (display_found) {
+        OSVR_LOG(info) << "Detected display named [" << display_.name << "]:";
+    } else {
+        OSVR_LOG(info) << "Default display:";
+    }
+    OSVR_LOG(info) << "  Adapter: " << display_.adapter.description;
+    OSVR_LOG(info) << "  Monitor name: " << display_.name;
+    OSVR_LOG(info) << "  Resolution: " << display_.size.width << "x" << display_.size.height;
+    OSVR_LOG(info) << "  Position: (" << display_.position.x << ", " << display_.position.y << ")";
+    switch (display_.rotation) {
+    case osvr::display::Rotation::Zero:
+        OSVR_LOG(info) << "  Rotation: Landscape";
+        break;
+    case osvr::display::Rotation::Ninety:
+        OSVR_LOG(info) << "  Rotation: Portrait";
+        break;
+    case osvr::display::Rotation::OneEighty:
+        OSVR_LOG(info) << "  Rotation: Landscape (flipped)";
+        break;
+    case osvr::display::Rotation::TwoSeventy:
+        OSVR_LOG(info) << "  Rotation: Portrait (flipped)";
+        break;
+    default:
+        OSVR_LOG(info) << "  Rotation: Landscape";
+        break;
+    }
+    OSVR_LOG(info) << "  Refresh rate: " << display_.verticalRefreshRate;
+    OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
+    OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
+    OSVR_LOG(info) << "  EDID product ID: " << display_.edidProductId;
 }
 

@@ -28,6 +28,7 @@
 // Internal Includes
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 #include "Settings.h"
+#include "display/Display.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -211,6 +212,7 @@ private:
 
     // Settings
     bool verboseLogging_ = false;
+    osvr::display::Display display_ = {};
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

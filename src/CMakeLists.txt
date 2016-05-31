@@ -25,6 +25,11 @@ include(PlatformDefinitions)
 define_platform_macros(OSVR)
 configure_file(osvr_platform.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_platform.h")
 
+#
+# Display detection and enumeration
+#
+add_subdirectory(display)
+
 # Disable 'lib' prefix on POSIX systems
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
@@ -49,7 +54,20 @@ add_library(driver_osvr
 	platform_fixes.h
 	pretty_print.h
 )
-target_link_libraries(driver_osvr PRIVATE osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+
+target_link_libraries(driver_osvr
+	PRIVATE
+	osvr::osvrClientKitCpp
+	eigen-headers
+	util-headers
+	jsoncpp_lib
+	osvrDisplay
+)
+
+if (WIN32)
+	target_link_libraries(driver_osvr PRIVATE dxgi)
+endif()
+
 target_include_directories(driver_osvr SYSTEM PRIVATE ${OPENVR_INCLUDE_DIRS})
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
