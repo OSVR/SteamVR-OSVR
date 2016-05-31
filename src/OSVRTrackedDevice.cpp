@@ -532,11 +532,11 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
     case vr::Prop_EdidVendorID_Int32:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.edidProductId;
+        return display_.edidVendorId;
     case vr::Prop_EdidProductID_Int32:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.edidVendorId;
+        return display_.edidProductId;
     case vr::Prop_DisplayGCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
