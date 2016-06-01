@@ -43,11 +43,24 @@ OSVRTrackingReference::~OSVRTrackingReference()
 
 vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 {
+    // Clean up tracker callback if exists
+    if (m_TrackerInterface.notEmpty()) {
+        m_TrackerInterface.free();
+    }
+
+    // Register tracker callback
+    m_TrackerInterface = m_Context.getInterface("/me/head");
+    m_TrackerInterface.registerCallback(&OSVRTrackingReference::RefTrackerCallback, this);
+
     return vr::VRInitError_None;
 }
 
 void OSVRTrackingReference::Deactivate()
 {
+    /// Have to force freeing here
+    if (m_TrackerInterface.notEmpty()) {
+        m_TrackerInterface.free();
+    }
 }
 
 void OSVRTrackingReference::PowerOff()
@@ -72,33 +85,7 @@ void OSVRTrackingReference::DebugRequest(const char* request, char* response_buf
 
 vr::DriverPose_t OSVRTrackingReference::GetPose()
 {
-    vr::DriverPose_t pose;
-    pose.poseTimeOffset = 0; // close enough
-    Eigen::Vector3d::Map(pose.vecWorldFromDriverTranslation) = Eigen::Vector3d::Zero();
-    Eigen::Vector3d::Map(pose.vecDriverFromHeadTranslation) = Eigen::Vector3d::Zero();
-    map(pose.qWorldFromDriverRotation) = Eigen::Quaterniond::Identity();
-    map(pose.qDriverFromHeadRotation) = Eigen::Quaterniond::Identity();
-    
-    // Position
-    Eigen::Vector3d::Map(pose.vecPosition) = Eigen::Vector3d::Zero();
-
-    // Position velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
-    Eigen::Vector3d::Map(pose.vecAcceleration) = Eigen::Vector3d::Zero();
-    
-    // Orientation
-    map(pose.qRotation) = Eigen::Quaterniond::Identity();
-    
-    // Angular velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
-    Eigen::Vector3d::Map(pose.vecAngularAcceleration) = Eigen::Vector3d::Zero();
-
-    pose.result = vr::TrackingResult_Running_OK;
-    pose.poseIsValid = true;
-    pose.willDriftInYaw = false;
-    pose.shouldApplyHeadModel = false;
-    
-    return pose;
+    return pose_;
 }
 
 bool OSVRTrackingReference::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
@@ -363,6 +350,41 @@ std::string OSVRTrackingReference::GetStringTrackedDeviceProperty(vr::ETrackedDe
 #include "ignore-warning/pop"
 }
 
+void OSVRTrackingReference::RefTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
+{
+    if (!userdata)
+        return;
+
+    auto* self = static_cast<OSVRTrackingReference*>(userdata);
+
+    vr::DriverPose_t pose;
+    pose.poseTimeOffset = 0; // close enough
+    Eigen::Vector3d::Map(pose.vecWorldFromDriverTranslation) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecDriverFromHeadTranslation) = Eigen::Vector3d::Zero();
+    map(pose.qWorldFromDriverRotation) = Eigen::Quaterniond::Identity();
+    map(pose.qDriverFromHeadRotation) = Eigen::Quaterniond::Identity();
+
+    // Position
+    Eigen::Vector3d::Map(pose.vecPosition) = Eigen::Vector3d::Zero();
+
+    // Position velocity and acceleration are not currently consistently provided
+    Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecAcceleration) = Eigen::Vector3d::Zero();
+
+    // Orientation
+    map(pose.qRotation) = Eigen::Quaterniond::Identity();
+
+    // Angular velocity and acceleration are not currently consistently provided
+    Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecAngularAcceleration) = Eigen::Vector3d::Zero();
+
+    pose.result = vr::TrackingResult_Running_OK;
+    pose.poseIsValid = true;
+    pose.willDriftInYaw = false;
+    pose.shouldApplyHeadModel = false;
+    self->pose_ = pose;
+    self->driver_host_->TrackedDevicePoseUpdated(1, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
+}
 
 
 void OSVRTrackingReference::configure()

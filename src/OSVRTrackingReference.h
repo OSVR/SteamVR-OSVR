@@ -140,11 +140,13 @@ public:
     
 private:
     std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
+    static void RefTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     void configure();
     
     osvr::clientkit::ClientContext& m_Context;
     vr::IServerDriverHost* driver_host_ = nullptr;
-//    vr::DriverPose_t pose_;
+    osvr::clientkit::Interface m_TrackerInterface;
+    vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
     std::unique_ptr<Settings> settings_;
 
