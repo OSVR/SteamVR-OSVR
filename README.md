@@ -30,9 +30,9 @@ The default locations are as follows:
 
 	- "The right folder" will contain, among other things, a directory called `drivers`.
 
-- Upon extracting the OSVR driver, you'll get a `SteamVR-OSVR` directory, with a `drivers` directory inside it (with additional directories and files deeper inside `drivers`).
+- Upon extracting the OSVR driver, you'll get a `SteamVR-OSVR` directory. Drill down through `SteamVR-OSVR/lib/openvr` until you find an `osvr` folder.
 
-You'll want to drag the `drivers` directory from the `SteamVR-OSVR` extracted folder over into the Steam directory, to merge its contents with the existing contents of the `drivers` directory. (It should just make an `osvr` subdirectory with contents.)
+You'll want to drag the `osvr` directory `drivers` directory you found previously. If you are upgrading from an earlier version of the driver,  merge its contents with the existing contents of the `osvr` directory.
 
 To know if you got it right, do the same Windows Run (or other way of opening a folder by its name) as above, with the path `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR\drivers\osvr\bin\win32"` instead. (Make changes as appropriate to suit your Steam install location.) If you got it right, you should see a number of files, including one called `driver_osvr.dll`.
 
