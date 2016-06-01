@@ -637,11 +637,11 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
     case vr::Prop_CurrentUniverseId_Uint64:
         if (error)
             *error = vr::TrackedProp_Success;
-        return 0;
+        return 1;
     case vr::Prop_PreviousUniverseId_Uint64:
         if (error)
             *error = vr::TrackedProp_Success;
-        return 0;
+        return 1;
     case vr::Prop_DisplayFirmwareVersion_Uint64:
         /// @todo This really should be read from the server
         if (error)
