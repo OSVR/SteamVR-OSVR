@@ -171,6 +171,10 @@ void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer,
 {
     // TODO
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
+    // return empty string for now
+    if (response_buffer_size > 0) {
+        response_buffer[0] = '\0';
+    }
 }
 
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
