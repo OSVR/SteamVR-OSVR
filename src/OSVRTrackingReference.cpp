@@ -340,7 +340,7 @@ std::string OSVRTrackingReference::GetStringTrackedDeviceProperty(vr::ETrackedDe
         return "OSVR_HMD_Camera_1";
     case vr::Prop_RenderModelName_String:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+            *error = vr::TrackedProp_Success;
         return "dk2_camera";
     default:
         if (error)
