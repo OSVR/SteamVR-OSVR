@@ -68,6 +68,12 @@ public:
     virtual void Cleanup() OSVR_OVERRIDE;
 
     /**
+     * Returns the version of the @c ITrackedDeviceServerDriver interface used by
+     * this driver.
+     */
+    virtual const char* const* GetInterfaceVersions() OSVR_OVERRIDE;
+
+    /**
      * Returns the number of tracked devices.
      */
     virtual uint32_t GetTrackedDeviceCount() OSVR_OVERRIDE;
@@ -76,17 +82,15 @@ public:
      * Returns a single tracked device by its index.
      *
      * @param index the index of the tracked device to return.
-     * @param interface_version the version of the tracked device server driver interface
      */
-    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index, const char* interface_version) OSVR_OVERRIDE;
+    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index) OSVR_OVERRIDE;
 
     /**
      * Returns a single HMD by its name.
      *
      * @param id the C string name of the HMD.
-     * @param interface_version the version of the tracked device server driver interface
      */
-    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id, const char* interface_version) OSVR_OVERRIDE;
+    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id) OSVR_OVERRIDE;
 
     /**
      * Allows the driver do to some work in the main loop of the server.

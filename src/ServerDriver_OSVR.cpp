@@ -60,22 +60,22 @@ void ServerDriver_OSVR::Cleanup()
     context_.reset();
 }
 
+const char* const* ServerDriver_OSVR::GetInterfaceVersions()
+{
+    return vr::k_InterfaceVersions;
+}
+
 uint32_t ServerDriver_OSVR::GetTrackedDeviceCount()
 {
     OSVR_LOG(info) << "ServerDriver_OSVR::GetTrackedDeviceCount(): Detected " << trackedDevices_.size() << " tracked devices.\n";
     return static_cast<uint32_t>(trackedDevices_.size());
 }
 
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t index, const char* interface_version)
+vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t index)
 {
-    if (0 != strcasecmp(interface_version, vr::ITrackedDeviceServerDriver_Version)) {
-        OSVR_LOG(err) << "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
-        return NULL;
-    }
-
     if (index >= trackedDevices_.size()) {
         OSVR_LOG(err) << "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " << index << " is out of range [0.." << trackedDevices_.size() << "].\n";
-        return NULL;
+        return nullptr;
     }
 
     OSVR_LOG(info) << "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device #" << index << ".\n";
@@ -83,13 +83,8 @@ vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32
     return trackedDevices_[index].get();
 }
 
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id, const char* interface_version)
+vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id)
 {
-    if (0 != strcasecmp(interface_version, vr::ITrackedDeviceServerDriver_Version)) {
-        OSVR_LOG(err) << "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Incompatible SteamVR version!\n";
-        return NULL;
-    }
-
     for (auto& tracked_device : trackedDevices_) {
         if (0 == std::strcmp(id, tracked_device->GetId())) {
             OSVR_LOG(info) << "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " << id << ".\n";
@@ -99,7 +94,7 @@ vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const
 
     OSVR_LOG(err) << "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Failed to locate device named '" << id << "'.\n";
 
-    return NULL;
+    return nullptr;
 }
 
 void ServerDriver_OSVR::RunFrame()
