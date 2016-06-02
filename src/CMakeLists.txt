@@ -64,7 +64,7 @@ target_link_libraries(driver_osvr
 	osvrDisplay
 )
 
-if (WIN32)
+if(WIN32)
 	target_link_libraries(driver_osvr PRIVATE dxgi)
 endif()
 

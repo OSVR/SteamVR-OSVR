@@ -14,3 +14,7 @@ set(OSVR_DISPLAY_SOURCES
 add_library(osvrDisplay STATIC ${OSVR_DISPLAY_SOURCES})
 target_link_libraries(osvrDisplay osvr::osvrUtil)
 
+if(UNIX AND CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+	set_target_properties(osvrDisplay PROPERTIES COMPILE_FLAGS "-fPIC")
+endif()
+
