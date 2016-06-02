@@ -87,11 +87,9 @@ vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32
 
 vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id)
 {
-    char snString[64];
-    vr::ETrackedPropertyError properr;
     for (auto& tracked_device : trackedDevices_) {
-        tracked_device->GetStringTrackedDeviceProperty(vr::Prop_SerialNumber_String, snString, 64, &properr);
-        if (0 == std::strcmp(id, snString)) {
+        const auto device_id = getDeviceId(tracked_device.get());
+        if (0 == std::strcmp(id, device_id.c_str())) {
             OSVR_LOG(info) << "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " << id << ".\n";
             return tracked_device.get();
         }
@@ -120,5 +118,17 @@ void ServerDriver_OSVR::EnterStandby()
 void ServerDriver_OSVR::LeaveStandby()
 {
     // TODO
+}
+
+std::string ServerDriver_OSVR::getDeviceId(vr::ITrackedDeviceServerDriver* device)
+{
+    char device_id[vr::k_unMaxPropertyStringSize];
+    vr::ETrackedPropertyError property_error;
+    device->GetStringTrackedDeviceProperty(vr::Prop_SerialNumber_String, device_id, vr::k_unMaxPropertyStringSize, &property_error);
+    if (vr::TrackedProp_Success == property_error) {
+        return device_id;
+    } else {
+        return "";
+    }
 }
 

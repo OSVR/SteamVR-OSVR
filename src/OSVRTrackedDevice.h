@@ -209,6 +209,7 @@ private:
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
     std::unique_ptr<Settings> settings_;
+    uint32_t objectId_ = 0;
 
     // Settings
     bool verboseLogging_ = false;

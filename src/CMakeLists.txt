@@ -40,8 +40,8 @@ add_library(driver_osvr
 	Logging.h
 	OSVRTrackedDevice.cpp
 	OSVRTrackedDevice.h
-    OSVRTrackingReference.cpp
-    OSVRTrackingReference.h
+	OSVRTrackingReference.cpp
+	OSVRTrackingReference.h
 	ServerDriver_OSVR.cpp
 	ServerDriver_OSVR.h
 	Settings.h

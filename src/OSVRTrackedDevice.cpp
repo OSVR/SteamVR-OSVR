@@ -70,6 +70,8 @@ OSVRTrackedDevice::~OSVRTrackedDevice()
 
 vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 {
+    objectId_ = object_id;
+
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
 
     // Register tracker callback
@@ -907,7 +909,7 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.shouldApplyHeadModel = true;
 
     self->pose_ = pose;
-    self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
+    self->driver_host_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
 }
 
 float OSVRTrackedDevice::GetIPD()

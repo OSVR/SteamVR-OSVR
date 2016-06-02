@@ -1,14 +1,14 @@
 /** @file
-    @brief OSVR tracking reference
+    @brief OSVR tracking reference (e.g., camera or base station)
 
-    @date 2015
+    @date 2016
 
     @author
     Sensics, Inc.
     <http://sensics.com/osvr>
 */
 
-// Copyright 2015 Sensics, Inc.
+// Copyright 2016 Sensics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@
 #include <openvr_driver.h>
 
 // Library/third-party includes
-#include <osvr/ClientKit/Display.h>
-#include <osvr/Client/RenderManagerConfig.h>
+#include <osvr/ClientKit/ClientKit.h>
 
 // Standard includes
 #include <string>
@@ -46,47 +45,46 @@ public:
     OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
 
     virtual ~OSVRTrackingReference();
-    
-   // ------------------------------------
-   // Management Methods
-   // ------------------------------------
-   /**
-    * This is called before an HMD is returned to the application. It will
-    * always be called before any display or tracking methods. Memory and
-    * processor use by the ITrackedDeviceServerDriver object should be kept to
-    * a minimum until it is activated.  The pose listener is guaranteed to be
-    * valid until Deactivate is called, but should not be used after that
-    * point.
-    */
-   virtual vr::EVRInitError Activate(uint32_t object_id) OSVR_OVERRIDE;
 
-   /**
-    * This is called when The VR system is switching from this Hmd being the
-    * active display to another Hmd being the active display. The driver should
-    * clean whatever memory and thread use it can when it is deactivated.
-    */
-   virtual void Deactivate() OSVR_OVERRIDE;
+    // ------------------------------------
+    // Management Methods
+    // ------------------------------------
+    /**
+     * This is called before an HMD is returned to the application. It will
+     * always be called before any display or tracking methods. Memory and
+     * processor use by the ITrackedDeviceServerDriver object should be kept to
+     * a minimum until it is activated.  The pose listener is guaranteed to be
+     * valid until Deactivate is called, but should not be used after that
+     * point.
+     */
+    virtual vr::EVRInitError Activate(uint32_t object_id) OSVR_OVERRIDE;
 
-   /**
-    * Handles a request from the system to power off this device.
-    */
-   virtual void PowerOff() OSVR_OVERRIDE;
+    /**
+     * This is called when The VR system is switching from this Hmd being the
+     * active display to another Hmd being the active display. The driver should
+     * clean whatever memory and thread use it can when it is deactivated.
+     */
+    virtual void Deactivate() OSVR_OVERRIDE;
 
-   /**
-    * Requests a component interface of the driver for device-specific
-    * functionality. The driver should return NULL if the requested interface
-    * or version is not supported.
-    */
-   virtual void* GetComponent(const char* component_name_and_version) OSVR_OVERRIDE;
+    /**
+     * Handles a request from the system to power off this device.
+     */
+    virtual void PowerOff() OSVR_OVERRIDE;
 
-   /**
-    * A VR Client has made this debug request of the driver. The set of valid
-    * requests is entirely up to the driver and the client to figure out, as is
-    * the format of the response. Responses that exceed the length of the
-    * supplied buffer should be truncated and null terminated.
-    */
-   virtual void DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size) OSVR_OVERRIDE;
+    /**
+     * Requests a component interface of the driver for device-specific
+     * functionality. The driver should return NULL if the requested interface
+     * or version is not supported.
+     */
+    virtual void* GetComponent(const char* component_name_and_version) OSVR_OVERRIDE;
 
+    /**
+     * A VR Client has made this debug request of the driver. The set of valid
+     * requests is entirely up to the driver and the client to figure out, as is
+     * the format of the response. Responses that exceed the length of the
+     * supplied buffer should be truncated and null terminated.
+     */
+    virtual void DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size) OSVR_OVERRIDE;
 
     // ------------------------------------
     // Tracking Methods
@@ -137,22 +135,39 @@ public:
      * than @c k_unMaxPropertyStringSize.
      */
     virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-    
+
+protected:
+    const char* GetId();
+
 private:
     std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
-    static void RefTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
+    static void TrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
+
+    /**
+     * Read configuration settings from configuration file.
+     */
     void configure();
-    
+
     osvr::clientkit::ClientContext& m_Context;
     vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
     std::unique_ptr<Settings> settings_;
+    uint32_t objectId_ = 0;
 
     // Settings
     bool verboseLogging_ = false;
-    
+    std::string trackerPath_ = "/camera";
+
+    // Default values are those for the OSVR HDK IR camera
+    float fovLeft_ = 35.235f; // degrees
+    float fovRight_ = 35.235f; // degrees
+    float fovTop_ = 27.95f; // degrees
+    float fovBottom_ = 27.95f; // degrees
+    float minTrackingRange_ = 0.15f; // meters
+    float maxTrackingRange_ = 1.5f; // meters
 };
 
-#endif // INCLUDED_OSVRTrackingReference_h_GUID_250D4551_4054_9D37_A8F6_F2FCFDB1C188
+#endif // INCLUDED_OSVRTrackingReference_h_GUID_4D3F2E76_D0A2_4876_A7E9_CF0E772B02EF
+
