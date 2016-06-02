@@ -561,14 +561,14 @@ void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue
     map(pose.qDriverFromHeadRotation) = Eigen::Quaterniond::Identity();
 
     // Position
-    Eigen::Vector3d::Map(pose.vecPosition) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecPosition) = osvr::util::vecMap(report->pose.translation);
 
     // Position velocity and acceleration are not currently consistently provided
     Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
     Eigen::Vector3d::Map(pose.vecAcceleration) = Eigen::Vector3d::Zero();
 
     // Orientation
-    map(pose.qRotation) = Eigen::Quaterniond::Identity();
+    map(pose.qRotation) = osvr::util::fromQuat(report->pose.rotation);
 
     // Angular velocity and acceleration are not currently consistently provided
     Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();

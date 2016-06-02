@@ -158,13 +158,14 @@ private:
 
     // Settings
     bool verboseLogging_ = false;
-    std::string trackerPath_ = "/camera";
+    std::string trackerPath_ = "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera";
 
     // Default values are those for the OSVR HDK IR camera
     float fovLeft_ = 35.235f; // degrees
     float fovRight_ = 35.235f; // degrees
     float fovTop_ = 27.95f; // degrees
     float fovBottom_ = 27.95f; // degrees
+
     float minTrackingRange_ = 0.15f; // meters
     float maxTrackingRange_ = 1.5f; // meters
 };
