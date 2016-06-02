@@ -118,7 +118,12 @@ public:
     virtual void LeaveStandby() OSVR_OVERRIDE;
 
 private:
-    std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
+    /**
+     * Returns the serial number of the tracked device.
+     */
+    std::string getDeviceId(vr::ITrackedDeviceServerDriver* device);
+
+    std::vector<std::unique_ptr<vr::ITrackedDeviceServerDriver>> trackedDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
 };
 

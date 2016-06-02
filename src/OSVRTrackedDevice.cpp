@@ -70,6 +70,8 @@ OSVRTrackedDevice::~OSVRTrackedDevice()
 
 vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 {
+    objectId_ = object_id;
+
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
 
     // Register tracker callback
@@ -171,6 +173,10 @@ void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer,
 {
     // TODO
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
+    // return empty string for now
+    if (response_buffer_size > 0) {
+        response_buffer[0] = '\0';
+    }
 }
 
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
@@ -633,11 +639,11 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
     case vr::Prop_CurrentUniverseId_Uint64:
         if (error)
             *error = vr::TrackedProp_Success;
-        return 0;
+        return 1;
     case vr::Prop_PreviousUniverseId_Uint64:
         if (error)
             *error = vr::TrackedProp_Success;
-        return 0;
+        return 1;
     case vr::Prop_DisplayFirmwareVersion_Uint64:
         /// @todo This really should be read from the server
         if (error)
@@ -903,7 +909,7 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.shouldApplyHeadModel = true;
 
     self->pose_ = pose;
-    self->driver_host_->TrackedDevicePoseUpdated(0, self->pose_); /// @fixme figure out ID correctly, don't hardcode to zero
+    self->driver_host_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
 }
 
 float OSVRTrackedDevice::GetIPD()

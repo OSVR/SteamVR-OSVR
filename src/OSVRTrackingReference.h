@@ -1,14 +1,14 @@
 /** @file
-    @brief OSVR tracked device
+    @brief OSVR tracking reference (e.g., camera or base station)
 
-    @date 2015
+    @date 2016
 
     @author
     Sensics, Inc.
     <http://sensics.com/osvr>
 */
 
-// Copyright 2015 Sensics, Inc.
+// Copyright 2016 Sensics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,31 +22,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
-#define INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
+#ifndef INCLUDED_OSVRTrackingReference_h_GUID_250D4551_4054_9D37_A8F6_F2FCFDB1C188
+#define INCLUDED_OSVRTrackingReference_h_GUID_250D4551_4054_9D37_A8F6_F2FCFDB1C188
 
 // Internal Includes
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 #include "Settings.h"
-#include "display/Display.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
 
 // Library/third-party includes
-#include <osvr/ClientKit/Display.h>
-#include <osvr/Client/RenderManagerConfig.h>
+#include <osvr/ClientKit/ClientKit.h>
 
 // Standard includes
 #include <string>
 #include <memory>
 
-class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
+class OSVRTrackingReference : public vr::ITrackedDeviceServerDriver {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
 
-    virtual ~OSVRTrackedDevice();
+    virtual ~OSVRTrackingReference();
+
     // ------------------------------------
     // Management Methods
     // ------------------------------------
@@ -86,50 +85,6 @@ public:
      * supplied buffer should be truncated and null terminated.
      */
     virtual void DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size) OSVR_OVERRIDE;
-
-    // ------------------------------------
-    // Display Methods
-    // ------------------------------------
-
-    /**
-     * Size and position that the window needs to be on the VR display.
-     */
-    virtual void GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
-
-    /**
-     * Returns true if the display is extending the desktop.
-     */
-    virtual bool IsDisplayOnDesktop() OSVR_OVERRIDE;
-
-    /**
-     * Returns true if the display is real and not a fictional display.
-     */
-    virtual bool IsDisplayRealDisplay() OSVR_OVERRIDE;
-
-    /**
-     * Suggested size for the intermediate render target that the distortion
-     * pulls from.
-     */
-    virtual void GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
-
-    /**
-     * Gets the viewport in the frame buffer to draw the output of the distortion
-     * into
-     */
-    virtual void GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
-
-    /**
-     * The components necessary to build your own projection matrix in case your
-     * application is doing something fancy like infinite Z
-     */
-    virtual void GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom) OSVR_OVERRIDE;
-
-    /**
-     * Returns the result of the distortion function for the specified eye and
-     * input UVs. UVs go from 0,0 in the upper left of that eye's viewport and
-     * 1,1 in the lower right of that eye's viewport.
-     */
-    virtual vr::DistortionCoordinates_t ComputeDistortion(vr::EVREye eye, float u, float v) OSVR_OVERRIDE;
 
     // ------------------------------------
     // Tracking Methods
@@ -186,24 +141,14 @@ protected:
 
 private:
     std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
-
-    /**
-     * Callback function which is called whenever new data has been received
-     * from the tracker.
-     */
-    static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
-
-    float GetIPD();
+    static void TrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 
     /**
      * Read configuration settings from configuration file.
      */
     void configure();
 
-    const std::string m_DisplayDescription;
     osvr::clientkit::ClientContext& m_Context;
-    osvr::clientkit::DisplayConfig m_DisplayConfig;
-    osvr::client::RenderManagerConfig m_RenderManagerConfig;
     vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
     vr::DriverPose_t pose_;
@@ -213,8 +158,17 @@ private:
 
     // Settings
     bool verboseLogging_ = false;
-    osvr::display::Display display_ = {};
+    std::string trackerPath_ = "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera";
+
+    // Default values are those for the OSVR HDK IR camera
+    float fovLeft_ = 35.235f; // degrees
+    float fovRight_ = 35.235f; // degrees
+    float fovTop_ = 27.95f; // degrees
+    float fovBottom_ = 27.95f; // degrees
+
+    float minTrackingRange_ = 0.15f; // meters
+    float maxTrackingRange_ = 1.5f; // meters
 };
 
-#endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
+#endif // INCLUDED_OSVRTrackingReference_h_GUID_4D3F2E76_D0A2_4876_A7E9_CF0E772B02EF
 

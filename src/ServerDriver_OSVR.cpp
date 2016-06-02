@@ -26,6 +26,7 @@
 #include "ServerDriver_OSVR.h"
 
 #include "OSVRTrackedDevice.h"      // for OSVRTrackedDevice
+#include "OSVRTrackingReference.h"  // for OSVRTrackingReference
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
 #include "osvr_platform.h"          // for OSVR_PATH_SEPARATOR
@@ -50,6 +51,7 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServer
 
     const std::string display_description = context_->getStringParameter("/display");
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(display_description, *(context_.get()), driver_host));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get()), driver_host));
 
     return vr::VRInitError_None;
 }
@@ -86,7 +88,8 @@ vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32
 vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id)
 {
     for (auto& tracked_device : trackedDevices_) {
-        if (0 == std::strcmp(id, tracked_device->GetId())) {
+        const auto device_id = getDeviceId(tracked_device.get());
+        if (0 == std::strcmp(id, device_id.c_str())) {
             OSVR_LOG(info) << "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " << id << ".\n";
             return tracked_device.get();
         }
@@ -115,5 +118,17 @@ void ServerDriver_OSVR::EnterStandby()
 void ServerDriver_OSVR::LeaveStandby()
 {
     // TODO
+}
+
+std::string ServerDriver_OSVR::getDeviceId(vr::ITrackedDeviceServerDriver* device)
+{
+    char device_id[vr::k_unMaxPropertyStringSize];
+    vr::ETrackedPropertyError property_error;
+    device->GetStringTrackedDeviceProperty(vr::Prop_SerialNumber_String, device_id, vr::k_unMaxPropertyStringSize, &property_error);
+    if (vr::TrackedProp_Success == property_error) {
+        return device_id;
+    } else {
+        return "";
+    }
 }
 

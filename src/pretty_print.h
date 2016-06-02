@@ -183,6 +183,10 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_AudioFirmwareVersion_Uint64";
         case vr::Prop_CameraCompatibilityMode_Int32:
             return "Prop_CameraCompatibilityMode_Int32";
+        case vr::Prop_ScreenshotHorizontalFieldOfViewDegrees_Float:
+            return "Prop_ScreenshotHorizontalFieldOfViewDegrees_Float";
+        case vr::Prop_ScreenshotVerticalFieldOfViewDegrees_Float:
+            return "Prop_ScreenshotVerticalFieldOfViewDegrees_Float";
         case vr::Prop_AttachedDeviceId_String:
             return "Prop_AttachedDeviceId_String";
         case vr::Prop_SupportedButtons_Uint64:
