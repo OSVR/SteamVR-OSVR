@@ -188,8 +188,8 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
     *x = m_RenderManagerConfig.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
     *y = m_RenderManagerConfig.getWindowYPosition();
-    *width = displayDims.width;
-    *height = displayDims.height;
+    *width = static_cast<uint32_t>(displayDims.width);
+    *height = static_cast<uint32_t>(displayDims.height);
 
 #ifdef OSVR_WINDOWS
     // ... until we've added code for other platforms, this is Windows-only
@@ -232,10 +232,10 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
     osvr::clientkit::RelativeViewport viewPort = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
-    *x = viewPort.left;
-    *y = viewPort.bottom;
-    *width = viewPort.width;
-    *height = viewPort.height;
+    *x = static_cast<uint32_t>(viewPort.left);
+    *y = static_cast<uint32_t>(viewPort.bottom);
+    *width = static_cast<uint32_t>(viewPort.width);
+    *height = static_cast<uint32_t>(viewPort.height);
 }
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom)
@@ -413,7 +413,7 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
     case vr::Prop_DisplayFrequency_Float:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.verticalRefreshRate;
+        return static_cast<float>(display_.verticalRefreshRate);
     case vr::Prop_UserIpdMeters_Float:
         if (error)
             *error = vr::TrackedProp_Success;
@@ -538,11 +538,11 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
     case vr::Prop_EdidVendorID_Int32:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.edidVendorId;
+        return static_cast<int32_t>(display_.edidVendorId);
     case vr::Prop_EdidProductID_Int32:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.edidProductId;
+        return static_cast<int32_t>(display_.edidProductId);
     case vr::Prop_DisplayGCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -924,7 +924,8 @@ float OSVRTrackedDevice::GetIPD()
         OSVR_LOG(err) << "OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n";
     }
 
-    return (osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm();
+    float ipd = static_cast<float>((osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm());
+    return ipd;
 }
 
 const char* OSVRTrackedDevice::GetId()
