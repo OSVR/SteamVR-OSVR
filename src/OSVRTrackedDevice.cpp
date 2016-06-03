@@ -172,6 +172,10 @@ void* OSVRTrackedDevice::GetComponent(const char* component_name_and_version)
 void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size)
 {
     // TODO
+
+    // Log the requests just to see what info clients are looking for
+    OSVR_LOG(debug) << "Received debug request [" << request << "] with response buffer size of " << response_buffer_size << "].";
+
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
     // return empty string for now
     if (response_buffer_size > 0) {
