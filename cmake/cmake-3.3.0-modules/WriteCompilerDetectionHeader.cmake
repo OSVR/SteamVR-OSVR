@@ -253,8 +253,8 @@
 #=============================================================================
 
 
-include(${CMAKE_CURRENT_LIST_DIR}/CMakeParseArguments.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/CMakeCompilerIdDetection.cmake)
+include(CMakeParseArguments)
+include(CMakeCompilerIdDetection)
 
 function(_load_compiler_variables CompilerId lang)
   include("${CMAKE_ROOT}/Modules/Compiler/${CompilerId}-${lang}-FeatureTests.cmake" OPTIONAL)
