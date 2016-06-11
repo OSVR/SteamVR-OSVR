@@ -139,8 +139,7 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
         OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
-    /// @fixme figure out ID correctly, don't hardcode to zero
-    driver_host_->ProximitySensorState(0, true);
+    driver_host_->ProximitySensorState(objectId_, true);
 
     OSVR_LOG(trace) << "OSVRTrackedDevice::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
