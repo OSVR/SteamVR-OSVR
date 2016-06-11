@@ -62,8 +62,8 @@ int main(int argc, char* argv[])
         cout << "  Rotation: " << to_string(display.rotation) << endl;
         cout << "  Refresh rate: " << display.verticalRefreshRate << endl;
         cout << "  " << (display.attachedToDesktop ? "Extended mode" : "Direct mode") << endl;
-        cout << "  EDID vendor ID: " << display.edidVendorId << endl;
-        cout << "  EDID product ID: " << display.edidProductId << endl;
+        cout << "  EDID vendor ID: 0x" << std::hex << display.edidVendorId << std::dec << endl;
+        cout << "  EDID product ID: 0x" << std::hex << display.edidProductId << std::dec << endl;
         cout << "" << endl;
     }
 
