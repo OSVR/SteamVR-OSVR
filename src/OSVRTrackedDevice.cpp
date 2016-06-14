@@ -166,12 +166,16 @@ void* OSVRTrackedDevice::GetComponent(const char* component_name_and_version)
     }
 
     // Override this to add a component to a driver
-    return NULL;
+    return nullptr;
 }
 
 void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size)
 {
     // TODO
+
+    // Log the requests just to see what info clients are looking for
+    OSVR_LOG(debug) << "Received debug request [" << request << "] with response buffer size of " << response_buffer_size << "].";
+
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
     // return empty string for now
     if (response_buffer_size > 0) {
@@ -188,8 +192,8 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
     *x = m_RenderManagerConfig.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
     *y = m_RenderManagerConfig.getWindowYPosition();
-    *width = displayDims.width;
-    *height = displayDims.height;
+    *width = static_cast<uint32_t>(displayDims.width);
+    *height = static_cast<uint32_t>(displayDims.height);
 
 #ifdef OSVR_WINDOWS
     // ... until we've added code for other platforms, this is Windows-only
@@ -232,10 +236,10 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
     osvr::clientkit::RelativeViewport viewPort = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
-    *x = viewPort.left;
-    *y = viewPort.bottom;
-    *width = viewPort.width;
-    *height = viewPort.height;
+    *x = static_cast<uint32_t>(viewPort.left);
+    *y = static_cast<uint32_t>(viewPort.bottom);
+    *width = static_cast<uint32_t>(viewPort.width);
+    *height = static_cast<uint32_t>(viewPort.height);
 }
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom)
@@ -271,21 +275,10 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 {
     const bool default_value = false;
 
-    if (isWrongDataType(prop, bool())) {
+    const auto result = checkProperty(prop, bool());
+    if (vr::TrackedProp_Success != result) {
         if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
+            *error = result;
         return default_value;
     }
 
@@ -376,21 +369,10 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
 {
     const float default_value = 0.0f;
 
-    if (isWrongDataType(prop, float())) {
+    const auto result = checkProperty(prop, float());
+    if (vr::TrackedProp_Success != result) {
         if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
+            *error = result;
         return default_value;
     }
 
@@ -413,7 +395,7 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
     case vr::Prop_DisplayFrequency_Float:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.verticalRefreshRate;
+        return static_cast<float>(display_.verticalRefreshRate);
     case vr::Prop_UserIpdMeters_Float:
         if (error)
             *error = vr::TrackedProp_Success;
@@ -501,21 +483,10 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
 {
     const int32_t default_value = 0;
 
-    if (isWrongDataType(prop, int32_t())) {
+    const auto result = checkProperty(prop, int32_t());
+    if (vr::TrackedProp_Success != result) {
         if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
+            *error = result;
         return default_value;
     }
 
@@ -538,11 +509,11 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
     case vr::Prop_EdidVendorID_Int32:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.edidVendorId;
+        return static_cast<int32_t>(display_.edidVendorId);
     case vr::Prop_EdidProductID_Int32:
         if (error)
             *error = vr::TrackedProp_Success;
-        return display_.edidProductId;
+        return static_cast<int32_t>(display_.edidProductId);
     case vr::Prop_DisplayGCType_Int32:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -586,21 +557,10 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
 {
     const uint64_t default_value = 0;
 
-    if (isWrongDataType(prop, uint64_t())) {
+    const auto result = checkProperty(prop, uint64_t());
+    if (vr::TrackedProp_Success != result) {
         if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
+            *error = result;
         return default_value;
     }
 
@@ -690,21 +650,10 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
     vr::HmdMatrix34_t default_value;
     map(default_value) = Matrix34f::Identity();
 
-    if (isWrongDataType(prop, vr::HmdMatrix34_t())) {
+    const auto result = checkProperty(prop, vr::HmdMatrix34_t());
+    if (vr::TrackedProp_Success != result) {
         if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
+            *error = result;
         return default_value;
     }
 
@@ -734,35 +683,25 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
     return default_value;
 }
 
-uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char *pchValue, uint32_t unBufferSize, vr::ETrackedPropertyError *pError)
+uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError *error)
 {
     uint32_t default_value = 0;
-    if (isWrongDataType(prop, pchValue)) {
-        if (pError)
-            *pError = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
 
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (pError)
-            *pError = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (pError)
-            *pError = vr::TrackedProp_InvalidDevice;
+    const auto result = checkProperty(prop, value);
+    if (vr::TrackedProp_Success != result) {
+        if (error)
+            *error = result;
         return default_value;
     }
 
     OSVR_LOG(trace) << "OSVRTrackedDevice::GetStringTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
-    std::string sValue = GetStringTrackedDeviceProperty(prop, pError);
-    if (*pError == vr::TrackedProp_Success) {
-        if (sValue.size() + 1 > unBufferSize) {
-            *pError = vr::TrackedProp_BufferTooSmall;
+    std::string sValue = GetStringTrackedDeviceProperty(prop, error);
+    if (*error == vr::TrackedProp_Success) {
+        if (sValue.size() + 1 > buffer_size) {
+            *error = vr::TrackedProp_BufferTooSmall;
         } else {
-            valveStrCpy(sValue, pchValue, unBufferSize);
+            valveStrCpy(sValue, value, buffer_size);
         }
         return static_cast<uint32_t>(sValue.size()) + 1;
     }
@@ -924,7 +863,8 @@ float OSVRTrackedDevice::GetIPD()
         OSVR_LOG(err) << "OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n";
     }
 
-    return (osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm();
+    float ipd = static_cast<float>((osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm());
+    return ipd;
 }
 
 const char* OSVRTrackedDevice::GetId()
@@ -1005,5 +945,23 @@ void OSVRTrackedDevice::configure()
     OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
     OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
     OSVR_LOG(info) << "  EDID product ID: " << display_.edidProductId;
+}
+
+template <typename T>
+vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDeviceProperty prop, const T&)
+{
+    if (isWrongDataType(prop, T())) {
+        return vr::TrackedProp_WrongDataType;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        return vr::TrackedProp_WrongDeviceClass;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        return vr::TrackedProp_InvalidDevice;
+    }
+
+    return vr::TrackedProp_Success;
 }
 
