@@ -1,7 +1,7 @@
 language: cpp
 
 compiler:
-  - clang
+  #- clang
   - gcc
 
 os:
@@ -39,7 +39,7 @@ addons:
     - boost-latest
     - george-edison55-precise-backports
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.7
+    #- llvm-toolchain-precise-3.7
     packages:
     - libboost-thread1.55-dev
     - libboost-system1.55-dev
@@ -52,7 +52,7 @@ addons:
     - cmake
     - gcc-5
     - g++-5
-    - clang-3.7
+    #- clang-3.7
     - libudev1
     - libudev-dev
 
