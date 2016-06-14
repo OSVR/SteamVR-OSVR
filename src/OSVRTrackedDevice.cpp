@@ -194,8 +194,8 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     *width = static_cast<uint32_t>(displayDims.width);
     *height = static_cast<uint32_t>(displayDims.height);
 
-#ifdef OSVR_WINDOWS
-    // ... until we've added code for other platforms, this is Windows-only
+#if defined(OSVR_WINDOWS) || defined(OSVR_MACOSX)
+    // ... until we've added code for other platforms
     *x = display_.position.x;
     *y = display_.position.y;
     *height = display_.size.height;
@@ -227,9 +227,8 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
     uint32_t w, h;
     GetWindowBounds(&x, &y, &w, &h);
 
-    // conversion to avoid compiler warnings
-    *width = uint32_t(w * overfill_factor);
-    *height = uint32_t(h * overfill_factor);
+    *width = static_cast<uint32_t>(w * overfill_factor);
+    *height = static_cast<uint32_t>(h * overfill_factor);
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
@@ -910,8 +909,8 @@ void OSVRTrackedDevice::configure()
         display_.rotation = osvr::display::Rotation::Zero;
         display_.verticalRefreshRate = 60.0;
         display_.attachedToDesktop = true;
-        display_.edidVendorId = 53838;
-        display_.edidProductId = 4121;
+        display_.edidVendorId = 0xd24e;// 53838
+        display_.edidProductId = 0x1019; // 4121
     }
 
     if (display_found) {
