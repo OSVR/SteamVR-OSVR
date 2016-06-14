@@ -1,7 +1,7 @@
 language: cpp
 
 compiler:
-  #- clang
+  - clang
   - gcc
 
 os:
@@ -16,6 +16,9 @@ matrix:
   exclude:
   - os: osx
     compiler: gcc
+  # Temporarily disable clang until the LLVM apt repository is back online.
+  - os: linux
+    compiler: clang
 
 cache:
   directories:
