@@ -1,5 +1,5 @@
 /** @file
-    @brief Header
+    @brief Display struct and related types.
 
     @date 2016
 
