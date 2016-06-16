@@ -187,6 +187,8 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_ScreenshotHorizontalFieldOfViewDegrees_Float";
         case vr::Prop_ScreenshotVerticalFieldOfViewDegrees_Float:
             return "Prop_ScreenshotVerticalFieldOfViewDegrees_Float";
+        case vr::Prop_DisplaySuppressed_Bool:
+            return "Prop_DisplaySuppressed_Bool";
         case vr::Prop_AttachedDeviceId_String:
             return "Prop_AttachedDeviceId_String";
         case vr::Prop_SupportedButtons_Uint64:
