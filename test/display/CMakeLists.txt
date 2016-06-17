@@ -11,5 +11,6 @@ target_include_directories(osvr_print_displays SYSTEM PRIVATE "${CMAKE_SOURCE_DI
 set_property(TARGET osvr_print_displays PROPERTY CXX_STANDARD 11)
 target_compile_features(osvr_print_displays PRIVATE cxx_override)
 
-
+install(TARGETS osvr_print_displays
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime)
 
