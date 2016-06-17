@@ -1,4 +1,4 @@
-## Desciprion of issue
+## Description of issue
 
 *Describe the issue you've encountered. What is the exepected and actual behavior? What steps have you tried to fix the problem?*
 
