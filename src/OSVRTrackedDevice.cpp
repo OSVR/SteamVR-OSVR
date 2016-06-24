@@ -54,18 +54,19 @@
 #include <fstream>
 #include <algorithm>        // for std::find
 
-OSVRTrackedDevice::OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_DisplayDescription(display_description), m_Context(context), driver_host_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
+OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : context_(context), driverHost_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
     settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
     if (driver_log) {
         Logging::instance().setDriverLog(driver_log);
     }
+
     configure();
 }
 
 OSVRTrackedDevice::~OSVRTrackedDevice()
 {
-    driver_host_ = nullptr;
+    driverHost_ = nullptr;
 }
 
 vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
@@ -75,28 +76,28 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
 
     // Register tracker callback
-    if (m_TrackerInterface.notEmpty()) {
-        m_TrackerInterface.free();
+    if (trackerInterface_.notEmpty()) {
+        trackerInterface_.free();
     }
 
     // Ensure context is fully started up
     OSVR_LOG(trace) << "Waiting for the context to fully start up...\n";
     std::time_t startTime = std::time(nullptr);
-    while (!m_Context.checkStatus()) {
-        m_Context.update();
+    while (!context_.checkStatus()) {
+        context_.update();
         if (std::time(nullptr) > startTime + waitTime) {
             OSVR_LOG(err) << "Context startup timed out!\n";
             return vr::VRInitError_Driver_Failed;
         }
     }
 
-    m_DisplayConfig = osvr::clientkit::DisplayConfig(m_Context);
+    displayConfig_ = osvr::clientkit::DisplayConfig(context_);
 
     // Ensure display is fully started up
     OSVR_LOG(trace) << "Waiting for the display to fully start up, including receiving initial pose update...\n";
     startTime = std::time(nullptr);
-    while (!m_DisplayConfig.checkStartup()) {
-        m_Context.update();
+    while (!displayConfig_.checkStartup()) {
+        context_.update();
         if (std::time(nullptr) > startTime + waitTime) {
             OSVR_LOG(err) << "Display startup timed out!\n";
             return vr::VRInitError_Driver_Failed;
@@ -104,26 +105,26 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     }
 
     // Verify valid display config
-    if ((m_DisplayConfig.getNumViewers() != 1) && (m_DisplayConfig.getViewer(0).getNumEyes() != 2) && (m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() == 1) && (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
+    if ((displayConfig_.getNumViewers() != 1) && (displayConfig_.getViewer(0).getNumEyes() != 2) && (displayConfig_.getViewer(0).getEye(0).getNumSurfaces() == 1) && (displayConfig_.getViewer(0).getEye(1).getNumSurfaces() != 1)) {
         OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Unexpected display parameters!\n";
 
-        if (m_DisplayConfig.getNumViewers() < 1) {
+        if (displayConfig_.getNumViewers() < 1) {
             OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least one viewer must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
-        } else if (m_DisplayConfig.getViewer(0).getNumEyes() < 2) {
+        } else if (displayConfig_.getViewer(0).getNumEyes() < 2) {
             OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least two eyes must exist.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
-        } else if ((m_DisplayConfig.getViewer(0).getEye(0).getNumSurfaces() < 1) || (m_DisplayConfig.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
+        } else if ((displayConfig_.getViewer(0).getEye(0).getNumSurfaces() < 1) || (displayConfig_.getViewer(0).getEye(1).getNumSurfaces() < 1)) {
             OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): At least one surface must exist for each eye.\n";
             return vr::VRInitError_Driver_HmdDisplayNotFound;
         }
     }
 
     // Register tracker callback
-    m_TrackerInterface = m_Context.getInterface("/me/head");
-    m_TrackerInterface.registerCallback(&OSVRTrackedDevice::HmdTrackerCallback, this);
+    trackerInterface_ = context_.getInterface("/me/head");
+    trackerInterface_.registerCallback(&OSVRTrackedDevice::HmdTrackerCallback, this);
 
-    auto configString = m_Context.getStringParameter("/renderManagerConfig");
+    auto configString = context_.getStringParameter("/renderManagerConfig");
 
     // If the /renderManagerConfig parameter is missing from the configuration
     // file, use an empty dictionary instead. This allows the render manager
@@ -134,12 +135,12 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     }
 
     try {
-        m_RenderManagerConfig.parse(configString);
+        renderManagerConfig_.parse(configString);
     } catch(const std::exception& e) {
         OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
-    driver_host_->ProximitySensorState(objectId_, true);
+    driverHost_->ProximitySensorState(objectId_, true);
 
     OSVR_LOG(trace) << "OSVRTrackedDevice::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
@@ -148,8 +149,8 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 void OSVRTrackedDevice::Deactivate()
 {
     /// Have to force freeing here
-    if (m_TrackerInterface.notEmpty()) {
-        m_TrackerInterface.free();
+    if (trackerInterface_.notEmpty()) {
+        trackerInterface_.free();
     }
 }
 
@@ -184,13 +185,13 @@ void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer,
 
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
 {
-    int nDisplays = m_DisplayConfig.getNumDisplayInputs();
+    int nDisplays = displayConfig_.getNumDisplayInputs();
     if (nDisplays != 1) {
         OSVR_LOG(err) << "OSVRTrackedDevice::OSVRTrackedDevice(): Unexpected display number of displays!\n";
     }
-    osvr::clientkit::DisplayDimensions displayDims = m_DisplayConfig.getDisplayDimensions(0);
-    *x = m_RenderManagerConfig.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
-    *y = m_RenderManagerConfig.getWindowYPosition();
+    osvr::clientkit::DisplayDimensions displayDims = displayConfig_.getDisplayDimensions(0);
+    *x = renderManagerConfig_.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
+    *y = renderManagerConfig_.getWindowYPosition();
     *width = static_cast<uint32_t>(displayDims.width);
     *height = static_cast<uint32_t>(displayDims.height);
 
@@ -233,7 +234,7 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
-    osvr::clientkit::RelativeViewport viewPort = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
+    osvr::clientkit::RelativeViewport viewPort = displayConfig_.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
     *x = static_cast<uint32_t>(viewPort.left);
     *y = static_cast<uint32_t>(viewPort.bottom);
     *width = static_cast<uint32_t>(viewPort.width);
@@ -244,7 +245,7 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* rig
 {
     // Reference: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetProjectionRaw
     // SteamVR expects top and bottom to be swapped!
-    osvr::clientkit::ProjectionClippingPlanes pl = m_DisplayConfig.getViewer(0).getEye(eye).getSurface(0).getProjectionClippingPlanes();
+    osvr::clientkit::ProjectionClippingPlanes pl = displayConfig_.getViewer(0).getEye(eye).getSurface(0).getProjectionClippingPlanes();
     *left = static_cast<float>(pl.left);
     *right = static_cast<float>(pl.right);
     *bottom = static_cast<float>(pl.top); // SWAPPED
@@ -254,6 +255,9 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* rig
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
     /// @todo FIXME Compute distortion using display configuration data
+
+    OSVR_LOG(trace) << "OSVRTrackedDevice::ComputeDistortion() called.";
+
     vr::DistortionCoordinates_t coords;
     coords.rfRed[0] = u;
     coords.rfRed[1] = v;
@@ -261,6 +265,18 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     coords.rfBlue[1] = v;
     coords.rfGreen[0] = u;
     coords.rfGreen[1] = v;
+
+    // TODO
+#if 0
+    Float2 osvr::renderkit::DistortionCorrectTextureCoordinate(
+        const size_t eye, Float2 const& inCoords,
+        const DistortionParameters& distort, const size_t color,
+        const float overfillFactor,
+        const std::vector< std::unique_ptr<UnstructuredMeshInterpolator> >& interpolators);
+#endif
+
+
+
     return coords;
 }
 
@@ -846,18 +862,18 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.shouldApplyHeadModel = true;
 
     self->pose_ = pose;
-    self->driver_host_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
+    self->driverHost_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
 }
 
 float OSVRTrackedDevice::GetIPD()
 {
     OSVR_Pose3 leftEye, rightEye;
 
-    if (m_DisplayConfig.getViewer(0).getEye(0).getPose(leftEye) != true) {
+    if (displayConfig_.getViewer(0).getEye(0).getPose(leftEye) != true) {
         OSVR_LOG(err) << "OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get left eye pose!\n";
     }
 
-    if (m_DisplayConfig.getViewer(0).getEye(1).getPose(rightEye) != true) {
+    if (displayConfig_.getViewer(0).getEye(1).getPose(rightEye) != true) {
         OSVR_LOG(err) << "OSVRTrackedDevice::GetHeadFromEyePose(): Unable to get right eye pose!\n";
     }
 
@@ -943,6 +959,31 @@ void OSVRTrackedDevice::configure()
     OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
     OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
     OSVR_LOG(info) << "  EDID product ID: " << display_.edidProductId;
+
+}
+
+void OSVRTrackedDevice::configureDistortionParameters()
+{
+    // Parse the display descriptor
+    displayDescription_ = context_.getStringParameter("/display");
+    displayConfiguration_ = OSVRDisplayConfiguration(displayDescription_);
+
+    // Initialize the distortion parameters
+    for (size_t i = 0; i < displayConfiguration_.getEyes().size(); ++i) {
+        osvr::renderkit::DistortionParameters distortion(displayConfiguration_, i);
+        distortion.m_desiredTriangles = 200 * 64;
+        distortionParameters_.push_back(distortion);
+    }
+
+    // FIXME
+    // Make the interpolators to be used by this eye.
+#if 0
+    std::vector<std::unique_ptr<UnstructuredMeshInterpolator>> interpolators;
+    if (!makeUnstructuredMeshInterpolators(distort, eye, interpolators)) {
+        std::cerr << "ComputeDistortionMesh: Could not create mesh interpolators" << std::endl;
+        return ret;
+    }
+#endif
 }
 
 template <typename T>

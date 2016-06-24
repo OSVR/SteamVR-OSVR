@@ -64,6 +64,7 @@ target_link_libraries(driver_osvr
 	util-headers
 	jsoncpp_lib
 	osvrDisplay
+	osvrRenderManager
 )
 
 if(WIN32)

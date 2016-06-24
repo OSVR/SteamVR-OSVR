@@ -28,6 +28,7 @@ option(BUILD_TESTS "Build test programs and unit tests." OFF)
 #
 find_package(OpenVR REQUIRED)
 find_package(osvr REQUIRED)
+find_package(osvrRenderManager REQUIRED)
 find_package(jsoncpp REQUIRED)
 if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
 	add_library(jsoncpp_lib INTERFACE)
