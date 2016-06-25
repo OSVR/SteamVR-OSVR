@@ -44,6 +44,7 @@
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>
+#include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
 
 // Standard includes
 #include <cstring>
@@ -254,28 +255,41 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* rig
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
-    /// @todo FIXME Compute distortion using display configuration data
+    OSVR_LOG(trace) << "OSVRTrackedDevice::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::ComputeDistortion() called.";
+    using osvr::renderkit::DistortionCorrectTextureCoordinate;
+    static const size_t COLOR_RED = 0;
+    static const size_t COLOR_GREEN = 1;
+    static const size_t COLOR_BLUE = 2;
+
+    const auto osvr_eye = static_cast<size_t>(eye);
+    const auto distortion_parameters = distortionParameters_[osvr_eye];
+    const auto in_coords = osvr::renderkit::Float2 {{u, v}};
+
+    MeshInterpolators* interpolators = &leftEyeInterpolators_;
+    if (vr::Eye_Right == eye) {
+        interpolators = &rightEyeInterpolators_;
+    }
+
+    auto coords_red = DistortionCorrectTextureCoordinate(
+        static_cast<size_t>(eye), in_coords, distortion_parameters,
+        COLOR_RED, overfillFactor_, *interpolators);
+
+    auto coords_green = DistortionCorrectTextureCoordinate(
+        static_cast<size_t>(eye), in_coords, distortion_parameters,
+        COLOR_GREEN, overfillFactor_, *interpolators);
+
+    auto coords_blue = DistortionCorrectTextureCoordinate(
+        static_cast<size_t>(eye), in_coords, distortion_parameters,
+        COLOR_BLUE, overfillFactor_, *interpolators);
 
     vr::DistortionCoordinates_t coords;
-    coords.rfRed[0] = u;
-    coords.rfRed[1] = v;
-    coords.rfBlue[0] = u;
-    coords.rfBlue[1] = v;
-    coords.rfGreen[0] = u;
-    coords.rfGreen[1] = v;
-
-    // TODO
-#if 0
-    Float2 osvr::renderkit::DistortionCorrectTextureCoordinate(
-        const size_t eye, Float2 const& inCoords,
-        const DistortionParameters& distort, const size_t color,
-        const float overfillFactor,
-        const std::vector< std::unique_ptr<UnstructuredMeshInterpolator> >& interpolators);
-#endif
-
-
+    coords.rfRed[0] = coords_red[0];
+    coords.rfRed[1] = coords_red[1];
+    coords.rfGreen[0] = coords_green[0];
+    coords.rfGreen[1] = coords_green[1];
+    coords.rfBlue[0] = coords_blue[0];
+    coords.rfBlue[1] = coords_blue[1];
 
     return coords;
 }
@@ -299,7 +313,10 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    // Prop_ContainsProximitySensor_Bool spams our log files. Ignoring it here.
+    if (vr::Prop_ContainsProximitySensor_Bool != prop) {
+        OSVR_LOG(trace) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    }
 
     switch (prop) {
     // Properties that apply to all device classes
@@ -975,15 +992,15 @@ void OSVRTrackedDevice::configureDistortionParameters()
         distortionParameters_.push_back(distortion);
     }
 
-    // FIXME
-    // Make the interpolators to be used by this eye.
-#if 0
-    std::vector<std::unique_ptr<UnstructuredMeshInterpolator>> interpolators;
-    if (!makeUnstructuredMeshInterpolators(distort, eye, interpolators)) {
-        std::cerr << "ComputeDistortionMesh: Could not create mesh interpolators" << std::endl;
-        return ret;
+    // Make the interpolators to be used by each eye.
+    if (!makeUnstructuredMeshInterpolators(distortionParameters_[0], 0, leftEyeInterpolators_)) {
+        OSVR_LOG(err) << "OSVRTrackedDevice::configureDistortionParameters(): Could not create mesh interpolators for left eye.";
     }
-#endif
+
+    if (!makeUnstructuredMeshInterpolators(distortionParameters_[1], 1, rightEyeInterpolators_)) {
+        OSVR_LOG(err) << "OSVRTrackedDevice::configureDistortionParameters(): Could not create mesh interpolators for right eye.";
+    }
+
 }
 
 template <typename T>

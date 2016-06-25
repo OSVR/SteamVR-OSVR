@@ -37,12 +37,14 @@
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Client/RenderManagerConfig.h>
 #include <osvr/RenderKit/DistortionParameters.h>
+#include <osvr/RenderKit/UnstructuredMeshInterpolator.h>
 #include <osvr/RenderKit/osvr_display_configuration.h>
 
 // Standard includes
 #include <string>
 #include <memory>
 #include <vector>
+#include <map>
 
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
@@ -234,6 +236,12 @@ private:
     std::vector<osvr::renderkit::DistortionParameters> distortionParameters_;
     OSVRDisplayConfiguration displayConfiguration_;
 
+    // per-eye mesh interpolators
+    using MeshInterpolators = std::vector<std::unique_ptr<osvr::renderkit::UnstructuredMeshInterpolator>>;
+    MeshInterpolators leftEyeInterpolators_;
+    MeshInterpolators rightEyeInterpolators_;
+
+    float overfillFactor_ = 1.0; // TODO get from RenderManager
 
     // Settings
     bool verboseLogging_ = false;
