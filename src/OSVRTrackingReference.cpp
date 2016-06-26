@@ -51,6 +51,7 @@
 
 OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_Context(context), driver_host_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_TrackingReference)
 {
+    OSVR_LOG(trace) << "OSVRTrackingReference::OSVRTrackingReference() called.";
     settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
     if (driver_log) {
         Logging::instance().setDriverLog(driver_log);
@@ -65,6 +66,7 @@ OSVRTrackingReference::~OSVRTrackingReference()
 
 vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 {
+    OSVR_LOG(trace) << "OSVRTrackingReference::Activate() called.";
     objectId_ = object_id;
 
     // Clean up tracker callback if exists
@@ -81,6 +83,8 @@ vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 
 void OSVRTrackingReference::Deactivate()
 {
+    OSVR_LOG(trace) << "OSVRTrackingReference::Deactivate() called.";
+
     // Clean up tracker callback if exists
     if (m_TrackerInterface.notEmpty()) {
         m_TrackerInterface.free();
@@ -141,7 +145,7 @@ bool OSVRTrackingReference::GetBoolTrackedDeviceProperty(vr::ETrackedDevicePrope
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackingReference::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    //OSVR_LOG(trace) << "OSVRTrackingReference::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // Properties that apply to all device classes

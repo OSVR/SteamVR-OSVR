@@ -57,6 +57,9 @@
 
 OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : context_(context), driverHost_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {
+    OSVR_LOG(trace) << "OSVRTrackedDevice::OSVRTrackedDevice() called.";
+
+    OSVR_LOG(debug) << "Client context: " << (&context_);
     settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
     if (driver_log) {
         Logging::instance().setDriverLog(driver_log);
@@ -72,6 +75,8 @@ OSVRTrackedDevice::~OSVRTrackedDevice()
 
 vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 {
+    OSVR_LOG(trace) << "OSVRTrackedDevice::Activate() called.";
+
     objectId_ = object_id;
 
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
@@ -82,25 +87,27 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     }
 
     // Ensure context is fully started up
-    OSVR_LOG(trace) << "Waiting for the context to fully start up...\n";
+    OSVR_LOG(trace) << "OSVRTrackedDevice::Activate(): Waiting for the context to fully start up...\n";
     std::time_t startTime = std::time(nullptr);
     while (!context_.checkStatus()) {
         context_.update();
         if (std::time(nullptr) > startTime + waitTime) {
-            OSVR_LOG(err) << "Context startup timed out!\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Context startup timed out!\n";
             return vr::VRInitError_Driver_Failed;
         }
     }
 
+    configureDistortionParameters();
+
     displayConfig_ = osvr::clientkit::DisplayConfig(context_);
 
     // Ensure display is fully started up
-    OSVR_LOG(trace) << "Waiting for the display to fully start up, including receiving initial pose update...\n";
+    OSVR_LOG(trace) << "OSVRTrackedDevice::Activate(): Waiting for the display to fully start up, including receiving initial pose update...\n";
     startTime = std::time(nullptr);
     while (!displayConfig_.checkStartup()) {
         context_.update();
         if (std::time(nullptr) > startTime + waitTime) {
-            OSVR_LOG(err) << "Display startup timed out!\n";
+            OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Display startup timed out!\n";
             return vr::VRInitError_Driver_Failed;
         }
     }
@@ -149,6 +156,8 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 
 void OSVRTrackedDevice::Deactivate()
 {
+    OSVR_LOG(trace) << "OSVRTrackedDevice::Deactivate() called.";
+
     /// Have to force freeing here
     if (trackerInterface_.notEmpty()) {
         trackerInterface_.free();
@@ -314,9 +323,7 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 #include "ignore-warning/switch-enum"
 
     // Prop_ContainsProximitySensor_Bool spams our log files. Ignoring it here.
-    if (vr::Prop_ContainsProximitySensor_Bool != prop) {
-        OSVR_LOG(trace) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
-    }
+    //OSVR_LOG(trace) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // Properties that apply to all device classes
@@ -918,7 +925,6 @@ void OSVRTrackedDevice::configure()
     // The name of the display we want to use
     const std::string display_name = settings_->getSetting<std::string>("displayName", "OSVR");
 
-
     // Detect displays and find the one we're using as an HMD
     bool display_found = false;
     auto displays = osvr::display::getDisplays();
@@ -976,7 +982,6 @@ void OSVRTrackedDevice::configure()
     OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
     OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
     OSVR_LOG(info) << "  EDID product ID: " << display_.edidProductId;
-
 }
 
 void OSVRTrackedDevice::configureDistortionParameters()
