@@ -266,21 +266,21 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     const auto distortion_parameters = distortionParameters_[osvr_eye];
     const auto in_coords = osvr::renderkit::Float2 {{u, v}};
 
-    MeshInterpolators* interpolators = &leftEyeInterpolators_;
+    auto interpolators = &leftEyeInterpolators_;
     if (vr::Eye_Right == eye) {
         interpolators = &rightEyeInterpolators_;
     }
 
     auto coords_red = DistortionCorrectTextureCoordinate(
-        static_cast<size_t>(eye), in_coords, distortion_parameters,
+        osvr_eye, in_coords, distortion_parameters,
         COLOR_RED, overfillFactor_, *interpolators);
 
     auto coords_green = DistortionCorrectTextureCoordinate(
-        static_cast<size_t>(eye), in_coords, distortion_parameters,
+        osvr_eye, in_coords, distortion_parameters,
         COLOR_GREEN, overfillFactor_, *interpolators);
 
     auto coords_blue = DistortionCorrectTextureCoordinate(
-        static_cast<size_t>(eye), in_coords, distortion_parameters,
+        osvr_eye, in_coords, distortion_parameters,
         COLOR_BLUE, overfillFactor_, *interpolators);
 
     vr::DistortionCoordinates_t coords;
@@ -842,7 +842,7 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
     return default_value;
 }
 
-void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
+void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, const OSVR_PoseReport* report)
 {
     if (!userdata)
         return;
@@ -986,21 +986,27 @@ void OSVRTrackedDevice::configureDistortionParameters()
     displayConfiguration_ = OSVRDisplayConfiguration(displayDescription_);
 
     // Initialize the distortion parameters
+    OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Number of eyes: " << displayConfiguration_.getEyes().size() << ".";
     for (size_t i = 0; i < displayConfiguration_.getEyes().size(); ++i) {
-        osvr::renderkit::DistortionParameters distortion(displayConfiguration_, i);
+        auto distortion = osvr::renderkit::DistortionParameters { displayConfiguration_, i };
         distortion.m_desiredTriangles = 200 * 64;
+        OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Adding distortion for eye " << i << ".";
         distortionParameters_.push_back(distortion);
     }
+    OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Number of distortion parameters: " << distortionParameters_.size() << ".";
 
     // Make the interpolators to be used by each eye.
+    OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Creating mesh interpolators for the left eye.";
     if (!makeUnstructuredMeshInterpolators(distortionParameters_[0], 0, leftEyeInterpolators_)) {
         OSVR_LOG(err) << "OSVRTrackedDevice::configureDistortionParameters(): Could not create mesh interpolators for left eye.";
     }
+    OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Number of left eye interpolators: " << leftEyeInterpolators_.size() << ".";
 
+    OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Creating mesh interpolators for the right eye.";
     if (!makeUnstructuredMeshInterpolators(distortionParameters_[1], 1, rightEyeInterpolators_)) {
         OSVR_LOG(err) << "OSVRTrackedDevice::configureDistortionParameters(): Could not create mesh interpolators for right eye.";
     }
-
+    OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Number of right eye interpolators: " << leftEyeInterpolators_.size() << ".";
 }
 
 template <typename T>
