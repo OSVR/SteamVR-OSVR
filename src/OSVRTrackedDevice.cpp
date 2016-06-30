@@ -264,6 +264,8 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* rig
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
+    // Note that RenderManager expects the (0, 0) to be the lower-left corner and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is upper-left and (1, 1) is lower-right.
+    // To accommodate this, we need to flip the y-coordinate before passing it to RenderManager and flip it again before returning the value to SteamVR.
     OSVR_LOG(trace) << "OSVRTrackedDevice::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
     using osvr::renderkit::DistortionCorrectTextureCoordinate;
@@ -273,7 +275,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
 
     const auto osvr_eye = static_cast<size_t>(eye);
     const auto distortion_parameters = distortionParameters_[osvr_eye];
-    const auto in_coords = osvr::renderkit::Float2 {{u, v}};
+    const auto in_coords = osvr::renderkit::Float2 {{u, 1.0 - v}}; // flip v-coordinate
 
     auto interpolators = &leftEyeInterpolators_;
     if (vr::Eye_Right == eye) {
@@ -293,12 +295,13 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
         COLOR_BLUE, overfillFactor_, *interpolators);
 
     vr::DistortionCoordinates_t coords;
+    // flip v-coordinates again
     coords.rfRed[0] = coords_red[0];
-    coords.rfRed[1] = coords_red[1];
+    coords.rfRed[1] = 1.0 - coords_red[1];
     coords.rfGreen[0] = coords_green[0];
-    coords.rfGreen[1] = coords_green[1];
+    coords.rfGreen[1] = 1.0 - coords_green[1];
     coords.rfBlue[0] = coords_blue[0];
-    coords.rfBlue[1] = coords_blue[1];
+    coords.rfBlue[1] = 1.0 - coords_blue[1];
 
     return coords;
 }
