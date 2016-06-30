@@ -64,7 +64,7 @@ target_link_libraries(driver_osvr
 	util-headers
 	jsoncpp_lib
 	osvrDisplay
-	osvrRenderManager
+	osvrRenderManager::osvrRenderManager
 )
 
 if(WIN32)
@@ -90,16 +90,13 @@ install(CODE "execute_process(COMMAND \"${VRPATHREG}\" adddriver \"${DRIVER_ROOT
 if(WIN32)
 	include(CopyImportedTarget)
 	list(APPEND targets osvr::osvrClientKit osvr::osvrClient osvr::osvrCommon osvr::osvrUtil)
-	list(APPEND targets osvrRenderManager)
+	list(APPEND targets osvrRenderManager::osvrRenderManager)
 	foreach(target IN LISTS targets)
 		copy_imported_targets(${target}) # for use in build tree
 		install_imported_target(${target} DESTINATION "${DRIVER_INSTALL_DIR}") # in installed directory
 	endforeach()
-	foreach(filename IN LISTS OSVR_RENDERMANAGER_REQUIRED_LIBRARIES)
-		get_filename_component(filename "${filename}" ABSOLUTE
-			BASE_DIR "${OSVR_RENDERMANAGER_REQUIRED_LIBRARIES_DIR}")
-		install(FILES "${filename}" DESTINATION "${DRIVER_INSTALL_DIR}")
-	endforeach()
+
+	osvrrm_install_dependencies("${DRIVER_INSTALL_DIR}")
 endif()
 
 #
