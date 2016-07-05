@@ -174,19 +174,10 @@ protected:
 
     /** \name Collections of properties and their values. */
     //@{
-    //std::map<vr::ETrackedDeviceProperty, bool> boolProperties_;
-    //std::map<vr::ETrackedDeviceProperty, float> floatProperties_;
-    //std::map<vr::ETrackedDeviceProperty, int32_t> int32Properties_;
-    //std::map<vr::ETrackedDeviceProperty, uint64_t> uint64Properties_;
-    //std::map<vr::ETrackedDeviceProperty, vr::HmdMatrix34_t> matrix34Properties;
-    //std::map<vr::ETrackedDeviceProperty, uint32_t> uint32Properties_;
-    //std::map<vr::ETrackedDeviceProperty, std::string> stringProperties_;
     PropertyMap properties_;
     //@}
 };
 
-//template <typename T>
-//inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const std::map<vr::ETrackedDeviceProperty, T>& map, const T& default_value)
 template <typename T>
 inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value)
 {
