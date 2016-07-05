@@ -40,6 +40,8 @@ add_library(driver_osvr
 	Logging.h
 	OSVRTrackedDevice.cpp
 	OSVRTrackedDevice.h
+	OSVRTrackedHMD.cpp
+	OSVRTrackedHMD.h
 	OSVRTrackingReference.cpp
 	OSVRTrackingReference.h
 	ServerDriver_OSVR.cpp
@@ -51,7 +53,8 @@ add_library(driver_osvr
 	identity.h
 	make_unique.h
 	matrix_cast.h
-	osvr_device_properties.h
+	PropertyProperties.h
+	PropertyMap.h
 	osvr_dll_export.h
 	platform_fixes.h
 	pretty_print.h
