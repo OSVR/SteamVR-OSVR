@@ -26,7 +26,7 @@
 #define INCLUDED_OSVRTrackingReference_h_GUID_250D4551_4054_9D37_A8F6_F2FCFDB1C188
 
 // Internal Includes
-#include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
+#include "OSVRTrackedDevice.h"
 #include "Settings.h"
 
 // OpenVR includes
@@ -39,10 +39,10 @@
 #include <string>
 #include <memory>
 
-class OSVRTrackingReference : public vr::ITrackedDeviceServerDriver {
+class OSVRTrackingReference : public OSVRTrackedDevice {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host);
 
     virtual ~OSVRTrackingReference();
 
@@ -66,98 +66,21 @@ public:
      */
     virtual void Deactivate() OSVR_OVERRIDE;
 
-    /**
-     * Handles a request from the system to power off this device.
-     */
-    virtual void PowerOff() OSVR_OVERRIDE;
-
-    /**
-     * Requests a component interface of the driver for device-specific
-     * functionality. The driver should return NULL if the requested interface
-     * or version is not supported.
-     */
-    virtual void* GetComponent(const char* component_name_and_version) OSVR_OVERRIDE;
-
-    /**
-     * A VR Client has made this debug request of the driver. The set of valid
-     * requests is entirely up to the driver and the client to figure out, as is
-     * the format of the response. Responses that exceed the length of the
-     * supplied buffer should be truncated and null terminated.
-     */
-    virtual void DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size) OSVR_OVERRIDE;
-
-    // ------------------------------------
-    // Tracking Methods
-    // ------------------------------------
-    virtual vr::DriverPose_t GetPose() OSVR_OVERRIDE;
-
-    // ------------------------------------
-    // Property Methods
-    // ------------------------------------
-
-    /**
-     * Returns a bool property. If the property is not available this function
-     * will return false.
-     */
-    virtual bool GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a float property. If the property is not available this function
-     * will return 0.
-     */
-    virtual float GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns an int property. If the property is not available this function
-     * will return 0.
-     */
-    virtual int32_t GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a uint64 property. If the property is not available this function
-     * will return 0.
-     */
-    virtual uint64_t GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a matrix property. If the device index is not valid or the
-     * property is not a matrix type, this function will return identity.
-     */
-    virtual vr::HmdMatrix34_t GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a string property. If the property is not available this function
-     * will return 0 and @p error will be set to an error. Otherwise it returns
-     * the length of the number of bytes necessary to hold this string including
-     * the trailing null. If the buffer is too small the error will be
-     * @c TrackedProp_BufferTooSmall. Strings will generally fit in buffers of
-     * @c k_unTrackingStringSize characters. Drivers may not return strings longer
-     * than @c k_unMaxPropertyStringSize.
-     */
-    virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
 protected:
     const char* GetId();
 
 private:
-    std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
     static void TrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 
     /**
      * Read configuration settings from configuration file.
      */
     void configure();
+    void configureProperties();
 
-    osvr::clientkit::ClientContext& m_Context;
-    vr::IServerDriverHost* driver_host_ = nullptr;
     osvr::clientkit::Interface m_TrackerInterface;
-    vr::DriverPose_t pose_;
-    vr::ETrackedDeviceClass deviceClass_;
-    std::unique_ptr<Settings> settings_;
-    uint32_t objectId_ = 0;
 
     // Settings
-    bool verboseLogging_ = false;
     std::string trackerPath_ = "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera";
 
     // Default values are those for the OSVR HDK IR camera

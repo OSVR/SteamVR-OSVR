@@ -22,8 +22,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef INCLUDED_osvr_device_properties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
-#define INCLUDED_osvr_device_properties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
+#ifndef INCLUDED_PropertyProperties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
+#define INCLUDED_PropertyProperties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
 
 // Internal Includes
 // - none
@@ -551,6 +551,11 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     return true;
 }
 
+inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, std::string)
+{
+    return isWrongDataType(prop, "");
+}
+
 inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
 {
     switch (prop) {
@@ -763,5 +768,5 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     return true;
 }
 
-#endif // INCLUDED_osvr_device_properties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
+#endif // INCLUDED_PropertyProperties_h_GUID_5212DE9D_B211_4139_A140_45A578EFA47E
 

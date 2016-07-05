@@ -29,6 +29,8 @@
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 #include "Settings.h"
 #include "display/Display.h"
+#include "PropertyMap.h"
+#include "PropertyProperties.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -46,12 +48,13 @@
 #include <vector>
 #include <map>
 
-class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
+class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class);
 
     virtual ~OSVRTrackedDevice();
+
     // ------------------------------------
     // Management Methods
     // ------------------------------------
@@ -93,52 +96,9 @@ public:
     virtual void DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size) OSVR_OVERRIDE;
 
     // ------------------------------------
-    // Display Methods
-    // ------------------------------------
-
-    /**
-     * Size and position that the window needs to be on the VR display.
-     */
-    virtual void GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
-
-    /**
-     * Returns true if the display is extending the desktop.
-     */
-    virtual bool IsDisplayOnDesktop() OSVR_OVERRIDE;
-
-    /**
-     * Returns true if the display is real and not a fictional display.
-     */
-    virtual bool IsDisplayRealDisplay() OSVR_OVERRIDE;
-
-    /**
-     * Suggested size for the intermediate render target that the distortion
-     * pulls from.
-     */
-    virtual void GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
-
-    /**
-     * Gets the viewport in the frame buffer to draw the output of the distortion
-     * into
-     */
-    virtual void GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height) OSVR_OVERRIDE;
-
-    /**
-     * The components necessary to build your own projection matrix in case your
-     * application is doing something fancy like infinite Z
-     */
-    virtual void GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom) OSVR_OVERRIDE;
-
-    /**
-     * Returns the result of the distortion function for the specified eye and
-     * input UVs. UVs go from 0,0 in the upper left of that eye's viewport and
-     * 1,1 in the lower right of that eye's viewport.
-     */
-    virtual vr::DistortionCoordinates_t ComputeDistortion(vr::EVREye eye, float u, float v) OSVR_OVERRIDE;
-
-    // ------------------------------------
     // Tracking Methods
     // ------------------------------------
+
     virtual vr::DriverPose_t GetPose() OSVR_OVERRIDE;
 
     // ------------------------------------
@@ -187,28 +147,7 @@ public:
     virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
 protected:
-    const char* GetId();
-
-private:
     std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
-
-    /**
-     * Callback function which is called whenever new data has been received
-     * from the tracker.
-     */
-    static void HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
-
-    float GetIPD();
-
-    /**
-     * Read configuration settings from configuration file.
-     */
-    void configure();
-
-    /**
-     * Configure RenderManager and distortion parameters.
-     */
-    void configureDistortionParameters();
 
     /**
      * Cecks to see if the requested property is valid for the device class and
@@ -223,30 +162,69 @@ private:
     template <typename T>
     vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&);
 
+    template <typename T>
+    T GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value);
+
     osvr::clientkit::ClientContext& context_;
-    std::string displayDescription_;
-    osvr::clientkit::DisplayConfig displayConfig_;
-    osvr::client::RenderManagerConfig renderManagerConfig_;
     vr::IServerDriverHost* driverHost_ = nullptr;
-    osvr::clientkit::Interface trackerInterface_;
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
     std::unique_ptr<Settings> settings_;
     uint32_t objectId_ = 0;
-    std::vector<osvr::renderkit::DistortionParameters> distortionParameters_;
-    OSVRDisplayConfiguration displayConfiguration_;
 
-    // per-eye mesh interpolators
-    using MeshInterpolators = std::vector<std::unique_ptr<osvr::renderkit::UnstructuredMeshInterpolator>>;
-    MeshInterpolators leftEyeInterpolators_;
-    MeshInterpolators rightEyeInterpolators_;
-
-    float overfillFactor_ = 1.0; // TODO get from RenderManager
-
-    // Settings
-    bool verboseLogging_ = false;
-    osvr::display::Display display_ = {};
+    /** \name Collections of properties and their values. */
+    //@{
+    //std::map<vr::ETrackedDeviceProperty, bool> boolProperties_;
+    //std::map<vr::ETrackedDeviceProperty, float> floatProperties_;
+    //std::map<vr::ETrackedDeviceProperty, int32_t> int32Properties_;
+    //std::map<vr::ETrackedDeviceProperty, uint64_t> uint64Properties_;
+    //std::map<vr::ETrackedDeviceProperty, vr::HmdMatrix34_t> matrix34Properties;
+    //std::map<vr::ETrackedDeviceProperty, uint32_t> uint32Properties_;
+    //std::map<vr::ETrackedDeviceProperty, std::string> stringProperties_;
+    PropertyMap properties_;
+    //@}
 };
+
+//template <typename T>
+//inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const std::map<vr::ETrackedDeviceProperty, T>& map, const T& default_value)
+template <typename T>
+inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value)
+{
+    const auto result = checkProperty(prop, T());
+    if (vr::TrackedProp_Success != result) {
+        if (error)
+            *error = result;
+        return default_value;
+    }
+
+    if (properties_.find(prop) != end(properties_)) {
+        if (error)
+            *error = vr::TrackedProp_Success;
+        return boost::get<T>(properties_[prop]);
+    } else {
+        if (error)
+            *error = vr::TrackedProp_ValueNotProvidedByDevice;
+        return default_value;
+    }
+}
+
+template <typename T>
+inline vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDeviceProperty prop, const T&)
+{
+    if (isWrongDataType(prop, T())) {
+        return vr::TrackedProp_WrongDataType;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        return vr::TrackedProp_WrongDeviceClass;
+    }
+
+    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
+        return vr::TrackedProp_InvalidDevice;
+    }
+
+    return vr::TrackedProp_Success;
+}
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
 
