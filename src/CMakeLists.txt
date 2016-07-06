@@ -103,7 +103,15 @@ endif()
 # Test program
 #
 add_executable(test_hmd_driver test_hmd_driver.cpp)
-target_link_libraries(test_hmd_driver PRIVATE driver_osvr osvr::osvrClientKitCpp eigen-headers util-headers jsoncpp_lib)
+target_link_libraries(test_hmd_driver
+	PRIVATE
+	driver_osvr
+	osvr::osvrClientKitCpp
+	eigen-headers
+	util-headers
+	jsoncpp_lib
+	osvrRenderManager::osvrRenderManager)
+
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
 endif()
