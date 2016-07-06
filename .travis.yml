@@ -55,4 +55,6 @@ addons:
     - clang-3.7
     - libudev1
     - libudev-dev
+    - libeigen3-dev
+    - libglew-dev
 
