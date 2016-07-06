@@ -14,9 +14,10 @@ before_install_linux()
 
     export PATH="${PREFIX}"/bin:$PATH
 
-    # Install OSVR-Core and its dependencies
+    # Install OSVR-Core, OSVR-RenderManager, and their dependencies
     pushd linux
     ./travis-install-osvr-core.sh "$1"
+    ./travis-install-osvr-rendermanager.sh "$1"
     popd
 }
 
@@ -29,6 +30,13 @@ before_install_osx()
     brew uninstall json-c
     brew install jsoncpp --HEAD
     brew install osvr-core --HEAD
+    brew install eigen
+    brew install glew
+
+    # Install OSVR-RenderManager
+    pushd osx
+    ./travis-install-osvr-rendermanager.sh "$1"
+    popd
 }
 
 if [ $# -ne 1 ]; then
