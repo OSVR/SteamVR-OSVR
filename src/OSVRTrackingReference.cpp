@@ -62,7 +62,7 @@ OSVRTrackingReference::~OSVRTrackingReference()
 vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::Activate() called.";
-    objectId_ = object_id;
+    OSVRTrackedDevice::Activate(object_id);
 
     // Clean up tracker callback if exists
     if (m_TrackerInterface.notEmpty()) {

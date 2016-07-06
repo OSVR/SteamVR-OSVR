@@ -70,7 +70,7 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 {
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate() called.";
 
-    objectId_ = object_id;
+    OSVRTrackedDevice::Activate(object_id);
 
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
 
