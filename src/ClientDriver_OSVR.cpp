@@ -33,7 +33,7 @@
 // Standard includes
 // - none
 
-vr::EVRInitError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
+vr::EVRInitError ClientDriver_OSVR::Init(vr::EClientDriverMode driver_mode, vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
 {
     if (driver_log)
         Logging::instance().setDriverLog(driver_log);
@@ -43,7 +43,10 @@ vr::EVRInitError ClientDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IClient
     driverInstallDir_ = driver_install_dir;
     settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
 
-    // TODO ?
+    // We don't support watchdog mode
+    if (vr::ClientDriverMode_Watchdog == driver_mode) {
+        return vr::VRInitError_Init_LowPowerWatchdogNotSupported;
+    }
 
     return vr::VRInitError_None;
 }
