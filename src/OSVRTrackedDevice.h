@@ -36,15 +36,20 @@
 // Library/third-party includes
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Client/RenderManagerConfig.h>
+#include <osvr/RenderKit/DistortionParameters.h>
+#include <osvr/RenderKit/UnstructuredMeshInterpolator.h>
+#include <osvr/RenderKit/osvr_display_configuration.h>
 
 // Standard includes
 #include <string>
 #include <memory>
+#include <vector>
+#include <map>
 
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackedDevice(const std::string& display_description, osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
 
     virtual ~OSVRTrackedDevice();
     // ------------------------------------
@@ -201,6 +206,11 @@ private:
     void configure();
 
     /**
+     * Configure RenderManager and distortion parameters.
+     */
+    void configureDistortionParameters();
+
+    /**
      * Cecks to see if the requested property is valid for the device class and
      * type requested.
      *
@@ -213,16 +223,25 @@ private:
     template <typename T>
     vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&);
 
-    const std::string m_DisplayDescription;
-    osvr::clientkit::ClientContext& m_Context;
-    osvr::clientkit::DisplayConfig m_DisplayConfig;
-    osvr::client::RenderManagerConfig m_RenderManagerConfig;
-    vr::IServerDriverHost* driver_host_ = nullptr;
-    osvr::clientkit::Interface m_TrackerInterface;
+    osvr::clientkit::ClientContext& context_;
+    std::string displayDescription_;
+    osvr::clientkit::DisplayConfig displayConfig_;
+    osvr::client::RenderManagerConfig renderManagerConfig_;
+    vr::IServerDriverHost* driverHost_ = nullptr;
+    osvr::clientkit::Interface trackerInterface_;
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
     std::unique_ptr<Settings> settings_;
     uint32_t objectId_ = 0;
+    std::vector<osvr::renderkit::DistortionParameters> distortionParameters_;
+    OSVRDisplayConfiguration displayConfiguration_;
+
+    // per-eye mesh interpolators
+    using MeshInterpolators = std::vector<std::unique_ptr<osvr::renderkit::UnstructuredMeshInterpolator>>;
+    MeshInterpolators leftEyeInterpolators_;
+    MeshInterpolators rightEyeInterpolators_;
+
+    float overfillFactor_ = 1.0; // TODO get from RenderManager
 
     // Settings
     bool verboseLogging_ = false;

@@ -46,6 +46,13 @@ inline std::string to_string(const std::string& str)
     return str;
 }
 
+inline std::string to_string(void* value)
+{
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
+}
+
 inline std::string to_string(const vr::ETrackedDeviceProperty& value)
 {
     switch (value) {
