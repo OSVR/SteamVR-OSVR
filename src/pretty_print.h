@@ -210,6 +210,8 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_Axis3Type_Int32";
         case vr::Prop_Axis4Type_Int32:
             return "Prop_Axis4Type_Int32";
+        case vr::Prop_ControllerRoleHint_Int32:
+            return "Prop_ControllerRoleHint_Int32";
         case vr::Prop_FieldOfViewLeftDegrees_Float:
             return "Prop_FieldOfViewLeftDegrees_Float";
         case vr::Prop_FieldOfViewRightDegrees_Float:

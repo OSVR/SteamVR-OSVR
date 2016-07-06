@@ -93,6 +93,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_Axis2Type_Int32:
     case vr::Prop_Axis3Type_Int32:
     case vr::Prop_Axis4Type_Int32:
+    case vr::Prop_ControllerRoleHint_Int32:
     case vr::Prop_CameraCompatibilityMode_Int32:
     // Uint64
     case vr::Prop_HardwareRevision_Uint64:
@@ -195,6 +196,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_Axis2Type_Int32:
     case vr::Prop_Axis3Type_Int32:
     case vr::Prop_Axis4Type_Int32:
+    case vr::Prop_ControllerRoleHint_Int32:
     case vr::Prop_CameraCompatibilityMode_Int32:
     // Uint64
     case vr::Prop_HardwareRevision_Uint64:
@@ -253,6 +255,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_Axis2Type_Int32:
     case vr::Prop_Axis3Type_Int32:
     case vr::Prop_Axis4Type_Int32:
+    case vr::Prop_ControllerRoleHint_Int32:
     case vr::Prop_CameraCompatibilityMode_Int32:
     // could be any type
     case vr::Prop_VendorSpecific_Reserved_Start:
@@ -415,6 +418,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_Axis2Type_Int32:
     case vr::Prop_Axis3Type_Int32:
     case vr::Prop_Axis4Type_Int32:
+    case vr::Prop_ControllerRoleHint_Int32:
     case vr::Prop_CameraCompatibilityMode_Int32:
     // String
     case vr::Prop_TrackingSystemName_String:
@@ -520,6 +524,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_Axis2Type_Int32:
     case vr::Prop_Axis3Type_Int32:
     case vr::Prop_Axis4Type_Int32:
+    case vr::Prop_ControllerRoleHint_Int32:
     case vr::Prop_CameraCompatibilityMode_Int32:
     // Uint64
     case vr::Prop_HardwareRevision_Uint64:
@@ -606,6 +611,7 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_Axis2Type_Int32:
     case vr::Prop_Axis3Type_Int32:
     case vr::Prop_Axis4Type_Int32:
+    case vr::Prop_ControllerRoleHint_Int32:
     case vr::Prop_CameraCompatibilityMode_Int32:
     // Uint64
     case vr::Prop_HardwareRevision_Uint64:
@@ -735,6 +741,7 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_Axis2Type_Int32:
     case vr::Prop_Axis3Type_Int32:
     case vr::Prop_Axis4Type_Int32:
+    case vr::Prop_ControllerRoleHint_Int32:
         return (vr::TrackedDeviceClass_Controller != device_class);
 
     // Properties that are unique to TrackedDeviceClass_TrackingReference

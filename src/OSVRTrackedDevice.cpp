@@ -275,7 +275,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
 
     const auto osvr_eye = static_cast<size_t>(eye);
     const auto distortion_parameters = distortionParameters_[osvr_eye];
-    const auto in_coords = osvr::renderkit::Float2 {{u, 1.0 - v}}; // flip v-coordinate
+    const auto in_coords = osvr::renderkit::Float2 {{u, 1.0f - v}}; // flip v-coordinate
 
     auto interpolators = &leftEyeInterpolators_;
     if (vr::Eye_Right == eye) {
@@ -297,11 +297,11 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     vr::DistortionCoordinates_t coords;
     // flip v-coordinates again
     coords.rfRed[0] = coords_red[0];
-    coords.rfRed[1] = 1.0 - coords_red[1];
+    coords.rfRed[1] = 1.0f - coords_red[1];
     coords.rfGreen[0] = coords_green[0];
-    coords.rfGreen[1] = 1.0 - coords_green[1];
+    coords.rfGreen[1] = 1.0f - coords_green[1];
     coords.rfBlue[0] = coords_blue[0];
-    coords.rfBlue[1] = 1.0 - coords_blue[1];
+    coords.rfBlue[1] = 1.0f - coords_blue[1];
 
     return coords;
 }

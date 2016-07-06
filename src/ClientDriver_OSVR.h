@@ -51,6 +51,11 @@ public:
      * If Init() returns anything other than vr::EVRInitError::VRInitError_None
      * the driver DLL will be unloaded.
      *
+     * @param driver_mode When this is passed as @c ClientDriverMode_Watchdog the
+     * driver should enter a low-power state where hardware is being monitored.
+     * If the driver does not support watchdog mode it should return
+     * @c VRInitError_Init_LowPowerWatchdogNotSupported.
+     *
      * @param driver_log a (potentially NULL) pointer to a vr::IDriverLog.
      *
      * @param driver_host will never be NULL, and will always be a pointer to a
@@ -62,7 +67,7 @@ public:
      * @param driver_install_dir The absolute path of the root directory for the
      * driver.
      */
-    virtual vr::EVRInitError Init(vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
+    virtual vr::EVRInitError Init(vr::EClientDriverMode driver_mode, vr::IDriverLog* driver_log, vr::IClientDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
 
     /**
      * Cleans up the driver right before it is unloaded.
