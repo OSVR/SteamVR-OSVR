@@ -50,7 +50,6 @@
 OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_TrackingReference)
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::OSVRTrackingReference() called.";
-    configure();
 }
 
 OSVRTrackingReference::~OSVRTrackingReference()
@@ -62,15 +61,16 @@ vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::Activate() called.";
     objectId_ = object_id;
+    configure();
 
     // Clean up tracker callback if exists
-    if (m_TrackerInterface.notEmpty()) {
-        m_TrackerInterface.free();
+    if (trackerInterface_.notEmpty()) {
+        trackerInterface_.free();
     }
 
     // Register tracker callback
-    m_TrackerInterface = context_.getInterface(trackerPath_);
-    m_TrackerInterface.registerCallback(&OSVRTrackingReference::TrackerCallback, this);
+    trackerInterface_ = context_.getInterface(trackerPath_);
+    trackerInterface_.registerCallback(&OSVRTrackingReference::TrackerCallback, this);
 
     return vr::VRInitError_None;
 }
@@ -80,8 +80,8 @@ void OSVRTrackingReference::Deactivate()
     OSVR_LOG(trace) << "OSVRTrackingReference::Deactivate() called.";
 
     // Clean up tracker callback if exists
-    if (m_TrackerInterface.notEmpty()) {
-        m_TrackerInterface.free();
+    if (trackerInterface_.notEmpty()) {
+        trackerInterface_.free();
     }
 }
 
@@ -130,12 +130,6 @@ void OSVRTrackingReference::configure()
 {
     // Read tracking reference values from config file
     trackerPath_ = settings_->getSetting<std::string>("cameraPath", trackerPath_);
-    fovLeft_ = settings_->getSetting<float>("cameraFOVLeftDegrees", fovLeft_);
-    fovRight_ = settings_->getSetting<float>("cameraFOVRightDegrees", fovRight_);
-    fovTop_ = settings_->getSetting<float>("cameraFOVTopDegrees", fovTop_);
-    fovBottom_ = settings_->getSetting<float>("cameraFOVBottomDegrees", fovBottom_);
-    minTrackingRange_ = settings_->getSetting<float>("minTrackingRangeMeters", minTrackingRange_);
-    maxTrackingRange_ = settings_->getSetting<float>("maxTrackingRangeMeters", maxTrackingRange_);
 
     configureProperties();
 }
@@ -165,7 +159,7 @@ void OSVRTrackingReference::configureProperties()
     //properties_[vr::Prop_StatusDisplayTransform_Matrix34] = /* ... */;
     //properties_[vr::Prop_TrackingSystemName_String] = "";
     properties_[vr::Prop_ModelNumber_String] = "OSVR Tracking Reference";
-    properties_[vr::Prop_SerialNumber_String] = GetId();
+    properties_[vr::Prop_SerialNumber_String] = GetId(); // FIXME read value from server
     properties_[vr::Prop_RenderModelName_String] = "dk2_camera"; // FIXME replace with HDK IR camera model
     properties_[vr::Prop_ManufacturerName_String] = "OSVR"; // FIXME read value from server
     //properties_[vr::Prop_TrackingFirmwareVersion_String] = "";
@@ -177,12 +171,14 @@ void OSVRTrackingReference::configureProperties()
     //properties_[vr::Prop_DriverVersion_String] = "";
 
     // Properties that are unique to TrackedDeviceClass_TrackingReference
-    properties_[vr::Prop_FieldOfViewLeftDegrees_Float] = fovLeft_;
-    properties_[vr::Prop_FieldOfViewRightDegrees_Float] = fovRight_;
-    properties_[vr::Prop_FieldOfViewTopDegrees_Float] = fovTop_;
-    properties_[vr::Prop_FieldOfViewBottomDegrees_Float] = fovBottom_;
-    properties_[vr::Prop_TrackingRangeMinimumMeters_Float] = minTrackingRange_;
-    properties_[vr::Prop_TrackingRangeMaximumMeters_Float] = maxTrackingRange_;
+
+    // Default tracking volume values are for the OSVR HDK IR camera
+    properties_[vr::Prop_FieldOfViewLeftDegrees_Float] = settings_->getSetting<float>("cameraFOVLeftDegrees", 35.235f);
+    properties_[vr::Prop_FieldOfViewRightDegrees_Float] = settings_->getSetting<float>("cameraFOVRightDegrees", 35.235);
+    properties_[vr::Prop_FieldOfViewTopDegrees_Float] = settings_->getSetting<float>("cameraFOVTopDegrees", 27.95f);
+    properties_[vr::Prop_FieldOfViewBottomDegrees_Float] = settings_->getSetting<float>("cameraFOVBottomDegrees", 27.95f);
+    properties_[vr::Prop_TrackingRangeMinimumMeters_Float] = settings_->getSetting<float>("minTrackingRangeMeters", 0.15f);
+    properties_[vr::Prop_TrackingRangeMaximumMeters_Float] = settings_->getSetting<float>("maxTrackingRangeMeters", 1.5f);
     //properties_[vr::Prop_ModeLabel_String] = "";
 }
 

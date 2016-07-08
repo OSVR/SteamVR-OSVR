@@ -56,6 +56,7 @@
 OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class) : context_(context), driverHost_(driver_host), pose_(), deviceClass_(device_class)
 {
     settings_ = std::make_unique<Settings>(driverHost_->GetSettings(vr::IVRSettings_Version));
+    properties_[vr::Prop_DeviceClass_Int32] = deviceClass_;
 }
 
 OSVRTrackedDevice::~OSVRTrackedDevice()

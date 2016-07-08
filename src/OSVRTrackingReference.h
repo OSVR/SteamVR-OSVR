@@ -78,19 +78,10 @@ private:
     void configure();
     void configureProperties();
 
-    osvr::clientkit::Interface m_TrackerInterface;
+    osvr::clientkit::Interface trackerInterface_;
 
     // Settings
     std::string trackerPath_ = "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera";
-
-    // Default values are those for the OSVR HDK IR camera
-    float fovLeft_ = 35.235f; // degrees
-    float fovRight_ = 35.235f; // degrees
-    float fovTop_ = 27.95f; // degrees
-    float fovBottom_ = 27.95f; // degrees
-
-    float minTrackingRange_ = 0.15f; // meters
-    float maxTrackingRange_ = 1.5f; // meters
 };
 
 #endif // INCLUDED_OSVRTrackingReference_h_GUID_4D3F2E76_D0A2_4876_A7E9_CF0E772B02EF

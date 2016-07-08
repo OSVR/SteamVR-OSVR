@@ -140,8 +140,6 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
         OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
-    driverHost_->ProximitySensorState(objectId_, true);
-
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
 }
