@@ -47,7 +47,7 @@
 #include <iostream>
 #include <exception>
 
-OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_TrackingReference)
+OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_TrackingReference, "OSVRTrackingReference")
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::OSVRTrackingReference() called.";
 }

@@ -53,7 +53,7 @@
 #include <fstream>
 #include <algorithm>        // for std::find
 
-OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class) : context_(context), driverHost_(driver_host), pose_(), deviceClass_(device_class)
+OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class, const std::string& name) : context_(context), driverHost_(driver_host), pose_(), deviceClass_(device_class), name_(name)
 {
     settings_ = std::make_unique<Settings>(driverHost_->GetSettings(vr::IVRSettings_Version));
     properties_[vr::Prop_DeviceClass_Int32] = deviceClass_;
@@ -85,25 +85,25 @@ void* OSVRTrackedDevice::GetComponent(const char* component_name_and_version)
     if (!strcasecmp(component_name_and_version, vr::IVRDisplayComponent_Version)) {
         auto component = dynamic_cast<vr::IVRDisplayComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else if (!strcasecmp(component_name_and_version, vr::IVRDriverDirectModeComponent_Version)) {
         auto component = dynamic_cast<vr::IVRDriverDirectModeComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else if (!strcasecmp(component_name_and_version, vr::IVRControllerComponent_Version)) {
         auto component = dynamic_cast<vr::IVRControllerComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else if (!strcasecmp(component_name_and_version, vr::IVRCameraComponent_Version)) {
         auto component = dynamic_cast<vr::IVRCameraComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else {
-        OSVR_LOG(warn) << "Unknown component [" << component_name_and_version << "] requested.";
+        OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Unknown component [" << component_name_and_version << "] requested.";
         return nullptr;
     }
 }
@@ -111,7 +111,7 @@ void* OSVRTrackedDevice::GetComponent(const char* component_name_and_version)
 void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size)
 {
     // Log the requests just to see what info clients are looking for
-    OSVR_LOG(debug) << "Received debug request [" << request << "] with response buffer size of " << response_buffer_size << "].";
+    OSVR_LOG(debug) << "OSVRTrackedDevice[" << name_ << "]: Received debug request [" << request << "] with response buffer size of " << response_buffer_size << "].";
 
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
     // return empty string for now
@@ -127,35 +127,35 @@ vr::DriverPose_t OSVRTrackedDevice::GetPose()
 
 bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "Requested bool property [" << prop << "].";
+    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested bool property [" << prop << "].";
     bool default_value = false;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "Requested float property [" << prop << "].";
+    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested float property [" << prop << "].";
     float default_value = 0.0f;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "Requested int32 property [" << prop << "].";
+    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested int32 property [" << prop << "].";
     int32_t default_value = 0;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "Requested uint64 property [" << prop << "].";
+    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested uint64 property [" << prop << "].";
     uint64_t default_value = 0;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "Requested matrix34 property [" << prop << "].";
+    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested matrix34 property [" << prop << "].";
     // Default value is identity matrix
     vr::HmdMatrix34_t default_value;
     map(default_value) = Matrix34f::Identity();
@@ -164,7 +164,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
 
 uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError *error)
 {
-    OSVR_LOG(trace) << "Requested string property [" << prop << "].";
+    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested string property [" << prop << "].";
     uint32_t default_value = 0;
 
     const auto result = checkProperty(prop, value);

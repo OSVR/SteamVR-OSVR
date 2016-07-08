@@ -53,7 +53,7 @@
 #include <exception>
 #include <algorithm>        // for std::find
 
-OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_HMD)
+OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_HMD, "OSVRTrackedHMD")
 {
     OSVR_LOG(trace) << "OSVRTrackedHMD::OSVRTrackedHMD() called.";
 
@@ -88,8 +88,6 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
             return vr::VRInitError_Driver_Failed;
         }
     }
-
-    configure();
 
     displayConfig_ = osvr::clientkit::DisplayConfig(context_);
 
@@ -139,6 +137,8 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
     } catch(const std::exception& e) {
         OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
+
+    configure();
 
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
