@@ -58,20 +58,21 @@ public:
     // ------------------------------------
     // Management Methods
     // ------------------------------------
+
     /**
-     * This is called before an HMD is returned to the application. It will
+     * This is called before a device is returned to the application. It will
      * always be called before any display or tracking methods. Memory and
-     * processor use by the ITrackedDeviceServerDriver object should be kept to
+     * processor use by the @c ITrackedDeviceServerDriver object should be kept to
      * a minimum until it is activated.  The pose listener is guaranteed to be
-     * valid until Deactivate is called, but should not be used after that
+     * valid until Deactivate() is called, but should not be used after that
      * point.
      */
     virtual vr::EVRInitError Activate(uint32_t object_id) OSVR_OVERRIDE;
 
     /**
-     * This is called when The VR system is switching from this Hmd being the
-     * active display to another Hmd being the active display. The driver should
-     * clean whatever memory and thread use it can when it is deactivated.
+     * This is called when The VR system is switching from this device being
+     * active to another device being active. The driver should clean whatever
+     * memory and thread use it can when it is deactivated.
      */
     virtual void Deactivate() OSVR_OVERRIDE;
 
@@ -171,11 +172,7 @@ protected:
     vr::ETrackedDeviceClass deviceClass_;
     std::unique_ptr<Settings> settings_;
     uint32_t objectId_ = 0;
-
-    /** \name Collections of properties and their values. */
-    //@{
     PropertyMap properties_;
-    //@}
 };
 
 template <typename T>

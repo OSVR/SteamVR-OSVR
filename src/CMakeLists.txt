@@ -21,10 +21,6 @@ set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX11_STANDARD_COMPILE_OPTION})
 check_cxx_source_compiles("#include <memory>\nint main(int, char**) { std::unique_ptr<int> i = std::make_unique<int>(0); }" OSVR_HAS_STD_MAKE_UNIQUE)
 configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_tests.h")
 
-include(PlatformDefinitions)
-define_platform_macros(OSVR)
-configure_file(osvr_platform.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_platform.h")
-
 #
 # Display detection and enumeration
 #

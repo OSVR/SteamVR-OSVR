@@ -29,7 +29,6 @@
 #include "OSVRTrackingReference.h"  // for OSVRTrackingReference
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
-#include "osvr_platform.h"          // for OSVR_PATH_SEPARATOR
 #include "Logging.h"                // for OSVR_LOG, Logging
 
 // Library/third-party includes

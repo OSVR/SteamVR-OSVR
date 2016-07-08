@@ -32,7 +32,6 @@
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
-#include "osvr_platform.h"
 #include "display/DisplayEnumerator.h"
 
 // OpenVR includes
@@ -41,6 +40,7 @@
 // Library/third-party includes
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Util/EigenInterop.h>
+#include <osvr/Util/PlatformConfig.h>
 #include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>
 #include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
@@ -57,8 +57,7 @@ OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::ISer
 {
     OSVR_LOG(trace) << "OSVRTrackedHMD::OSVRTrackedHMD() called.";
 
-    settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
-    configure();
+    settings_ = std::make_unique<Settings>(driverHost_->GetSettings(vr::IVRSettings_Version));
 }
 
 OSVRTrackedHMD::~OSVRTrackedHMD()
@@ -90,7 +89,7 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
         }
     }
 
-    configureDistortionParameters();
+    configure();
 
     displayConfig_ = osvr::clientkit::DisplayConfig(context_);
 
@@ -272,7 +271,7 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
 
 void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, const OSVR_PoseReport* report)
 {
-    if (!userdata)
+    if (!userdata || !report)
         return;
 
     auto* self = static_cast<OSVRTrackedHMD*>(userdata);
@@ -327,6 +326,13 @@ float OSVRTrackedHMD::GetIPD()
 }
 
 void OSVRTrackedHMD::configure()
+{
+    configureProperties();
+    configureDisplay();
+    configureDistortionParameters();
+}
+
+void OSVRTrackedHMD::configureDisplay()
 {
     // The name of the display we want to use
     const std::string display_name = settings_->getSetting<std::string>("displayName", "OSVR");

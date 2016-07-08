@@ -32,7 +32,6 @@
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
-#include "osvr_platform.h"
 #include "display/DisplayEnumerator.h"
 
 // OpenVR includes
@@ -115,22 +114,26 @@ vr::DriverPose_t OSVRTrackedDevice::GetPose()
 
 bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    return GetTrackedDeviceProperty(prop, error, false);
+    bool default_value = false;
+    return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    return GetTrackedDeviceProperty(prop, error, 0.0f);
+    float default_value = 0.0f;
+    return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    return GetTrackedDeviceProperty(prop, error, static_cast<int32_t>(0));
+    int32_t default_value = 0;
+    return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    return GetTrackedDeviceProperty(prop, error, static_cast<uint64_t>(0));
+    uint64_t default_value = 0;
+    return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)

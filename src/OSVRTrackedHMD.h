@@ -110,17 +110,13 @@ private:
 
     float GetIPD();
 
-    /**
-     * Read configuration settings from configuration file.
-     */
+    /** \name Configure components and properties. */
+    //@{
     void configure();
-
-    /**
-     * Configure RenderManager and distortion parameters.
-     */
+    void configureDisplay();
     void configureDistortionParameters();
-
     void configureProperties();
+    //@}
 
     std::string displayDescription_;
     osvr::clientkit::DisplayConfig displayConfig_;
