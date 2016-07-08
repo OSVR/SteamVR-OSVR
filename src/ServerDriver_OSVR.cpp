@@ -43,8 +43,12 @@
 
 vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
 {
-    if (driver_log)
-        Logging::instance().setDriverLog(driver_log);
+    driverLog_ = driver_log;
+    driverHost_ = driver_host;
+    userDriverConfigDir_ = user_driver_config_dir;
+    driverInstallDir_ = driver_install_dir;
+
+    configure();
 
     context_ = std::make_unique<osvr::clientkit::ClientContext>("org.osvr.SteamVR");
 
@@ -79,7 +83,6 @@ vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32
     }
 
     OSVR_LOG(info) << "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device #" << index << ".\n";
-
     return trackedDevices_[index].get();
 }
 
@@ -130,3 +133,22 @@ std::string ServerDriver_OSVR::getDeviceId(vr::ITrackedDeviceServerDriver* devic
     }
 }
 
+void ServerDriver_OSVR::configure()
+{
+    settings_ = std::make_unique<Settings>(driverHost_->GetSettings(vr::IVRSettings_Version));
+
+    if (driverLog_)
+        Logging::instance().setDriverLog(driverLog_);
+
+    // Get settings from config file
+    const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
+    if (verbose_logging) {
+        OSVR_LOG(info) << "Verbose logging enabled.";
+        Logging::instance().setLogLevel(trace);
+    }
+    else {
+        OSVR_LOG(info) << "Verbose logging disabled.";
+        Logging::instance().setLogLevel(info);
+    }
+
+}
