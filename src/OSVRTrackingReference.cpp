@@ -174,7 +174,7 @@ void OSVRTrackingReference::configureProperties()
 
     // Default tracking volume values are for the OSVR HDK IR camera
     properties_[vr::Prop_FieldOfViewLeftDegrees_Float] = settings_->getSetting<float>("cameraFOVLeftDegrees", 35.235f);
-    properties_[vr::Prop_FieldOfViewRightDegrees_Float] = settings_->getSetting<float>("cameraFOVRightDegrees", 35.235);
+    properties_[vr::Prop_FieldOfViewRightDegrees_Float] = settings_->getSetting<float>("cameraFOVRightDegrees", 35.235f);
     properties_[vr::Prop_FieldOfViewTopDegrees_Float] = settings_->getSetting<float>("cameraFOVTopDegrees", 27.95f);
     properties_[vr::Prop_FieldOfViewBottomDegrees_Float] = settings_->getSetting<float>("cameraFOVBottomDegrees", 27.95f);
     properties_[vr::Prop_TrackingRangeMinimumMeters_Float] = settings_->getSetting<float>("minTrackingRangeMeters", 0.15f);
