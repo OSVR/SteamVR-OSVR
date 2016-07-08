@@ -36,6 +36,7 @@
 // Standard includes
 #include <memory>
 #include <ostream>
+#include <ctime>
 
 /**
  * @brief The NullLogger just swallows any log messages it's sent.
@@ -51,6 +52,57 @@ public:
     {
         // do nothing
     }
+};
+
+class BufferedLogger : public vr::IDriverLog {
+public:
+    BufferedLogger(vr::IDriverLog* logger) : logger_(logger)
+    {
+        // do nothing
+    }
+
+    virtual void Log(const char* log_message) override
+    {
+        const auto elapsed_time = std::time(nullptr) - previousTime_;
+        const bool is_same_msg = (previousMessage_ == log_message);
+        const bool is_within_time_window = (elapsed_time < maxBufferTime_);
+        if (is_same_msg && is_within_time_window) {
+            // Buffer the message
+            count_++;
+            return;
+        }
+
+        // Flush the buffer
+        if (count_ > 1) {
+            const std::string msg = "Last message repeated " + std::to_string(count_) + " times.\n";
+            logger_->Log(msg.c_str());
+        }
+
+        // Log the new message
+        logger_->Log(log_message);
+
+        // Reset the buffer
+        previousMessage_ = log_message;
+        previousTime_ = std::time(nullptr);
+        count_ = 0;
+    }
+
+    virtual ~BufferedLogger()
+    {
+        // Flush and buffered messages
+        if (count_ > 1) {
+            const std::string msg = "Last message repeated " + std::to_string(count_) + " times.\n";
+            logger_->Log(msg.c_str());
+        }
+        logger_ = nullptr;
+    }
+
+protected:
+    vr::IDriverLog* logger_ = nullptr;
+    std::time_t maxBufferTime_ = 1; // seconds
+    std::time_t previousTime_ = std::time(nullptr);
+    std::string previousMessage_ = "";
+    unsigned int count_ = 0;
 };
 
 /**
@@ -133,7 +185,11 @@ public:
 
     void setDriverLog(vr::IDriverLog* driver_log)
     {
-        driverLog_ = driver_log;
+        if (driverLog_) {
+            driverLog_ = std::make_unique<BufferedLogger>(driver_log);
+        } else {
+            driverLog_ = std::make_unique<NullLogger>();
+        }
     }
 
     void setLogLevel(LogLevel severity)
@@ -149,24 +205,22 @@ public:
     LineLogger log(LogLevel severity)
     {
         const bool should_log = (severity >= severity_);
-        return LineLogger{ should_log, driverLog_ };
+        return LineLogger{ should_log, driverLog_.get() };
     }
 
 protected:
     Logging()
     {
         // Point the driver log to a null logger until a real logger is set.
-        nullLogger_ = std::make_unique<NullLogger>();
-        driverLog_ = nullLogger_.get();
+        driverLog_ = std::make_unique<NullLogger>();
     }
 
     ~Logging()
     {
-        driverLog_ = nullptr;
+        // do nothing
     }
 
-    std::unique_ptr<NullLogger> nullLogger_;
-    vr::IDriverLog* driverLog_;
+    std::unique_ptr<vr::IDriverLog> driverLog_;
     LogLevel severity_ = LogLevel::info;
 };
 
