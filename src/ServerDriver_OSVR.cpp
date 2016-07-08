@@ -137,8 +137,7 @@ void ServerDriver_OSVR::configure()
 {
     settings_ = std::make_unique<Settings>(driverHost_->GetSettings(vr::IVRSettings_Version));
 
-    if (driverLog_)
-        Logging::instance().setDriverLog(driverLog_);
+    Logging::instance().setDriverLog(driverLog_);
 
     // Get settings from config file
     const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
