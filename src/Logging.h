@@ -35,7 +35,7 @@
 
 // Standard includes
 #include <memory>
-#include <ostream>
+#include <iostream>
 #include <ctime>
 
 /**
@@ -49,6 +49,22 @@ public:
     }
 
     virtual ~NullLogger()
+    {
+        // do nothing
+    }
+};
+
+/**
+ * @brief The ConsoleLogger prints messages to the console.
+ */
+class ConsoleLogger : public vr::IDriverLog {
+public:
+    virtual void Log(const char* log_message) override
+    {
+        std::cout << "osvr: " << log_message;
+    }
+
+    virtual ~ConsoleLogger()
     {
         // do nothing
     }

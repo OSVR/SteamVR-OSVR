@@ -16,6 +16,8 @@ write_compiler_detection_header(
 	FEATURES cxx_override cxx_noexcept
 )
 
+# Check to see if std::make_unique is supported by the compiler.
+# If it's not, include our own implementation of it.
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX11_STANDARD_COMPILE_OPTION})
 check_cxx_source_compiles("#include <memory>\nint main(int, char**) { std::unique_ptr<int> i = std::make_unique<int>(0); }" OSVR_HAS_STD_MAKE_UNIQUE)
@@ -97,24 +99,4 @@ if(WIN32)
 
 	osvrrm_install_dependencies("${DRIVER_INSTALL_DIR}")
 endif()
-
-#
-# Test program
-#
-add_executable(test_hmd_driver test_hmd_driver.cpp)
-target_link_libraries(test_hmd_driver
-	PRIVATE
-	driver_osvr
-	osvr::osvrClientKitCpp
-	eigen-headers
-	util-headers
-	jsoncpp_lib
-	osvrRenderManager::osvrRenderManager)
-
-if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
-	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
-endif()
-target_include_directories(test_hmd_driver SYSTEM PRIVATE ${OPENVR_INCLUDE_DIRS})
-set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
-target_compile_features(test_hmd_driver PRIVATE cxx_override)
 

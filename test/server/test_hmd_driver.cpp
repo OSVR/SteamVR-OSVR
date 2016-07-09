@@ -26,6 +26,8 @@
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 #include "ServerDriver_OSVR.h"          // for ServerDriver_OSVR
 #include "driver_osvr.h"                // for factories
+#include "Logging.h"                    // for loggers
+#include "ServerDriverHost.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>              // for vr::IDriverLog
@@ -33,22 +35,6 @@
 // Standard includes
 #include <cstdlib> // for EXIT_SUCCESS
 #include <iostream>
-
-/**
- * Log messages to the console by default.
- */
-class Logger : public vr::IDriverLog {
-public:
-    void Log(const char* message) OSVR_OVERRIDE
-    {
-        std::cout << message << std::endl;
-    }
-
-    virtual ~Logger()
-    {
-        // do nothing
-    }
-};
 
 int main(int argc, char* argv[])
 {
@@ -74,11 +60,12 @@ int main(int argc, char* argv[])
     }
     std::cout << " - Tracker driver instantiated successfully." << std::endl;
 
-    Logger logger;
+    ConsoleLogger logger;
+    ServerDriverHost server_driver_host;
 
     // Initialize the tracker driver
     std::cout << "Initializing the tracker driver..." << std::endl;
-    vr::EVRInitError error = tracker_driver->Init(&logger, nullptr, "", "");
+    vr::EVRInitError error = tracker_driver->Init(&logger, &server_driver_host, "", "");
     if (vr::VRInitError_None != error) {
         std::cerr << "! Error initializing tracker driver: " << error << "." << std::endl;
         tracker_driver->Cleanup();
