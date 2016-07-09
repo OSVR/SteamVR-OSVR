@@ -31,6 +31,7 @@
 #include "display/Display.h"
 #include "PropertyMap.h"
 #include "PropertyProperties.h"
+#include "Logging.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -181,16 +182,20 @@ inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 {
     const auto result = checkProperty(prop, T());
     if (vr::TrackedProp_Success != result) {
+        OSVR_LOG(warn) << "OSVRTrackedDevice::GetTrackedDeviceProperty(): checkProperty() failed for property [" << prop << "] on device [" << name_ << "].";
         if (error)
             *error = result;
         return default_value;
     }
 
     if (properties_.find(prop) != end(properties_)) {
+        auto value = boost::get<T>(properties_[prop]);
+        OSVR_LOG(trace) << "OSVRTrackedDevice::GetTrackedDeviceProperty(): Property [" << prop << "] on device [" << name_ << "] has value [" << value << "].";
         if (error)
             *error = vr::TrackedProp_Success;
-        return boost::get<T>(properties_[prop]);
+        return value;
     } else {
+        OSVR_LOG(warn) << "OSVRTrackedDevice::GetTrackedDeviceProperty(): Property [" << prop << "] not provided by device [" << name_ << "].";
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;

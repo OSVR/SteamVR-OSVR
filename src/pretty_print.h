@@ -246,5 +246,25 @@ inline std::ostream& operator<<(std::ostream& out, const vr::ETrackedDevicePrope
     return out;
 }
 
+inline std::string to_string(const vr::HmdMatrix34_t& value)
+{
+    std::ostringstream oss;
+    float m[3][4];
+    oss << "[" << value.m[0][0] << " " << value.m[0][1] << " " << value.m[0][2] << value.m[0][3]
+               << value.m[1][0] << " " << value.m[1][1] << " " << value.m[1][2] << value.m[1][3]
+               << value.m[2][0] << " " << value.m[2][1] << " " << value.m[2][2] << value.m[2][3]
+        << "]";
+    return oss.str();
+}
+
+inline std::ostream& operator<<(std::ostream& out, const vr::HmdMatrix34_t& value)
+{
+    out << "[" << value.m[0][0] << " " << value.m[0][1] << " " << value.m[0][2] << value.m[0][3]
+               << value.m[1][0] << " " << value.m[1][1] << " " << value.m[1][2] << value.m[1][3]
+               << value.m[2][0] << " " << value.m[2][1] << " " << value.m[2][2] << value.m[2][3]
+        << "]";
+    return out;
+}
+
 #endif // INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
 
