@@ -144,8 +144,7 @@ void ServerDriver_OSVR::configure()
     if (verbose_logging) {
         OSVR_LOG(info) << "Verbose logging enabled.";
         Logging::instance().setLogLevel(trace);
-    }
-    else {
+    } else {
         OSVR_LOG(info) << "Verbose logging disabled.";
         Logging::instance().setLogLevel(info);
     }

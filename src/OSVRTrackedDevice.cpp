@@ -129,35 +129,35 @@ vr::DriverPose_t OSVRTrackedDevice::GetPose()
 
 bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested bool property [" << prop << "].";
+    //OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested bool property [" << prop << "].";
     bool default_value = false;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested float property [" << prop << "].";
+    //OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested float property [" << prop << "].";
     float default_value = 0.0f;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested int32 property [" << prop << "].";
+    //OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested int32 property [" << prop << "].";
     int32_t default_value = 0;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested uint64 property [" << prop << "].";
+    //OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested uint64 property [" << prop << "].";
     uint64_t default_value = 0;
     return GetTrackedDeviceProperty(prop, error, default_value);
 }
 
 vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
-    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested matrix34 property [" << prop << "].";
+    //OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested matrix34 property [" << prop << "].";
     // Default value is identity matrix
     vr::HmdMatrix34_t default_value;
     map(default_value) = Matrix34f::Identity();
@@ -166,7 +166,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
 
 uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError *error)
 {
-    OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested string property [" << prop << "].";
+    //OSVR_LOG(trace) << "OSVRTrackedDevice[" << name_ << "]: Requested string property [" << prop << "].";
     uint32_t default_value = 0;
 
     const auto result = checkProperty(prop, value);

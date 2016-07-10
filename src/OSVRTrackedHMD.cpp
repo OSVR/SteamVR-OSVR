@@ -56,8 +56,8 @@
 OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_HMD, "OSVRTrackedHMD")
 {
     OSVR_LOG(trace) << "OSVRTrackedHMD::OSVRTrackedHMD() called.";
-
-    settings_ = std::make_unique<Settings>(driverHost_->GetSettings(vr::IVRSettings_Version));
+    configure();
+    OSVR_LOG(trace) << "OSVRTrackedHMD::OSVRTrackedHMD() exiting.";
 }
 
 OSVRTrackedHMD::~OSVRTrackedHMD()
@@ -137,8 +137,6 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
     } catch(const std::exception& e) {
         OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
-
-    configure();
 
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
@@ -309,6 +307,13 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, c
 
 float OSVRTrackedHMD::GetIPD()
 {
+    OSVR_LOG(trace) << "OSVRTrackedHMD::GetIPD() called.";
+
+    if (!displayConfig_.valid()) {
+        OSVR_LOG(trace) << "OSVRTrackedHMD::GetIPD(): DisplayConfig is invalid.";
+        return 0.0;
+    }
+
     OSVR_Pose3 leftEye, rightEye;
 
     if (displayConfig_.getViewer(0).getEye(0).getPose(leftEye) != true) {
@@ -320,18 +325,24 @@ float OSVRTrackedHMD::GetIPD()
     }
 
     float ipd = static_cast<float>((osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm());
+    OSVR_LOG(trace) << "OSVRTrackedHMD::GetIPD() exiting.";
     return ipd;
 }
 
 void OSVRTrackedHMD::configure()
 {
-    configureProperties();
+    OSVR_LOG(trace) << "OSVRTrackedHMD::configure() called.";
+
     configureDisplay();
     configureDistortionParameters();
+    configureProperties();
+    OSVR_LOG(trace) << "OSVRTrackedHMD::configure() exiting.";
 }
 
 void OSVRTrackedHMD::configureDisplay()
 {
+    OSVR_LOG(trace) << "OSVRTrackedHMD::configureDisplay() called.";
+
     // The name of the display we want to use
     const std::string display_name = settings_->getSetting<std::string>("displayName", "OSVR");
 
@@ -396,6 +407,8 @@ void OSVRTrackedHMD::configureDisplay()
 
 void OSVRTrackedHMD::configureDistortionParameters()
 {
+    OSVR_LOG(trace) << "OSVRTrackedHMD::configureDistortionParameters() called.";
+
     // Parse the display descriptor
     displayDescription_ = context_.getStringParameter("/display");
     displayConfiguration_ = OSVRDisplayConfiguration(displayDescription_);
@@ -426,6 +439,8 @@ void OSVRTrackedHMD::configureDistortionParameters()
 
 void OSVRTrackedHMD::configureProperties()
 {
+    OSVR_LOG(trace) << "OSVRTrackedHMD::configureProperties() called.";
+
     // General properties that apply to all device classes
 
     properties_[vr::Prop_WillDriftInYaw_Bool] = true;
@@ -454,8 +469,8 @@ void OSVRTrackedHMD::configureProperties()
     //properties_[vr::Prop_StatusDisplayTransform_Matrix34] = /* TODO */
 
     //properties_[vr::Prop_TrackingSystemName_String] = "";
-    properties_[vr::Prop_ModelNumber_String] = "OSVR HMD";
-    properties_[vr::Prop_SerialNumber_String] = display_.name;
+    properties_[vr::Prop_ModelNumber_String] = std::string("OSVR HMD");
+    properties_[vr::Prop_SerialNumber_String] = std::string(display_.name);
     //properties_[vr::Prop_RenderModelName_String] = "";
     //properties_[vr::Prop_ManufacturerName_String] = "";
     //properties_[vr::Prop_TrackingFirmwareVersion_String] = "";
@@ -493,9 +508,9 @@ void OSVRTrackedHMD::configureProperties()
     //properties_[vr::Prop_DisplayGCType_Int32] = 0;
     //properties_[vr::Prop_CameraCompatibilityMode_Int32] = 0;
 
-    properties_[vr::Prop_CurrentUniverseId_Uint64] = 1;
-    properties_[vr::Prop_PreviousUniverseId_Uint64] = 1;
-    properties_[vr::Prop_DisplayFirmwareVersion_Uint64] = 192; // FIXME read from OSVR server
+    properties_[vr::Prop_CurrentUniverseId_Uint64] = static_cast<uint64_t>(1);
+    properties_[vr::Prop_PreviousUniverseId_Uint64] = static_cast<uint64_t>(1);
+    properties_[vr::Prop_DisplayFirmwareVersion_Uint64] = static_cast<uint64_t>(192); // FIXME read from OSVR server
     //properties_[vr::Prop_CameraFirmwareVersion_Uint64] = 0ul;
     //properties_[vr::Prop_DisplayFPGAVersion_Uint64] = 0ul;
     //properties_[vr::Prop_DisplayBootloaderVersion_Uint64] = 0ul;
@@ -508,5 +523,6 @@ void OSVRTrackedHMD::configureProperties()
     //properties_[vr::Prop_DisplayMCImageRight_String] = "";
     //properties_[vr::Prop_DisplayGCImage_String] = "";
     //properties_[vr::Prop_CameraFirmwareDescription_String] = "";
+    OSVR_LOG(trace) << "OSVRTrackedHMD::configureProperties() exiting.";
 }
 

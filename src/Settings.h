@@ -28,6 +28,7 @@
 
 // Internal Includes
 #include "identity.h"
+#include "Logging.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
@@ -77,7 +78,9 @@ inline Settings::Settings(vr::IVRSettings* settings, const std::string& section)
 template<typename T> inline T Settings::getSetting(const std::string& setting, const T& value)
 {
     // Redirect to the private method
-    return getSetting(identity<T>(), setting, value);
+    auto result = getSetting(identity<T>(), setting, value);
+    OSVR_LOG(trace) << "VR setting [" << setting << "] is [" << value << "].";
+    return result;
 }
 
 template<typename T> inline T Settings::getSetting(identity<T>, const std::string& setting, const T& value)

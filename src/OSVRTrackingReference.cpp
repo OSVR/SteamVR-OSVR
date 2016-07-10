@@ -50,6 +50,7 @@
 OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_TrackingReference, "OSVRTrackingReference")
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::OSVRTrackingReference() called.";
+    configure();
 }
 
 OSVRTrackingReference::~OSVRTrackingReference()
@@ -61,7 +62,6 @@ vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::Activate() called.";
     objectId_ = object_id;
-    configure();
 
     // Clean up tracker callback if exists
     if (trackerInterface_.notEmpty()) {
@@ -87,7 +87,7 @@ void OSVRTrackingReference::Deactivate()
 
 const char* OSVRTrackingReference::GetId()
 {
-    return "OSVR IR camera";
+    return "OSVR HDK IR camera";
 }
 
 void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
@@ -128,6 +128,8 @@ void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue
 
 void OSVRTrackingReference::configure()
 {
+    OSVR_LOG(trace) << "OSVRTrackingReference::configure() called.";
+
     // Read tracking reference values from config file
     trackerPath_ = settings_->getSetting<std::string>("cameraPath", trackerPath_);
 
@@ -136,6 +138,8 @@ void OSVRTrackingReference::configure()
 
 void OSVRTrackingReference::configureProperties()
 {
+    OSVR_LOG(trace) << "OSVRTrackingReference::configureProperties() called.";
+
     // Properties that apply to all device classes
     properties_[vr::Prop_WillDriftInYaw_Bool] = false;
     properties_[vr::Prop_DeviceIsWireless_Bool] = false;
@@ -158,10 +162,10 @@ void OSVRTrackingReference::configureProperties()
     //properties_[vr::Prop_DongleVersion_Uint64] = 0ul;
     //properties_[vr::Prop_StatusDisplayTransform_Matrix34] = /* ... */;
     //properties_[vr::Prop_TrackingSystemName_String] = "";
-    properties_[vr::Prop_ModelNumber_String] = "OSVR Tracking Reference";
-    properties_[vr::Prop_SerialNumber_String] = GetId(); // FIXME read value from server
-    properties_[vr::Prop_RenderModelName_String] = "dk2_camera"; // FIXME replace with HDK IR camera model
-    properties_[vr::Prop_ManufacturerName_String] = "OSVR"; // FIXME read value from server
+    properties_[vr::Prop_ModelNumber_String] = std::string("OSVR Tracking Reference");
+    properties_[vr::Prop_SerialNumber_String] = std::string("OSVR HDK IR camera: ") + trackerPath_; // FIXME read value from server
+    properties_[vr::Prop_RenderModelName_String] = std::string("dk2_camera"); // FIXME replace with HDK IR camera model
+    properties_[vr::Prop_ManufacturerName_String] = std::string("OSVR"); // FIXME read value from server
     //properties_[vr::Prop_TrackingFirmwareVersion_String] = "";
     //properties_[vr::Prop_HardwareRevision_String] = "";
     //properties_[vr::Prop_AllWirelessDongleDescriptions_String] = "";
