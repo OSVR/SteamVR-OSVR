@@ -53,7 +53,7 @@
 #include <fstream>
 #include <algorithm>        // for std::find
 
-OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class, const std::string& name) : context_(context), driverHost_(driver_host), pose_(), deviceClass_(device_class), name_(name)
+OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class, const std::string& user_driver_config_dir, const std::string& name) : context_(context), driverHost_(driver_host), deviceClass_(device_class), userDriverConfigDir_(user_driver_config_dir), name_(name), pose_()
 {
     OSVR_LOG(trace) << "OSVRTrackedDevice::OSVRTrackedDevice() called.";
 

@@ -1,0 +1,50 @@
+{
+    "_description": "Maps Razer Hydra controllers to SteamVR controllers.",
+    "controllers": {
+        "left": {
+            "basePath": "/me/hands/left",
+            "tracker": "/me/hands/left",
+            "axes": [
+                {
+                    "type": "joystick",
+                    "x": "joystick/x",
+                    "y": "joystick/y",
+                    "button": "joystick/button"
+                },
+                {
+                    "type": "trigger",
+                    "x": "trigger"
+                }
+            ],
+            "buttons": {
+                "system": "middle",
+                "menu": "4",
+                "grip": "bumper",
+                "a": "1"
+            }
+        },
+        "right": {
+            "basePath": "/me/hands/right",
+            "tracker": "/me/hands/right",
+            "axes": [
+                {
+                    "type": "joystick",
+                    "x": "joystick/x",
+                    "y": "joystick/y",
+                    "button": "joystick/button"
+                },
+                {
+                    "type": "trigger",
+                    "x": "trigger"
+                }
+            ],
+            "buttons": {
+                "system": "middle",
+                "menu": "4",
+                "grip": "bumper",
+                "a": "1"
+            }
+        }
+    }
+}
+

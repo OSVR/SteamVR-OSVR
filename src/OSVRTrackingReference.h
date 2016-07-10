@@ -42,7 +42,7 @@
 class OSVRTrackingReference : public OSVRTrackedDevice {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host);
+    OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, const std::string& user_driver_config_dir);
 
     virtual ~OSVRTrackingReference();
 

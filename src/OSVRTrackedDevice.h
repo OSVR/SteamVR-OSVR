@@ -52,7 +52,7 @@
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class, const std::string& name = "Unnamed device");
+    OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::ETrackedDeviceClass device_class, const std::string& user_driver_config_dir, const std::string& name = "Unnamed device");
 
     virtual ~OSVRTrackedDevice();
 
@@ -175,9 +175,10 @@ protected:
 
     osvr::clientkit::ClientContext& context_;
     vr::IServerDriverHost* driverHost_ = nullptr;
-    vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
+    std::string userDriverConfigDir_;
     std::string name_;
+    vr::DriverPose_t pose_;
     std::unique_ptr<Settings> settings_;
     uint32_t objectId_ = 0;
 

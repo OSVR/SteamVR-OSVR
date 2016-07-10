@@ -46,7 +46,7 @@
 class OSVRTrackedHMD : public OSVRTrackedDevice, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host);
+    OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, const std::string& user_driver_config_dir);
 
     virtual ~OSVRTrackedHMD();
 

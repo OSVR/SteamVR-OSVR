@@ -12,7 +12,8 @@
         "cameraFOVTopDegrees": 27.95,
         "cameraFOVBottomDegrees": 27.95,
         "minTrackingRangeMeters": 0.15,
-        "maxTrackingRangeMeters": 1.5
+        "maxTrackingRangeMeters": 1.5,
+        "controllerConfig": "Razer_Hydra.json"
     }
 }
 

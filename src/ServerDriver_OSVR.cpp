@@ -27,6 +27,7 @@
 
 #include "OSVRTrackedHMD.h"         // for OSVRTrackedHMD
 #include "OSVRTrackingReference.h"  // for OSVRTrackingReference
+#include "OSVRTrackedController.h"  // for OSVRTrackedController
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
 #include "Logging.h"                // for OSVR_LOG, Logging
@@ -52,8 +53,10 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServer
 
     context_ = std::make_unique<osvr::clientkit::ClientContext>("org.osvr.SteamVR");
 
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedHMD>(*(context_.get()), driver_host));
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get()), driver_host));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedHMD>(*(context_.get()), driver_host, userDriverConfigDir_));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get()), driver_host, userDriverConfigDir_));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), driver_host, userDriverConfigDir_, vr::TrackedControllerRole_LeftHand));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), driver_host, userDriverConfigDir_, vr::TrackedControllerRole_RightHand));
 
     return vr::VRInitError_None;
 }

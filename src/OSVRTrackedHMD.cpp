@@ -53,7 +53,7 @@
 #include <exception>
 #include <algorithm>        // for std::find
 
-OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_HMD, "OSVRTrackedHMD")
+OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, const std::string& user_driver_config_dir) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_HMD, user_driver_config_dir, "OSVRTrackedHMD")
 {
     OSVR_LOG(trace) << "OSVRTrackedHMD::OSVRTrackedHMD() called.";
     configure();
