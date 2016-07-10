@@ -152,7 +152,7 @@ protected:
     std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
 
     /**
-     * Cecks to see if the requested property is valid for the device class and
+     * Checks to see if the requested property is valid for the device class and
      * type requested.
      *
      * @tparam T type of value requested
@@ -167,6 +167,12 @@ protected:
     template <typename T>
     T GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value);
 
+    /**
+     * Sets a device property after performing safety checks.
+     */
+    template <typename T>
+    void setProperty(vr::ETrackedDeviceProperty prop, const T& value);
+
     osvr::clientkit::ClientContext& context_;
     vr::IServerDriverHost* driverHost_ = nullptr;
     vr::DriverPose_t pose_;
@@ -174,6 +180,9 @@ protected:
     std::string name_;
     std::unique_ptr<Settings> settings_;
     uint32_t objectId_ = 0;
+
+private:
+    // Use GetTrackedDeviceProperty() or setProperty() instead.
     PropertyMap properties_;
 };
 
@@ -218,6 +227,21 @@ inline vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDe
     }
 
     return vr::TrackedProp_Success;
+}
+
+template <typename T>
+inline void OSVRTrackedDevice::setProperty(vr::ETrackedDeviceProperty prop, const T& value)
+{
+    if (isWrongDataType(prop, value)) {
+        OSVR_LOG(err) << "[" << name_ << "]: Tried to set [" << prop << "] to value [" << value << "] but the value is the wrong type. Ignoring the attempt.";
+        return;
+    }
+
+    if (isWrongDeviceClass(prop, deviceClass_)) {
+        OSVR_LOG(warn) << "[" << name_ << "]: Tried to set [" << prop << "] but that property is not valid for this device class [" << deviceClass_ << "].";
+    }
+
+    properties_[prop] = value;
 }
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

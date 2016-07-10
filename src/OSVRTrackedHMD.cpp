@@ -443,86 +443,87 @@ void OSVRTrackedHMD::configureProperties()
 
     // General properties that apply to all device classes
 
-    properties_[vr::Prop_WillDriftInYaw_Bool] = true;
-    properties_[vr::Prop_DeviceIsWireless_Bool] = false;
-    properties_[vr::Prop_DeviceIsCharging_Bool] = false;
-    properties_[vr::Prop_Firmware_UpdateAvailable_Bool] = false;
-    properties_[vr::Prop_Firmware_ManualUpdate_Bool] = false;
-    properties_[vr::Prop_BlockServerShutdown_Bool] = false;
-    //properties_[vr::Prop_CanUnifyCoordinateSystemWithHmd_Bool] = true;
-    properties_[vr::Prop_ContainsProximitySensor_Bool] = false;
-    properties_[vr::Prop_DeviceProvidesBatteryStatus_Bool] = false;
-    properties_[vr::Prop_DeviceCanPowerOff_Bool] = true;
-    properties_[vr::Prop_HasCamera_Bool] = false;
+    setProperty(vr::Prop_WillDriftInYaw_Bool, true);
+    setProperty(vr::Prop_DeviceIsWireless_Bool, false);
+    setProperty(vr::Prop_DeviceIsCharging_Bool, false);
+    setProperty(vr::Prop_Firmware_UpdateAvailable_Bool, false);
+    setProperty(vr::Prop_Firmware_ManualUpdate_Bool, false);
+    setProperty(vr::Prop_BlockServerShutdown_Bool, false);
+    //setProperty(vr::Prop_CanUnifyCoordinateSystemWithHmd_Bool, true);
+    setProperty(vr::Prop_ContainsProximitySensor_Bool, false);
+    setProperty(vr::Prop_DeviceProvidesBatteryStatus_Bool, false);
+    setProperty(vr::Prop_DeviceCanPowerOff_Bool, true);
+    setProperty(vr::Prop_HasCamera_Bool, false);
 
-    properties_[vr::Prop_DeviceBatteryPercentage_Float] = 1.0f; // full battery
+    setProperty(vr::Prop_DeviceBatteryPercentage_Float, 1.0f); // full battery
 
-    properties_[vr::Prop_DeviceClass_Int32] = deviceClass_;
+    setProperty(vr::Prop_DeviceClass_Int32, deviceClass_);
 
-    //properties_[vr::Prop_HardwareRevision_Uint64] = 0ul;
-    //properties_[vr::Prop_FirmwareVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_FPGAVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_VRCVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_RadioVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_DongleVersion_Uint64] = 0ul;
+    //setProperty<uint64_t>(vr::Prop_HardwareRevision_Uint64, 0ul);
+    //setProperty<uint64_t>(vr::Prop_FirmwareVersion_Uint64, 0ul);
+    //setProperty<uint64_t>(vr::Prop_FPGAVersion_Uint64, 0ul);
+    //setProperty<uint64_t>(vr::Prop_VRCVersion_Uint64, 0ul);
+    //setProperty<uint64_t>(vr::Prop_RadioVersion_Uint64, 0ul);
+    //setProperty<uint64_t>(vr::Prop_DongleVersion_Uint64, 0ul);
 
-    //properties_[vr::Prop_StatusDisplayTransform_Matrix34] = /* TODO */
+    //setProperty(vr::Prop_StatusDisplayTransform_Matrix34, /* TODO */
 
-    //properties_[vr::Prop_TrackingSystemName_String] = "";
-    properties_[vr::Prop_ModelNumber_String] = std::string("OSVR HMD");
-    properties_[vr::Prop_SerialNumber_String] = std::string(display_.name);
-    //properties_[vr::Prop_RenderModelName_String] = "";
-    //properties_[vr::Prop_ManufacturerName_String] = "";
-    //properties_[vr::Prop_TrackingFirmwareVersion_String] = "";
-    //properties_[vr::Prop_HardwareRevision_String] = "";
-    //properties_[vr::Prop_AllWirelessDongleDescriptions_String] = "";
-    //properties_[vr::Prop_ConnectedWirelessDongle_String] = "";
-    //properties_[vr::Prop_Firmware_ManualUpdateURL_String] = "";
-    //properties_[vr::Prop_Firmware_ProgrammingTarget_String] = "";
-    //properties_[vr::Prop_DriverVersion_String] = "";
+    //setProperty<std::string>(vr::Prop_TrackingSystemName_String, "");
+    setProperty<std::string>(vr::Prop_ModelNumber_String, "OSVR HMD");
+    setProperty<std::string>(vr::Prop_SerialNumber_String, display_.name);
+    //setProperty<std::string>(vr::Prop_RenderModelName_String, "");
+    //setProperty<std::string>(vr::Prop_ManufacturerName_String, "");
+    //setProperty<std::string>(vr::Prop_TrackingFirmwareVersion_String, "");
+    //setProperty<std::string>(vr::Prop_HardwareRevision_String, "");
+    //setProperty<std::string>(vr::Prop_AllWirelessDongleDescriptions_String, "");
+    //setProperty<std::string>(vr::Prop_ConnectedWirelessDongle_String, "");
+    //setProperty<std::string>(vr::Prop_Firmware_ManualUpdateURL_String, "");
+    //setProperty<std::string>(vr::Prop_Firmware_ProgrammingTarget_String, "");
+    //setProperty<std::string>(vr::Prop_DriverVersion_String, "");
 
 
     // Properties that apply to HMDs
 
-    //properties_[vr::Prop_ReportsTimeSinceVSync_Bool] = false;
-    properties_[vr::Prop_IsOnDesktop_Bool] = IsDisplayOnDesktop();
+    //setProperty(vr::Prop_ReportsTimeSinceVSync_Bool, false);
+    setProperty(vr::Prop_IsOnDesktop_Bool, IsDisplayOnDesktop());
 
-    //properties_[vr::Prop_SecondsFromVsyncToPhotons_Float] = 0.0;
-    properties_[vr::Prop_DisplayFrequency_Float] = static_cast<float>(display_.verticalRefreshRate);
-    properties_[vr::Prop_UserIpdMeters_Float] = GetIPD();
-    //properties_[vr::Prop_DisplayMCOffset_Float] = 0.0;
-    //properties_[vr::Prop_DisplayMCScale_Float] = 0.0;
-    //properties_[vr::Prop_DisplayGCBlackClamp_Float] = 0.0;
-    //properties_[vr::Prop_DisplayGCOffset_Float] = 0.0;
-    //properties_[vr::Prop_DisplayGCScale_Float] = 0.0;
-    //properties_[vr::Prop_DisplayGCPrescale_Float] = 0.0;
-    //properties_[vr::Prop_LensCenterLeftU_Float] = 0.0;
-    //properties_[vr::Prop_LensCenterLeftV_Float] = 0.0;
-    //properties_[vr::Prop_LensCenterRightU_Float] = 0.0;
-    //properties_[vr::Prop_LensCenterRightV_Float] = 0.0;
-    //properties_[vr::Prop_UserHeadToEyeDepthMeters_Float] = 0.0;
+    //setProperty<float>(vr::Prop_SecondsFromVsyncToPhotons_Float, 0.0f);
+    setProperty<float>(vr::Prop_DisplayFrequency_Float, display_.verticalRefreshRate);
+    setProperty<float>(vr::Prop_UserIpdMeters_Float, GetIPD());
+    //setProperty<float>(vr::Prop_DisplayMCOffset_Float, 0.0f);
+    //setProperty<float>(vr::Prop_DisplayMCScale_Float, 0.0f);
+    //setProperty<float>(vr::Prop_DisplayGCBlackClamp_Float, 0.0f);
+    //setProperty<float>(vr::Prop_DisplayGCOffset_Float, 0.0f);
+    //setProperty<float>(vr::Prop_DisplayGCScale_Float, 0.0f);
+    //setProperty<float>(vr::Prop_DisplayGCPrescale_Float, 0.0f);
+    //setProperty<float>(vr::Prop_LensCenterLeftU_Float, 0.0f);
+    //setProperty<float>(vr::Prop_LensCenterLeftV_Float, 0.0f);
+    //setProperty<float>(vr::Prop_LensCenterRightU_Float, 0.0f);
+    //setProperty<float>(vr::Prop_LensCenterRightV_Float, 0.0f);
+    //setProperty<float>(vr::Prop_UserHeadToEyeDepthMeters_Float, 0.0f);
 
-    //properties_[vr::Prop_DisplayMCType_Int32] = 0;
-    properties_[vr::Prop_EdidVendorID_Int32] = static_cast<int32_t>(display_.edidVendorId);
-    properties_[vr::Prop_EdidProductID_Int32] = static_cast<int32_t>(display_.edidProductId);
-    //properties_[vr::Prop_DisplayGCType_Int32] = 0;
-    //properties_[vr::Prop_CameraCompatibilityMode_Int32] = 0;
+    //setProperty<int32_t>(vr::Prop_DisplayMCType_Int32, 0);
+    setProperty<int32_t>(vr::Prop_EdidVendorID_Int32, display_.edidVendorId);
+    setProperty<int32_t>(vr::Prop_EdidProductID_Int32, display_.edidProductId);
+    //setProperty<int32_t>(vr::Prop_DisplayGCType_Int32, 0);
+    //setProperty<int32_t>(vr::Prop_CameraCompatibilityMode_Int32, 0);
 
-    properties_[vr::Prop_CurrentUniverseId_Uint64] = static_cast<uint64_t>(1);
-    properties_[vr::Prop_PreviousUniverseId_Uint64] = static_cast<uint64_t>(1);
-    properties_[vr::Prop_DisplayFirmwareVersion_Uint64] = static_cast<uint64_t>(192); // FIXME read from OSVR server
-    //properties_[vr::Prop_CameraFirmwareVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_DisplayFPGAVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_DisplayBootloaderVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_DisplayHardwareVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_AudioFirmwareVersion_Uint64] = 0ul;
+    setProperty<uint64_t>(vr::Prop_CurrentUniverseId_Uint64, 1);
+    setProperty<uint64_t>(vr::Prop_PreviousUniverseId_Uint64, 1);
+    setProperty<uint64_t>(vr::Prop_DisplayFirmwareVersion_Uint64, 192); // FIXME read from OSVR server
+    //setProperty<uint64_t>(vr::Prop_CameraFirmwareVersion_Uint64, 0);
+    //setProperty<uint64_t>(vr::Prop_DisplayFPGAVersion_Uint64, 0);
+    //setProperty<uint64_t>(vr::Prop_DisplayBootloaderVersion_Uint64, 0);
+    //setProperty<uint64_t>(vr::Prop_DisplayHardwareVersion_Uint64, 0);
+    //setProperty<uint64_t>(vr::Prop_AudioFirmwareVersion_Uint64, 0);
 
-    //properties_[vr::Prop_CameraToHeadTransform_Matrix34] = /* TODO */
+    //setProperty(vr::Prop_CameraToHeadTransform_Matrix34, /* TODO */);
 
-    //properties_[vr::Prop_DisplayMCImageLeft_String] = "";
-    //properties_[vr::Prop_DisplayMCImageRight_String] = "";
-    //properties_[vr::Prop_DisplayGCImage_String] = "";
-    //properties_[vr::Prop_CameraFirmwareDescription_String] = "";
+    //setProperty<std::string>(vr::Prop_DisplayMCImageLeft_String, "");
+    //setProperty<std::string>(vr::Prop_DisplayMCImageRight_String, "");
+    //setProperty<std::string>(vr::Prop_DisplayGCImage_String, "");
+    //setProperty<std::string>(vr::Prop_CameraFirmwareDescription_String, "");
+
     OSVR_LOG(trace) << "OSVRTrackedHMD::configureProperties() exiting.";
 }
 

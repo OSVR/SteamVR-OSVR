@@ -141,49 +141,49 @@ void OSVRTrackingReference::configureProperties()
     OSVR_LOG(trace) << "OSVRTrackingReference::configureProperties() called.";
 
     // Properties that apply to all device classes
-    properties_[vr::Prop_WillDriftInYaw_Bool] = false;
-    properties_[vr::Prop_DeviceIsWireless_Bool] = false;
-    properties_[vr::Prop_DeviceIsCharging_Bool] = false;
-    properties_[vr::Prop_Firmware_UpdateAvailable_Bool] = false;
-    properties_[vr::Prop_Firmware_ManualUpdate_Bool] = false;
-    properties_[vr::Prop_BlockServerShutdown_Bool] = false;
-    //properties_[vr::Prop_CanUnifyCoordinateSystemWithHmd_Bool] = true;
-    properties_[vr::Prop_ContainsProximitySensor_Bool] = false;
-    properties_[vr::Prop_DeviceProvidesBatteryStatus_Bool] = false;
-    properties_[vr::Prop_DeviceCanPowerOff_Bool] = false;
-    properties_[vr::Prop_HasCamera_Bool] = false;
-    properties_[vr::Prop_DeviceBatteryPercentage_Float] = 1.0f;
-    properties_[vr::Prop_DeviceClass_Int32] = deviceClass_;
-    //properties_[vr::Prop_HardwareRevision_Uint64] = 0ul;
-    //properties_[vr::Prop_FirmwareVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_FPGAVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_VRCVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_RadioVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_DongleVersion_Uint64] = 0ul;
-    //properties_[vr::Prop_StatusDisplayTransform_Matrix34] = /* ... */;
-    //properties_[vr::Prop_TrackingSystemName_String] = "";
-    properties_[vr::Prop_ModelNumber_String] = std::string("OSVR Tracking Reference");
-    properties_[vr::Prop_SerialNumber_String] = std::string("OSVR HDK IR camera: ") + trackerPath_; // FIXME read value from server
-    properties_[vr::Prop_RenderModelName_String] = std::string("dk2_camera"); // FIXME replace with HDK IR camera model
-    properties_[vr::Prop_ManufacturerName_String] = std::string("OSVR"); // FIXME read value from server
-    //properties_[vr::Prop_TrackingFirmwareVersion_String] = "";
-    //properties_[vr::Prop_HardwareRevision_String] = "";
-    //properties_[vr::Prop_AllWirelessDongleDescriptions_String] = "";
-    //properties_[vr::Prop_ConnectedWirelessDongle_String] = "";
-    //properties_[vr::Prop_Firmware_ManualUpdateURL_String] = "";
-    //properties_[vr::Prop_Firmware_ProgrammingTarget_String] = "";
-    //properties_[vr::Prop_DriverVersion_String] = "";
+    setProperty(vr::Prop_WillDriftInYaw_Bool, false);
+    setProperty(vr::Prop_DeviceIsWireless_Bool, false);
+    setProperty(vr::Prop_DeviceIsCharging_Bool, false);
+    setProperty(vr::Prop_Firmware_UpdateAvailable_Bool, false);
+    setProperty(vr::Prop_Firmware_ManualUpdate_Bool, false);
+    setProperty(vr::Prop_BlockServerShutdown_Bool, false);
+    //setProperty(vr::Prop_CanUnifyCoordinateSystemWithHmd_Bool, true);
+    setProperty(vr::Prop_ContainsProximitySensor_Bool, false);
+    setProperty(vr::Prop_DeviceProvidesBatteryStatus_Bool, false);
+    setProperty(vr::Prop_DeviceCanPowerOff_Bool, false);
+    setProperty(vr::Prop_HasCamera_Bool, false);
+    setProperty<float>(vr::Prop_DeviceBatteryPercentage_Float, 1.0f);
+    setProperty<int32_t>(vr::Prop_DeviceClass_Int32, deviceClass_);
+    //setProperty(vr::Prop_HardwareRevision_Uint64, 0ul);
+    //setProperty(vr::Prop_FirmwareVersion_Uint64, 0ul);
+    //setProperty(vr::Prop_FPGAVersion_Uint64, 0ul);
+    //setProperty(vr::Prop_VRCVersion_Uint64, 0ul);
+    //setProperty(vr::Prop_RadioVersion_Uint64, 0ul);
+    //setProperty(vr::Prop_DongleVersion_Uint64, 0ul);
+    //setProperty(vr::Prop_StatusDisplayTransform_Matrix34, /* ... */);
+    //setProperty<std::string>(vr::Prop_TrackingSystemName_String, "");
+    setProperty<std::string>(vr::Prop_ModelNumber_String, "OSVR Tracking Reference");
+    setProperty<std::string>(vr::Prop_SerialNumber_String, "OSVR HDK IR camera: " + trackerPath_); // FIXME read value from server
+    setProperty<std::string>(vr::Prop_RenderModelName_String, "dk2_camera"); // FIXME replace with HDK IR camera model
+    setProperty<std::string>(vr::Prop_ManufacturerName_String, "OSVR"); // FIXME read value from server
+    //setProperty<std::string>(vr::Prop_TrackingFirmwareVersion_String, "");
+    //setProperty<std::string>(vr::Prop_HardwareRevision_String, "");
+    //setProperty<std::string>(vr::Prop_AllWirelessDongleDescriptions_String, "");
+    //setProperty<std::string>(vr::Prop_ConnectedWirelessDongle_String, "");
+    //setProperty<std::string>(vr::Prop_Firmware_ManualUpdateURL_String, "");
+    //setProperty<std::string>(vr::Prop_Firmware_ProgrammingTarget_String, "");
+    //setProperty<std::string>(vr::Prop_DriverVersion_String, "");
 
     // Properties that are unique to TrackedDeviceClass_TrackingReference
 
     // Default tracking volume values are for the OSVR HDK IR camera
-    properties_[vr::Prop_FieldOfViewLeftDegrees_Float] = settings_->getSetting<float>("cameraFOVLeftDegrees", 35.235f);
-    properties_[vr::Prop_FieldOfViewRightDegrees_Float] = settings_->getSetting<float>("cameraFOVRightDegrees", 35.235f);
-    properties_[vr::Prop_FieldOfViewTopDegrees_Float] = settings_->getSetting<float>("cameraFOVTopDegrees", 27.95f);
-    properties_[vr::Prop_FieldOfViewBottomDegrees_Float] = settings_->getSetting<float>("cameraFOVBottomDegrees", 27.95f);
-    properties_[vr::Prop_TrackingRangeMinimumMeters_Float] = settings_->getSetting<float>("minTrackingRangeMeters", 0.15f);
-    properties_[vr::Prop_TrackingRangeMaximumMeters_Float] = settings_->getSetting<float>("maxTrackingRangeMeters", 1.5f);
-    //properties_[vr::Prop_ModeLabel_String] = "";
+    setProperty<float>(vr::Prop_FieldOfViewLeftDegrees_Float, settings_->getSetting<float>("cameraFOVLeftDegrees", 35.235f));
+    setProperty<float>(vr::Prop_FieldOfViewRightDegrees_Float, settings_->getSetting<float>("cameraFOVRightDegrees", 35.235f));
+    setProperty<float>(vr::Prop_FieldOfViewTopDegrees_Float, settings_->getSetting<float>("cameraFOVTopDegrees", 27.95f));
+    setProperty<float>(vr::Prop_FieldOfViewBottomDegrees_Float, settings_->getSetting<float>("cameraFOVBottomDegrees", 27.95f));
+    setProperty<float>(vr::Prop_TrackingRangeMinimumMeters_Float, settings_->getSetting<float>("minTrackingRangeMeters", 0.15f));
+    setProperty<float>(vr::Prop_TrackingRangeMaximumMeters_Float, settings_->getSetting<float>("maxTrackingRangeMeters", 1.5f));
+    //setProperty<std::string>(vr::Prop_ModeLabel_String, "");
 }
 
 
