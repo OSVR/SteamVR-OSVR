@@ -37,6 +37,9 @@
 
 class VRSettings : public vr::IVRSettings {
 public:
+    VRSettings();
+    virtual ~VRSettings();
+
     virtual const char* GetSettingsErrorNameFromEnum(vr::EVRSettingsError error) OSVR_OVERRIDE;
 
     virtual bool Sync(bool force = false, vr::EVRSettingsError* error = nullptr) OSVR_OVERRIDE;

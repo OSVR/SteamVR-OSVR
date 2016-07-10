@@ -32,6 +32,16 @@
 // Standard includes
 // - none
 
+VRSettings::VRSettings()
+{
+    // do nothing
+}
+
+VRSettings::~VRSettings()
+{
+    // do nothing
+}
+
 const char* VRSettings::GetSettingsErrorNameFromEnum(vr::EVRSettingsError error)
 {
     // TODO
