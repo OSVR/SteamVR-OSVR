@@ -49,6 +49,7 @@
 // Standard includes
 #include <cstring>
 #include <ctime>
+#include <fstream>
 #include <string>
 #include <iostream>
 #include <exception>
@@ -209,7 +210,7 @@ void OSVRTrackedController::configureController()
     // Read the controller config file
     namespace fs = boost::filesystem;
     const auto controller_config_filename  = (fs::path(userDriverConfigDir_) / controller_config).generic_string();
-    std::ifstream config_stream(controller_config_filename);
+    std::ifstream config_stream { controller_config_filename };
 
     Json::Value root;
     config_stream >> root;
