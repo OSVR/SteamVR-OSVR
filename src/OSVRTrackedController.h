@@ -48,6 +48,7 @@
 
 class OSVRTrackedController;
 
+#if 0
 struct AnalogInterface {
     osvr::clientkit::Interface analogInterfaceX;
     osvr::clientkit::Interface analogInterfaceY;
@@ -58,6 +59,20 @@ struct AnalogInterface {
     double x;
     double y;
     uint32_t axisIndex;
+};
+#endif
+
+struct Axis {
+    vr::EVRControllerAxisType type;
+    vr::VRControllerAxis_t position;
+};
+
+struct AxisCallbackData {
+    OSVRTrackedController* controller;
+    uint32_t index;
+    enum class AxisDirection {
+        X, Y
+    } direction;
 };
 
 
@@ -109,6 +124,7 @@ protected:
 
 private:
     void configure();
+    void configureController();
     void configureProperties();
 
     void freeInterfaces();
@@ -117,17 +133,21 @@ private:
      * Callback function which is called whenever new data has been received
      * from the tracker.
      */
+#if 0
     static void controllerTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     static void controllerButtonCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report);
     static void controllerTriggerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
     static void controllerJoystickXCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
     static void controllerJoystickYCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
+#endif
+    static void axisCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
 
     vr::ETrackedControllerRole controllerRole_;
-    osvr::clientkit::Interface trackerInterface_;
-    osvr::clientkit::Interface buttonInterface_[NUM_BUTTONS];
-    uint32_t numAxis_;
-    AnalogInterface analogInterface_[NUM_AXIS];
+    //osvr::clientkit::Interface trackerInterface_;
+    //osvr::clientkit::Interface buttonInterface_[NUM_BUTTONS];
+    std::vector<osvr::clientkit::Interface> interfaces_;
+    std::vector<Axis> axes_;
+    std::vector<AxisCallbackData> axisCallbackData_;
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

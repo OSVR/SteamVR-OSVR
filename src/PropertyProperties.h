@@ -32,7 +32,7 @@
 #include <openvr_driver.h>
 
 // Standard includes
-// - none
+#include <string>
 
 // Whenever you upgrade OpenVR, make sure you update all the functions below if vr::ETrackedDeviceProperty has changed.
 

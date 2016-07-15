@@ -36,7 +36,7 @@ if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
 endif()
 
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 
 # For our generated file
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

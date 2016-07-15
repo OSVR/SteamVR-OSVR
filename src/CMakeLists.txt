@@ -63,11 +63,13 @@ add_library(driver_osvr
 target_link_libraries(driver_osvr
 	PRIVATE
 	osvr::osvrClientKitCpp
+	osvr::osvrCommon
 	eigen-headers
 	util-headers
 	jsoncpp_lib
 	osvrDisplay
 	osvrRenderManager::osvrRenderManager
+	Boost::filesystem
 )
 
 if(WIN32)
