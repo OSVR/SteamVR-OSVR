@@ -436,6 +436,16 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     coords.rfBlue[0] = coords_blue[0];
     coords.rfBlue[1] = 1.0f - coords_blue[1];
 
+	// offset for center of projection
+	auto x_offset = 0.5 - distortion_parameters.m_distortionCOP[0];
+	auto y_offset = 0.5 - distortion_parameters.m_distortionCOP[1];
+	coords.rfRed[0] = coords.rfRed[0] + x_offset;
+	coords.rfRed[1] = coords.rfRed[1] + y_offset;
+	coords.rfGreen[0] = coords.rfGreen[0] + x_offset;
+	coords.rfGreen[1] = coords.rfGreen[1] + y_offset;
+	coords.rfBlue[0] = coords.rfBlue[0] + x_offset;
+	coords.rfBlue[1] = coords.rfBlue[1] + y_offset;
+	
     return coords;
 }
 
