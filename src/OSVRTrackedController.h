@@ -25,13 +25,6 @@
 #ifndef INCLUDED_OSVRTrackedController_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
 #define INCLUDED_OSVRTrackedController_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
 
-
-#define NUM_BUTTONS 64
-#define NUM_TOUCHPAD 1 // only SteamVR Axis 0 for the moment (not implemented yet)
-#define NUM_TRIGGER 1 // only SteamVR Axis 1 for the moment
-#define NUM_JOYSTICKS 3 // only SteamVR Axis 2,3,4 for the moment (there is always x and y in one joystick)
-#define NUM_AXIS 5
-
 // Internal Includes
 #include "OSVRTrackedDevice.h"
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
@@ -49,20 +42,6 @@
 #include <string>
 
 class OSVRTrackedController;
-
-#if 0
-struct AnalogInterface {
-    osvr::clientkit::Interface analogInterfaceX;
-    osvr::clientkit::Interface analogInterfaceY;
-
-    OSVRTrackedController* parentController;
-
-    vr::EVRControllerAxisType axisType;
-    double x;
-    double y;
-    uint32_t axisIndex;
-};
-#endif
 
 struct AxisCallbackData {
     OSVRTrackedController* controller;

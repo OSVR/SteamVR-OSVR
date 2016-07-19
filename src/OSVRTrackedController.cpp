@@ -135,72 +135,6 @@ void OSVRTrackedController::freeInterfaces()
     }
 }
 
-#if 0
-void OSVRTrackedController::controllerTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
-{
-    if (!userdata)
-        return;
-
-    auto* self = static_cast<OSVRTrackedController*>(userdata);
-
-    vr::DriverPose_t pose;
-    pose.poseTimeOffset = 0; // close enough
-
-    Eigen::Vector3d::Map(pose.vecWorldFromDriverTranslation) = Eigen::Vector3d::Zero();
-    Eigen::Vector3d::Map(pose.vecDriverFromHeadTranslation) = Eigen::Vector3d::Zero();
-
-    map(pose.qWorldFromDriverRotation) = Eigen::Quaterniond::Identity();
-    map(pose.qDriverFromHeadRotation) = Eigen::Quaterniond::Identity();
-
-    // Position
-    Eigen::Vector3d::Map(pose.vecPosition) = osvr::util::vecMap(report->pose.translation);
-
-    // Position velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
-    Eigen::Vector3d::Map(pose.vecAcceleration) = Eigen::Vector3d::Zero();
-
-    // Orientation
-    map(pose.qRotation) = osvr::util::fromQuat(report->pose.rotation);
-
-    // Angular velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
-    Eigen::Vector3d::Map(pose.vecAngularAcceleration) = Eigen::Vector3d::Zero();
-
-    pose.result = vr::TrackingResult_Running_OK;
-    pose.poseIsValid = true;
-    //pose.willDriftInYaw = true;
-    //pose.shouldApplyHeadModel = true;
-    pose.deviceIsConnected = true;
-
-    self->pose_ = pose;
-
-    self->driverHost_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
-}
-
-void OSVRTrackedController::controllerButtonCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report)
-{
-    if (!userdata)
-        return;
-
-    auto* self = static_cast<OSVRTrackedController*>(userdata);
-
-    vr::EVRButtonId button_id;
-    if ((report->sensor >= 0 && report->sensor <= 7) || (report->sensor >= 32 && report->sensor <= 36)) {
-        button_id = static_cast<vr::EVRButtonId>(report->sensor);
-    } else if (report->sensor >= 8 && report->sensor <= 12) {
-        button_id = static_cast<vr::EVRButtonId>(report->sensor + 24);
-    } else {
-        return;
-    }
-
-    if (OSVR_BUTTON_PRESSED == report->state) {
-        self->driverHost_->TrackedDeviceButtonPressed(self->objectId_, button_id, 0);
-    } else {
-        self->driverHost_->TrackedDeviceButtonUnpressed(self->objectId_, button_id, 0);
-    }
-}
-#endif
-
 const char* OSVRTrackedController::GetId()
 {
     /// @todo When available, return the actual unique ID of the HMD
@@ -268,16 +202,13 @@ void OSVRTrackedController::configureController()
 
 void OSVRTrackedController::configureTracker(const Json::Value& controller_root, const std::string& base_path)
 {
-    // TODO
-#if 0
     const auto tracker_path = controller_root.get("tracker", base_path).asString();
     const auto abs_tracker_path = resolvePath(tracker_path, base_path);
-    auto tracker_inferface  = context_.getInterface(tracker_path);
+    auto tracker_inferface  = context_.getInterface(abs_tracker_path);
     interfaces_.push_back(tracker_interface);
     if (tracker_interface.notEmpty()) {
         tracker_interface.registerCallback(&OSVRTrackedController::trackerCallback, this);
     }
-#endif
 }
 
 void OSVRTrackedController::configureAxes(const Json::Value& controller_root, const std::string& base_path)
@@ -350,10 +281,6 @@ void OSVRTrackedController::configureButtons(const Json::Value& controller_root,
         if (!controller_root["buttons"].isMember(button_name))
             continue;
 
-        // system: path
-        // menu: path
-        // grip: path
-        // a: path
         const auto button_id = getButtonId(button_name);
         const auto button_callback_data = ButtonCallbackData { this, button_id };
         const auto button_path = controller_root["buttons"][button_name].asString();
@@ -368,7 +295,7 @@ void OSVRTrackedController::configureButtons(const Json::Value& controller_root,
 
 void OSVRTrackedController::trackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
 {
-    if (!userdata)
+    if (!userdata || !report)
         return;
 
     auto* self = static_cast<OSVRTrackedController*>(userdata);
