@@ -80,6 +80,7 @@ OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& con
 
     // These properties are required priot to Activate()
     setProperty<int32_t>(vr::Prop_DeviceClass_Int32, deviceClass_);
+    setProperty<int32_t>(vr::Prop_ControllerRoleHint_Int32, controllerRole_);
     setProperty<std::string>(vr::Prop_ModelNumber_String, "OSVR Controller");
     setProperty<std::string>(vr::Prop_SerialNumber_String, name_);
 }
