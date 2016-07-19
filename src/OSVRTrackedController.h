@@ -64,11 +64,6 @@ struct AnalogInterface {
 };
 #endif
 
-struct Axis {
-    vr::EVRControllerAxisType type;
-    vr::VRControllerAxis_t position;
-};
-
 struct AxisCallbackData {
     OSVRTrackedController* controller;
     uint32_t index;
@@ -152,9 +147,10 @@ private:
 
     vr::ETrackedControllerRole controllerRole_;
     std::vector<osvr::clientkit::Interface> interfaces_;
-    std::vector<Axis> axes_;
-    std::vector<AxisCallbackData> axisCallbackData_;
-    std::vector<ButtonCallbackData> buttonCallbackData_;
+    AxisCallbackData axisCallbackData_[vr::k_unControllerStateAxisCount] = { };
+    vr::EVRControllerAxisType axisTypes_[vr::k_unControllerStateAxisCount] = { vr::k_eControllerAxis_None };
+    ButtonCallbackData buttonCallbackData_[vr::k_EButton_Max] = { };
+    uint64_t numButtons_ = 0;
 
     vr::VRControllerState_t controllerState_;
     std::vector<std::string> buttonNames_ {
