@@ -43,6 +43,8 @@
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Client/RenderManagerConfig.h>
 
+#include <Json/Value.h>
+
 // Standard includes
 #include <string>
 
@@ -75,6 +77,10 @@ struct AxisCallbackData {
     } direction;
 };
 
+struct ButtonCallbackData {
+    OSVRTrackedController* controller;
+    vr::EVRButtonId button_id;
+};
 
 class OSVRTrackedController : public OSVRTrackedDevice, public vr::IVRControllerComponent {
     friend class ServerDriver_OSVR;
@@ -125,29 +131,47 @@ protected:
 private:
     void configure();
     void configureController();
+    void configureTracker(const Json::Value& controller_root, const std::string& base_path);
+    void configureAxes(const Json::Value& controller_root, const std::string& base_path);
+    void configureButtons(const Json::Value& controller_root, const std::string& base_path);
     void configureProperties();
 
     void freeInterfaces();
 
-    /**
-     * Callback function which is called whenever new data has been received
-     * from the tracker.
-     */
-#if 0
-    static void controllerTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
-    static void controllerButtonCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report);
-    static void controllerTriggerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
-    static void controllerJoystickXCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
-    static void controllerJoystickYCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
-#endif
+    /** \name OSVR callback functions */
+    //@{
+    static void trackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     static void axisCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
+    static void buttonCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report);
+    //@}
+
+    /**
+     * Takes a JSON key and returns the corresponding @c vr::EVRButton button.
+     */
+    vr::EVRButtonId getButtonId(const std::string& key) const;
 
     vr::ETrackedControllerRole controllerRole_;
-    //osvr::clientkit::Interface trackerInterface_;
-    //osvr::clientkit::Interface buttonInterface_[NUM_BUTTONS];
     std::vector<osvr::clientkit::Interface> interfaces_;
     std::vector<Axis> axes_;
     std::vector<AxisCallbackData> axisCallbackData_;
+    std::vector<ButtonCallbackData> buttonCallbackData_;
+
+    vr::VRControllerState_t controllerState_;
+    std::vector<std::string> buttonNames_ {
+        "system",
+        "menu",
+        "grip",
+        "left",
+        "up",
+        "right",
+        "down",
+        "a",
+        "axis0",
+        "axis1",
+        "axis2",
+        "axis3",
+        "axis4",
+    };
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
