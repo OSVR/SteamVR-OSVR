@@ -204,7 +204,7 @@ void OSVRTrackedController::configureTracker(const Json::Value& controller_root,
 {
     const auto tracker_path = controller_root.get("tracker", base_path).asString();
     const auto abs_tracker_path = resolvePath(tracker_path, base_path);
-    auto tracker_inferface  = context_.getInterface(abs_tracker_path);
+    auto tracker_interface = context_.getInterface(abs_tracker_path);
     interfaces_.push_back(tracker_interface);
     if (tracker_interface.notEmpty()) {
         tracker_interface.registerCallback(&OSVRTrackedController::trackerCallback, this);
