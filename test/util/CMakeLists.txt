@@ -10,7 +10,7 @@ target_link_libraries(test_PathTreeUtils
 	osvr::osvrCommon)
 
 target_include_directories(test_PathTreeUtils
-	PRIVATE
+	SYSTEM PRIVATE
 	"${gtest_SOURCE_DIR}/include"
 	"${CMAKE_SOURCE_DIR}/src"
 	"${OPENVR_INCLUDE_DIR}")

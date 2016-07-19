@@ -49,7 +49,7 @@
  *
  * A base path must be provided if the path is relative.
  *
- * @throws @c std::invalid_exception if the path is not absolute or we try to
+ * @throws @c std::invalid_argument if the path is not absolute or we try to
  * traverse above the root.
  */
 //@{
@@ -60,7 +60,7 @@ std::string getCanonicalPath(const std::string& path, const std::string& base_pa
 /**
  * Appends a path to a base path and returns the result.
  */
-std::string appendPath(const std::string& prefix, const std::string& suffix);
+std::string appendPath(std::string prefix, std::string suffix);
 
 /**
  * Resolves a path given a base path and a relative or absolute path. If an
@@ -85,7 +85,6 @@ inline std::string getCanonicalPath(const std::string& path)
     // Split the path string into components and push those components onto a
     // stack.
     std::vector<std::string> components;
-    //split(components, path, is_any_of(std::string(osvr::common::getPathSeparatorCharacter())), token_compress_on);
     split(components, path, is_any_of(osvr::common::getPathSeparator()), token_compress_on);
 
     std::vector<std::string> canonical_components;
@@ -113,8 +112,13 @@ inline std::string getCanonicalPath(const std::string& path)
     }
 
     std::string canonical_path;
-    for (const auto& component : components) {
+    for (const auto& component : canonical_components) {
         canonical_path += osvr::common::getPathSeparator() + component;
+    }
+
+    // Preserve trailing slash on input path
+    if (path.back() == osvr::common::getPathSeparatorCharacter()) {
+        canonical_path += osvr::common::getPathSeparatorCharacter();
     }
 
     return canonical_path;
