@@ -124,7 +124,7 @@ private:
      */
     vr::EVRButtonId getButtonId(const std::string& key) const;
 
-    vr::ETrackedControllerRole controllerRole_;
+    vr::ETrackedControllerRole controllerRole_ = vr::TrackedControllerRole_Invalid;
     std::vector<osvr::clientkit::Interface> interfaces_;
     AxisCallbackData axisCallbackData_[vr::k_unControllerStateAxisCount] = { };
     vr::EVRControllerAxisType axisTypes_[vr::k_unControllerStateAxisCount] = { vr::k_eControllerAxis_None };
