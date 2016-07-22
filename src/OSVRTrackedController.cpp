@@ -157,7 +157,6 @@ void OSVRTrackedController::configure()
 {
     configureController();
     configureProperties();
-    printControllerConfiguration();
 }
 
 void OSVRTrackedController::configureController()
@@ -487,53 +486,5 @@ vr::EVRButtonId OSVRTrackedController::getButtonId(const std::string& key) const
     } else {
         OSVR_LOG(err) << name_ << ": Invalid button name [" << key << "].";
         return static_cast<vr::EVRButtonId>(63);
-    }
-}
-
-void OSVRTrackedController::printControllerConfiguration()
-{
-    setProperty<int32_t>(vr::Prop_DeviceClass_Int32, deviceClass_);
-    setProperty<int32_t>(vr::Prop_Axis0Type_Int32, axisTypes_[0]);
-    setProperty<int32_t>(vr::Prop_Axis1Type_Int32, axisTypes_[1]);
-    setProperty<int32_t>(vr::Prop_Axis2Type_Int32, axisTypes_[2]);
-    setProperty<int32_t>(vr::Prop_Axis3Type_Int32, axisTypes_[3]);
-    setProperty<int32_t>(vr::Prop_Axis4Type_Int32, axisTypes_[4]);
-
-    setProperty<uint64_t>(vr::Prop_SupportedButtons_Uint64, numButtons_);
-
-    AxisCallbackData axisCallbackData_[vr::k_unControllerStateAxisCount] = {};
-    vr::EVRControllerAxisType axisTypes_[vr::k_unControllerStateAxisCount] = { vr::k_eControllerAxis_None };
-    ButtonCallbackData buttonCallbackData_[vr::k_EButton_Max] = {};
-
-    OSVR_LOG(info) << name_ << ": Axes:";
-    for (size_t i = 0; i < vr::k_unControllerStateAxisCount; ++i) {
-        OSVR_LOG(info) << name_ << ":   Axis " << i << ":";
-
-        std::string axis_type = "None";
-        if (vr::k_eControllerAxis_None == axisTypes_[i]) {
-            axis_type = "None";
-        } else if (vr::k_eControllerAxis_TrackPad) {
-            axis_type = "TrackPad";
-        } else if (vr::k_eControllerAxis_Joystick) {
-            axis_type = "Joystick";
-        } else if (vr::k_eControllerAxis_Trigger) {
-            axis_type = "Trigger";
-        } else {
-            axis_type = "Unknown";
-        }
-        OSVR_LOG(info) << name_ << ":     Type: " << axis_type;
-
-        const auto cbdata = axisCallbackData_[i];
-        std::string direction = "None";
-        if (AxisCallbackData::AxisDirection::X == cbdata.direction) {
-            direction = "X";
-        } else if (AxisCallbackData::AxisDirection::Y == cbdata.direction) {
-            direction = "Y";
-        } else {
-            direction = "Unknown";
-        }
-        OSVR_LOG(info) << name_ << ":     Direction: " << direction;
-
-
     }
 }
