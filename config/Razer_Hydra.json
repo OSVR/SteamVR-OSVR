@@ -2,8 +2,8 @@
     "_description": "Maps Razer Hydra controllers to SteamVR controllers.",
     "controllers": {
         "left": {
-            "basePath": "/me/hands/left",
-            "tracker": "/me/hands/left",
+            "basePath": "/controller/left",
+            "tracker": "/controller/left",
             "axes": [
                 {
                     "type": "joystick",
@@ -24,8 +24,8 @@
             }
         },
         "right": {
-            "basePath": "/me/hands/right",
-            "tracker": "/me/hands/right",
+            "basePath": "/controller/right",
+            "tracker": "/controller/right",
             "axes": [
                 {
                     "type": "joystick",
