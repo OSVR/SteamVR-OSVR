@@ -132,6 +132,6 @@ void ServerDriverHost::VendorSpecificEvent(uint32_t which_device, vr::EVREventTy
 bool ServerDriverHost::IsExiting()
 {
     std::cout << "ServerDriverHost::IsExiting() called." << std::endl;
-    // TODO
+    return false; // TODO
 }
 

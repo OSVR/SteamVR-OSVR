@@ -71,6 +71,7 @@ private:
 inline Settings::Settings(vr::IVRSettings* settings, const std::string& section) : settings_(settings), section_(section)
 {
     if (!settings) {
+        OSVR_LOG(err) << "Settings::Settings(): Must use non-null IVRSettings.";
         throw std::invalid_argument("Must use non-null IVRSettings.");
     }
 }
@@ -79,7 +80,7 @@ template<typename T> inline T Settings::getSetting(const std::string& setting, c
 {
     // Redirect to the private method
     auto result = getSetting(identity<T>(), setting, value);
-    OSVR_LOG(trace) << "VR setting [" << setting << "] is [" << value << "].";
+    OSVR_LOG(trace) << "VR setting [" << setting << "] is [" << result << "].";
     return result;
 }
 

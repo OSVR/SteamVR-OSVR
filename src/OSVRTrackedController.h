@@ -124,6 +124,12 @@ private:
      */
     vr::EVRButtonId getButtonId(const std::string& key) const;
 
+    /**
+     * Prints the controller's configuration. Useful for seeing which axes
+     * and buttons are mapped to which OSVR paths.
+     */
+    void printControllerConfiguration();
+
     vr::ETrackedControllerRole controllerRole_ = vr::TrackedControllerRole_Invalid;
     std::vector<osvr::clientkit::Interface> interfaces_;
     AxisCallbackData axisCallbackData_[vr::k_unControllerStateAxisCount] = { };

@@ -7,7 +7,8 @@ add_executable(test_PathTreeUtils test_PathTreeUtils.cpp)
 target_link_libraries(test_PathTreeUtils
 	jsoncpp_lib
 	gtest
-	osvr::osvrCommon)
+	osvr::osvrCommon
+	Boost::boost)
 
 target_include_directories(test_PathTreeUtils
 	SYSTEM PRIVATE

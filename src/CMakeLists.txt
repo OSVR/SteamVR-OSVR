@@ -69,7 +69,9 @@ target_link_libraries(driver_osvr
 	jsoncpp_lib
 	osvrDisplay
 	osvrRenderManager::osvrRenderManager
+	Boost::boost
 	Boost::filesystem
+	Boost::disable_autolinking
 )
 
 if(WIN32)

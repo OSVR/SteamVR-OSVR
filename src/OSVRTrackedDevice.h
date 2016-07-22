@@ -192,7 +192,7 @@ inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 {
     const auto result = checkProperty(prop, T());
     if (vr::TrackedProp_Success != result) {
-        OSVR_LOG(warn) << "OSVRTrackedDevice::GetTrackedDeviceProperty(): checkProperty() failed for property [" << prop << "] on device [" << name_ << "].";
+        OSVR_LOG(warn) << name_ << ": checkProperty() failed for property [" << prop << "].";
         if (error)
             *error = result;
         return default_value;
@@ -200,12 +200,12 @@ inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 
     if (properties_.find(prop) != end(properties_)) {
         auto value = boost::get<T>(properties_[prop]);
-        OSVR_LOG(trace) << "OSVRTrackedDevice::GetTrackedDeviceProperty(): Property [" << prop << "] on device [" << name_ << "] has value [" << value << "].";
+        OSVR_LOG(trace) << name_ << ": Property [" << prop << "] has value [" << value << "].";
         if (error)
             *error = vr::TrackedProp_Success;
         return value;
     } else {
-        OSVR_LOG(warn) << "OSVRTrackedDevice::GetTrackedDeviceProperty(): Property [" << prop << "] not provided by device [" << name_ << "].";
+        OSVR_LOG(warn) << name_ << ": Property [" << prop << "] not provided.";
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
@@ -234,12 +234,12 @@ template <typename T>
 inline void OSVRTrackedDevice::setProperty(vr::ETrackedDeviceProperty prop, const T& value)
 {
     if (isWrongDataType(prop, value)) {
-        OSVR_LOG(err) << "[" << name_ << "]: Tried to set [" << prop << "] to value [" << value << "] but the value is the wrong type. Ignoring the attempt.";
+        OSVR_LOG(err) << name_ << ": Tried to set [" << prop << "] to value [" << value << "] but the value is the wrong type. Ignoring the attempt.";
         return;
     }
 
     if (isWrongDeviceClass(prop, deviceClass_)) {
-        OSVR_LOG(warn) << "[" << name_ << "]: Tried to set [" << prop << "] but that property is not valid for this device class [" << deviceClass_ << "].";
+        OSVR_LOG(warn) << name_ << ": Tried to set [" << prop << "] but that property is not valid for this device class [" << deviceClass_ << "].";
     }
 
     properties_[prop] = value;

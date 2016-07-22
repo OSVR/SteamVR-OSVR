@@ -57,7 +57,15 @@
 
 OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, const std::string& user_driver_config_dir, vr::ETrackedControllerRole controller_role) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_Controller, user_driver_config_dir, "OSVRTrackedController"), controllerRole_(controller_role), interfaces_(), controllerState_()
 {
-    name_ = "OSVRController" + std::to_string(controller_role);
+    std::string suffix = "";
+    if (vr::TrackedControllerRole_LeftHand == controller_role) {
+        suffix = "Left";
+    } else if (vr::TrackedControllerRole_RightHand == controller_role) {
+        suffix = "Right";
+    } else {
+        suffix = "";
+    }
+    name_ = "OSVRController" + suffix;
 
     // Initialize controller state
     controllerState_.unPacketNum = 0;
@@ -92,6 +100,8 @@ OSVRTrackedController::~OSVRTrackedController()
 
 vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
 {
+    OSVR_LOG(trace) << name_ << ": Activate() called.";
+
     OSVRTrackedDevice::Activate(object_id);
 
     const std::time_t wait_time = 5; // wait up to 5 seconds for init
@@ -99,15 +109,16 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
     freeInterfaces();
 
     // Ensure context is fully started up
-    OSVR_LOG(info) << "Waiting for the context to fully start up...";
+    OSVR_LOG(info) << name_ << ": Waiting for the context to fully start up...";
     const auto start_time = std::time(nullptr);
     while (!context_.checkStatus()) {
         context_.update();
         if (std::time(nullptr) > start_time + wait_time) {
-            OSVR_LOG(warn) << "Context startup timed out!";
+            OSVR_LOG(warn) << name_ << ": Context startup timed out!";
             return vr::VRInitError_Driver_Failed;
         }
     }
+    OSVR_LOG(info) << name_ << ": Context connected.";
 
     configure();
 
@@ -146,50 +157,65 @@ void OSVRTrackedController::configure()
 {
     configureController();
     configureProperties();
+    printControllerConfiguration();
 }
 
 void OSVRTrackedController::configureController()
 {
+    OSVR_LOG(trace) << name_ << ": Configuring controller...";
+
     // Default controller configuration
     // TODO
 
     // Read the controller config (if it exists) and set the OSVR paths
     const auto controller_config = settings_->getSetting<std::string>("controllerConfig", "");
     if (controller_config.empty()) {
-        OSVR_LOG(info) << "A controller configuration file must be provivded to use tracked controllers.";
+        OSVR_LOG(info) << name_ << ": A controller configuration file must be provided to use tracked controllers.";
         return;
     }
 
     // Read the controller config file
     namespace fs = boost::filesystem;
-    const auto controller_config_filename  = (fs::path(userDriverConfigDir_) / controller_config).generic_string();
+    //const auto controller_config_filename  = (fs::path(userDriverConfigDir_) / fs::path(controller_config)).generic_string();
+    const auto controller_config_filename = userDriverConfigDir_ + "/" + controller_config;
 
+    {
+        OSVR_LOG(debug) << name_ << ": userDriverConfigDir_ = [" << std::string(userDriverConfigDir_) << "].";
+        OSVR_LOG(debug) << name_ << ": controller_config = [" << std::string(controller_config) << "].";
+        OSVR_LOG(debug) << name_ << ": controller_config_filename = [" << std::string(controller_config_filename) << "].";
+    }
+
+    /*
+    // FIXME boost::fs causing crashes?
     // Check if file exists
     auto boost_path = fs::path(controller_config_filename);
     if (!fs::exists(boost_path)) {
-        OSVR_LOG(err) << "Error: The controller map file [" << controller_config_filename << "] doesn't exist.";
+        OSVR_LOG(err) << name_ << ": Error: The controller map file [" << controller_config_filename << "] doesn't exist.";
         return;
     }
 
     if (!fs::is_regular_file(boost_path)) {
-        OSVR_LOG(err) << "Error: The controller map file [" << controller_config_filename << "] isn't a readable file.";
+        OSVR_LOG(err) << name_ << ": Error: The controller map file [" << controller_config_filename << "] isn't a readable file.";
         return;
     }
+    */
 
     // Open the file into a stream
+    OSVR_LOG(trace) << name_ << ": Opening the controller map file [" << controller_config_filename << "]...";
     std::ifstream config_stream { controller_config_filename };
 
     // Parse the file
     auto root = Json::Value();
     auto reader = Json::Reader();
+    OSVR_LOG(trace) << name_ << ": Parsing the controller map file [" << controller_config << "]...";
     auto parsed_okay = reader.parse(config_stream, root, false);
     if (!parsed_okay) {
-        OSVR_LOG(err) << "Error parsing " << controller_config_filename << ": " << reader.getFormattedErrorMessages();
+        OSVR_LOG(err) << name_ << ": Error parsing " << controller_config_filename << ": " << reader.getFormattedErrorMessages();
         return;
     }
 
     if (!root.isMember("controllers")) {
-        OSVR_LOG(err) << "Error parsing " << controller_config_filename << ": Missing 'controllers' entry.";
+        OSVR_LOG(err) << name_ << ": Error parsing " << controller_config_filename << ": Missing 'controllers' entry.";
         return;
     }
 
@@ -202,7 +228,7 @@ void OSVRTrackedController::configureController()
     const auto controller_root = root["controllers"][controller_hand];
 
     const auto base_path = controller_root.get("basePath", "/me/hands/" + controller_hand).asString();
-    OSVR_LOG(trace) << "Using controller base path: " << base_path;
+    OSVR_LOG(trace) << name_ << ": Using controller base path: " << base_path;
 
     configureTracker(controller_root, base_path);
     configureAxes(controller_root, base_path);
@@ -211,7 +237,10 @@ void OSVRTrackedController::configureController()
 
 void OSVRTrackedController::configureTracker(const Json::Value& controller_root, const std::string& base_path)
 {
+    OSVR_LOG(trace) << name_ << ": Configuring controller tracker...";
+
     if (!controller_root.isMember("tracker")) {
+        OSVR_LOG(info) << name_ << ": No tracker for this controller.";
         return;
     }
 
@@ -220,23 +249,27 @@ void OSVRTrackedController::configureTracker(const Json::Value& controller_root,
     auto tracker_interface = context_.getInterface(abs_tracker_path);
     interfaces_.push_back(tracker_interface);
     if (tracker_interface.notEmpty()) {
-        OSVR_LOG(debug) << "Tracker interface [" << abs_tracker_path << "] added.";
+        OSVR_LOG(debug) << name_ << ": Tracker interface [" << abs_tracker_path << "] added.";
         tracker_interface.registerCallback(&OSVRTrackedController::trackerCallback, this);
     } else {
-        OSVR_LOG(warn) << "Tracker interface [" << abs_tracker_path << "] has not been initialized.";
+        OSVR_LOG(warn) << name_ << ": Tracker interface [" << abs_tracker_path << "] has not been initialized.";
     }
 }
 
 void OSVRTrackedController::configureAxes(const Json::Value& controller_root, const std::string& base_path)
 {
-    if (!controller_root.isMember("axes"))
+    OSVR_LOG(trace) << name_ << ": Configuring axes (joysticks and triggers)...";
+
+    if (!controller_root.isMember("axes")) {
+        OSVR_LOG(info) << name_ << ": There are no axes for this controller.";
         return;
+    }
 
     const auto axes = controller_root["axes"];
     uint32_t index = 0;
     for (const auto& axis : axes) {
         if (index > vr::k_unControllerStateAxisCount - 1) {
-            OSVR_LOG(err) << "SteamVR only supports up to " << vr::k_unControllerStateAxisCount << " axes at this time. The extraneous axes will be ignored.";
+            OSVR_LOG(err) << name_ << ": SteamVR only supports up to " << vr::k_unControllerStateAxisCount << " axes at this time. The extraneous axes will be ignored.";
             break;
         }
 
@@ -261,10 +294,10 @@ void OSVRTrackedController::configureAxes(const Json::Value& controller_root, co
             axisCallbackData_[index] = { this, index, AxisCallbackData::AxisDirection::X };
             auto interface_x = context_.getInterface(x_path);
             if (interface_x.notEmpty()) {
-                OSVR_LOG(debug) << "Analog interface [" << x_path << "] added.";
+                OSVR_LOG(debug) << name_ << ": Analog interface [" << x_path << "] added.";
                 interface_x.registerCallback(&OSVRTrackedController::axisCallback, &axisCallbackData_[index]);
             } else {
-                OSVR_LOG(warn) << "Analog interface [" << x_path << "] has not been initialized.";
+                OSVR_LOG(warn) << name_ << ": Analog interface [" << x_path << "] has not been initialized.";
             }
         }
 
@@ -272,10 +305,10 @@ void OSVRTrackedController::configureAxes(const Json::Value& controller_root, co
             axisCallbackData_[index] = { this, index, AxisCallbackData::AxisDirection::Y };
             auto interface_y = context_.getInterface(y_path);
             if (interface_y.notEmpty()) {
-                OSVR_LOG(debug) << "Analog interface [" << y_path << "] added.";
+                OSVR_LOG(debug) << name_ << ": Analog interface [" << y_path << "] added.";
                 interface_y.registerCallback(&OSVRTrackedController::axisCallback, &axisCallbackData_[index]);
             } else {
-                OSVR_LOG(warn) << "Analog interface [" << y_path << "] has not been initialized.";
+                OSVR_LOG(warn) << name_ << ": Analog interface [" << y_path << "] has not been initialized.";
             }
         }
 
@@ -285,11 +318,11 @@ void OSVRTrackedController::configureAxes(const Json::Value& controller_root, co
             const auto full_button_path = resolvePath(button_path, base_path);
             auto interface_button = context_.getInterface(full_button_path);
             if (interface_button.notEmpty()) {
-                OSVR_LOG(debug) << "Button interface [" << full_button_path << "] added.";
+                OSVR_LOG(debug) << name_ << ": Button interface [" << full_button_path << "] added.";
                 interface_button.registerCallback(&OSVRTrackedController::buttonCallback, &buttonCallbackData_[numButtons_ - 1]);
                 numButtons_++;
             } else {
-                OSVR_LOG(warn) << "Button interface [" << full_button_path << "] has not been initialized.";
+                OSVR_LOG(warn) << name_ << ": Button interface [" << full_button_path << "] has not been initialized.";
             }
         }
 
@@ -299,8 +332,12 @@ void OSVRTrackedController::configureAxes(const Json::Value& controller_root, co
 
 void OSVRTrackedController::configureButtons(const Json::Value& controller_root, const std::string& base_path)
 {
-    if (!controller_root.isMember("buttons"))
+    OSVR_LOG(trace) << name_ << ": Configuring buttons for this controller.";
+
+    if (!controller_root.isMember("buttons")) {
+        OSVR_LOG(info) << name_ << ": There are no buttons configured for this controller.";
         return;
+    }
 
     for (const auto& button_name : buttonNames_) {
         if (!controller_root["buttons"].isMember(button_name))
@@ -312,11 +349,11 @@ void OSVRTrackedController::configureButtons(const Json::Value& controller_root,
         const auto full_button_path = resolvePath(button_path, base_path);
         auto interface_button = context_.getInterface(full_button_path);
         if (interface_button.notEmpty()) {
-            OSVR_LOG(debug) << "Button interface [" << full_button_path << "] added.";
+            OSVR_LOG(debug) << name_ << ": Button interface [" << full_button_path << "] added.";
             interface_button.registerCallback(&OSVRTrackedController::buttonCallback, &buttonCallbackData_[numButtons_ - 1]);
             numButtons_++;
         } else {
-            OSVR_LOG(warn) << "Button interface [" << full_button_path << "] has not been initialized.";
+            OSVR_LOG(warn) << name_ << ": Button interface [" << full_button_path << "] has not been initialized.";
         }
     }
 }
@@ -448,8 +485,55 @@ vr::EVRButtonId OSVRTrackedController::getButtonId(const std::string& key) const
     } else if (key == "axis4") {
         return vr::k_EButton_Axis4;
     } else {
-        OSVR_LOG(err) << "Invalid button name [" << key << "].";
+        OSVR_LOG(err) << name_ << ": Invalid button name [" << key << "].";
         return static_cast<vr::EVRButtonId>(63);
     }
 }
 
+void OSVRTrackedController::printControllerConfiguration()
+{
+    setProperty<int32_t>(vr::Prop_DeviceClass_Int32, deviceClass_);
+    setProperty<int32_t>(vr::Prop_Axis0Type_Int32, axisTypes_[0]);
+    setProperty<int32_t>(vr::Prop_Axis1Type_Int32, axisTypes_[1]);
+    setProperty<int32_t>(vr::Prop_Axis2Type_Int32, axisTypes_[2]);
+    setProperty<int32_t>(vr::Prop_Axis3Type_Int32, axisTypes_[3]);
+    setProperty<int32_t>(vr::Prop_Axis4Type_Int32, axisTypes_[4]);
+
+    setProperty<uint64_t>(vr::Prop_SupportedButtons_Uint64, numButtons_);
+
+    AxisCallbackData axisCallbackData_[vr::k_unControllerStateAxisCount] = {};
+    vr::EVRControllerAxisType axisTypes_[vr::k_unControllerStateAxisCount] = { vr::k_eControllerAxis_None };
+    ButtonCallbackData buttonCallbackData_[vr::k_EButton_Max] = {};
+
+    OSVR_LOG(info) << name_ << ": Axes:";
+    for (size_t i = 0; i < vr::k_unControllerStateAxisCount; ++i) {
+        OSVR_LOG(info) << name_ << ":   Axis " << i << ":";
+
+        std::string axis_type = "None";
+        if (vr::k_eControllerAxis_None == axisTypes_[i]) {
+            axis_type = "None";
+        } else if (vr::k_eControllerAxis_TrackPad) {
+            axis_type = "TrackPad";
+        } else if (vr::k_eControllerAxis_Joystick) {
+            axis_type = "Joystick";
+        } else if (vr::k_eControllerAxis_Trigger) {
+            axis_type = "Trigger";
+        } else {
+            axis_type = "Unknown";
+        }
+        OSVR_LOG(info) << name_ << ":     Type: " << axis_type;
+
+        const auto cbdata = axisCallbackData_[i];
+        std::string direction = "None";
+        if (AxisCallbackData::AxisDirection::X == cbdata.direction) {
+            direction = "X";
+        } else if (AxisCallbackData::AxisDirection::Y == cbdata.direction) {
+            direction = "Y";
+        } else {
+            direction = "Unknown";
+        }
+        OSVR_LOG(info) << name_ << ":     Direction: " << direction;
+
+
+    }
+}

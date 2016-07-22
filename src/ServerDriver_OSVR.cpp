@@ -51,12 +51,15 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServer
 
     configure();
 
+    OSVR_LOG(debug) << "ServerDriver_OSVR: userDriverConfigDir_ = [" << userDriverConfigDir_ << "].";
+    OSVR_LOG(debug) << "ServerDriver_OSVR: driverInstallDir_ = [" << driverInstallDir_ << "].";
+
     context_ = std::make_unique<osvr::clientkit::ClientContext>("org.osvr.SteamVR");
 
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedHMD>(*(context_.get()), driver_host, userDriverConfigDir_));
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get()), driver_host, userDriverConfigDir_));
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), driver_host, userDriverConfigDir_, vr::TrackedControllerRole_LeftHand));
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), driver_host, userDriverConfigDir_, vr::TrackedControllerRole_RightHand));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedHMD>(*(context_.get()), driverHost_, userDriverConfigDir_));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get()), driverHost_, userDriverConfigDir_));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), driverHost_, userDriverConfigDir_, vr::TrackedControllerRole_LeftHand));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), driverHost_, userDriverConfigDir_, vr::TrackedControllerRole_RightHand));
 
     return vr::VRInitError_None;
 }

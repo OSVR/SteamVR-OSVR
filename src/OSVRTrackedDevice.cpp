@@ -87,25 +87,25 @@ void* OSVRTrackedDevice::GetComponent(const char* component_name_and_version)
     if (!strcasecmp(component_name_and_version, vr::IVRDisplayComponent_Version)) {
         auto component = dynamic_cast<vr::IVRDisplayComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << name_ << "::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else if (!strcasecmp(component_name_and_version, vr::IVRDriverDirectModeComponent_Version)) {
         auto component = dynamic_cast<vr::IVRDriverDirectModeComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << name_ << "::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else if (!strcasecmp(component_name_and_version, vr::IVRControllerComponent_Version)) {
         auto component = dynamic_cast<vr::IVRControllerComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << name_ << "::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else if (!strcasecmp(component_name_and_version, vr::IVRCameraComponent_Version)) {
         auto component = dynamic_cast<vr::IVRCameraComponent*>(this);
         if (!component)
-            OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
+            OSVR_LOG(warn) << name_ << "::GetComponent(): Requested component [" << component_name_and_version << "] but failed dynamic_cast.";
         return component;
     } else {
-        OSVR_LOG(warn) << "OSVRTrackedDevice[" << name_ << "]::GetComponent(): Unknown component [" << component_name_and_version << "] requested.";
+        OSVR_LOG(warn) << name_ << "::GetComponent(): Unknown component [" << component_name_and_version << "] requested.";
         return nullptr;
     }
 }
@@ -113,7 +113,7 @@ void* OSVRTrackedDevice::GetComponent(const char* component_name_and_version)
 void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer, uint32_t response_buffer_size)
 {
     // Log the requests just to see what info clients are looking for
-    OSVR_LOG(debug) << "OSVRTrackedDevice[" << name_ << "]: Received debug request [" << request << "] with response buffer size of " << response_buffer_size << "].";
+    OSVR_LOG(debug) << name_ << ": Received debug request [" << request << "] with response buffer size of " << response_buffer_size << "].";
 
     // make use of (from vrtypes.h) static const uint32_t k_unMaxDriverDebugResponseSize = 32768;
     // return empty string for now
