@@ -70,7 +70,6 @@ target_link_libraries(driver_osvr
 	osvrDisplay
 	osvrRenderManager::osvrRenderManager
 	Boost::boost
-	Boost::filesystem
 	Boost::disable_autolinking
 )
 

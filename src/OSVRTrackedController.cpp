@@ -37,12 +37,12 @@
 #include <openvr_driver.h>
 
 // Library/third-party includes
+#include <osvr/Client/RenderManagerConfig.h>
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Util/EigenInterop.h>
-#include <osvr/Client/RenderManagerConfig.h>
-#include <util/FixedLengthStringFunctions.h>
+#include <osvr/Util/PlatformConfig.h>
 
-#include <boost/filesystem.hpp>
+#include <util/FixedLengthStringFunctions.h>
 
 #include <json/value.h>
 #include <json/reader.h>
@@ -174,9 +174,11 @@ void OSVRTrackedController::configureController()
     }
 
     // Read the controller config file
-    namespace fs = boost::filesystem;
-    //const auto controller_config_filename  = (fs::path(userDriverConfigDir_) / fs::path(controller_config)).generic_string();
+#ifdef OSVR_WINDOWS
+    const auto controller_config_filename = userDriverConfigDir_ + "\\" + controller_config;
+#else
     const auto controller_config_filename = userDriverConfigDir_ + "/" + controller_config;
+#endif
 
     {
         OSVR_LOG(debug) << name_ << ": userDriverConfigDir_ = [" << std::string(userDriverConfigDir_) << "].";
@@ -184,24 +186,13 @@ void OSVRTrackedController::configureController()
         OSVR_LOG(debug) << name_ << ": controller_config_filename = [" << std::string(controller_config_filename) << "].";
     }
 
-    /*
-    // FIXME boost::fs causing crashes?
-    // Check if file exists
-    auto boost_path = fs::path(controller_config_filename);
-    if (!fs::exists(boost_path)) {
-        OSVR_LOG(err) << name_ << ": Error: The controller map file [" << controller_config_filename << "] doesn't exist.";
-        return;
-    }
-
-    if (!fs::is_regular_file(boost_path)) {
-        OSVR_LOG(err) << name_ << ": Error: The controller map file [" << controller_config_filename << "] isn't a readable file.";
-        return;
-    }
-    */
-
     // Open the file into a stream
     OSVR_LOG(trace) << name_ << ": Opening the controller map file [" << controller_config_filename << "]...";
     std::ifstream config_stream { controller_config_filename };
+    if (config_stream.fail()) {
+        OSVR_LOG(err) << name_ << ": Failed to open or read controller map file [" << controller_config_filename << "]...";
+        return;
+    }
 
     // Parse the file
     auto root = Json::Value();

@@ -24,8 +24,7 @@ target_link_libraries(test_hmd_driver
 	util-headers
 	jsoncpp_lib
 	osvrRenderManager::osvrRenderManager
-	Boost::boost
-	Boost::filesystem)
+	Boost::boost)
 
 target_include_directories(test_hmd_driver
 	PRIVATE
