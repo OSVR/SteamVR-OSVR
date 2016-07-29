@@ -118,7 +118,6 @@ private:
     void configureProperties();
     //@}
 
-    std::string displayDescription_;
     osvr::clientkit::DisplayConfig displayConfig_;
     osvr::client::RenderManagerConfig renderManagerConfig_;
     osvr::clientkit::Interface trackerInterface_;
