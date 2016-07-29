@@ -168,9 +168,18 @@ void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, ui
     // ... until we've added code for other platforms
     *x = display_.position.x;
     *y = display_.position.y;
-    *height = display_.size.height;
-    *width = display_.size.width;
+
+    const bool is_landscape = (osvr::display::Rotation::Zero == display_.rotation || osvr::display::Rotation::OneEighty == display_.rotation);
+    if (is_landscape) {
+        *height = display_.size.height;
+        *width = display_.size.width;
+    } else {
+        *height = display_.size.width;
+        *width = display_.size.height;
+    }
 #endif
+
+    OSVR_LOG(trace) << "GetWindowBounds(): x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
 }
 
 bool OSVRTrackedHMD::IsDisplayOnDesktop()
@@ -203,11 +212,39 @@ void OSVRTrackedHMD::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* h
 
 void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
-    osvr::clientkit::RelativeViewport viewPort = displayConfig_.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
-    *x = static_cast<uint32_t>(viewPort.left);
-    *y = static_cast<uint32_t>(viewPort.bottom);
-    *width = static_cast<uint32_t>(viewPort.width);
-    *height = static_cast<uint32_t>(viewPort.height);
+    int32_t display_x, display_y;
+    uint32_t display_width, display_height;
+    GetWindowBounds(&display_x, &display_y, &display_width, &display_height);
+
+    // We have to duplicate this logic from OSVR-Core's DisplayConfig.cpp file
+    // because that version doesn't handle the *detected* rotation, only the
+    // rotation set in the config file.
+    const auto display_mode = displayConfiguration_.getDisplayMode();
+    if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
+        *x = 0;
+        *y = 0;
+        *width = display_width;
+        *height = display_height;
+    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
+        *y = 0;
+        *width = display_width / 2;
+        *height = display_height;
+    } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
+        *x = (vr::Eye_Left == eye) ? display_height : 0;
+        *x = 0;
+        *width = display_width;
+        *height = display_height / 2;
+    } else {
+        // Default to horizontal side-by-side mode
+        *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
+        *y = 0;
+        *width = display_width / 2;
+        *height = display_height;
+    }
+
+    const auto eye_str = (vr::Eye_Left == eye) ? "left" : "right";
+    OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
 }
 
 void OSVRTrackedHMD::GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom)
@@ -223,8 +260,11 @@ void OSVRTrackedHMD::GetProjectionRaw(vr::EVREye eye, float* left, float* right,
 
 vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
-    // Note that RenderManager expects the (0, 0) to be the lower-left corner and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is upper-left and (1, 1) is lower-right.
-    // To accommodate this, we need to flip the y-coordinate before passing it to RenderManager and flip it again before returning the value to SteamVR.
+    // Note that RenderManager expects the (0, 0) to be the lower-left corner
+    // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
+    // upper-left and (1, 1) is lower-right.  To accommodate this, we need to
+    // flip the y-coordinate before passing it to RenderManager and flip it
+    // again before returning the value to SteamVR.
     OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
     using osvr::renderkit::DistortionCorrectTextureCoordinate;
@@ -236,10 +276,7 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     const auto distortion_parameters = distortionParameters_[osvr_eye];
     const auto in_coords = osvr::renderkit::Float2 {{u, 1.0f - v}}; // flip v-coordinate
 
-    auto interpolators = &leftEyeInterpolators_;
-    if (vr::Eye_Right == eye) {
-        interpolators = &rightEyeInterpolators_;
-    }
+    const auto interpolators = (vr::Eye_Left == eye) ? &leftEyeInterpolators_ : &rightEyeInterpolators_;
 
     auto coords_red = DistortionCorrectTextureCoordinate(
         osvr_eye, in_coords, distortion_parameters,
