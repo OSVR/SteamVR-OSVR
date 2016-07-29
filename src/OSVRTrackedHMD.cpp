@@ -447,8 +447,8 @@ void OSVRTrackedHMD::configureDistortionParameters()
     OSVR_LOG(trace) << "OSVRTrackedHMD::configureDistortionParameters() called.";
 
     // Parse the display descriptor
-    displayDescription_ = context_.getStringParameter("/display");
-    displayConfiguration_ = OSVRDisplayConfiguration(displayDescription_);
+    const auto display_description = context_.getStringParameter("/display");
+    displayConfiguration_ = OSVRDisplayConfiguration(display_description);
 
     // Initialize the distortion parameters
     OSVR_LOG(debug) << "OSVRTrackedHMD::configureDistortionParameters(): Number of eyes: " << displayConfiguration_.getEyes().size() << ".";
