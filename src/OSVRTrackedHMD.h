@@ -32,15 +32,16 @@
 // Library/third-party includes
 #include <openvr_driver.h>
 
-#include <osvr/ClientKit/Display.h>
 #include <osvr/Client/RenderManagerConfig.h>
+#include <osvr/ClientKit/Display.h>
 #include <osvr/RenderKit/DistortionParameters.h>
 #include <osvr/RenderKit/UnstructuredMeshInterpolator.h>
 #include <osvr/RenderKit/osvr_display_configuration.h>
 
 // Standard includes
-#include <string>
 #include <memory>
+#include <string>
+#include <tuple>
 #include <vector>
 
 class OSVRTrackedHMD : public OSVRTrackedDevice, public vr::IVRDisplayComponent {
@@ -117,6 +118,8 @@ private:
     void configureDistortionParameters();
     void configureProperties();
     //@}
+
+    std::pair<float, float> rotateTextureCoordinates(osvr::display::Rotation rotation, float& u, float& v) const;
 
     osvr::clientkit::DisplayConfig displayConfig_;
     osvr::client::RenderManagerConfig renderManagerConfig_;

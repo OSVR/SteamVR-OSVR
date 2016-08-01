@@ -24,34 +24,32 @@
 
 // Internal Includes
 #include "OSVRTrackedHMD.h"
-#include "Logging.h"
 
-#include "osvr_compiler_detection.h"
+#include "Logging.h"
+#include "ValveStrCpy.h"
+#include "display/DisplayEnumerator.h"
+#include "make_unique.h"
 #include "make_unique.h"
 #include "matrix_cast.h"
-#include "ValveStrCpy.h"
+#include "osvr_compiler_detection.h"
 #include "platform_fixes.h" // strcasecmp
-#include "make_unique.h"
-#include "display/DisplayEnumerator.h"
-
-// OpenVR includes
-#include <openvr_driver.h>
 
 // Library/third-party includes
+#include <osvr/Client/RenderManagerConfig.h>
 #include <osvr/ClientKit/Display.h>
+#include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Util/PlatformConfig.h>
-#include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>
-#include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
 
 // Standard includes
+#include <algorithm>        // for std::find
 #include <cstring>
 #include <ctime>
-#include <string>
-#include <iostream>
 #include <exception>
-#include <algorithm>        // for std::find
+#include <iostream>
+#include <string>
+#include <tuple>
 
 OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, const std::string& user_driver_config_dir) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_HMD, user_driver_config_dir, "OSVRTrackedHMD")
 {
@@ -169,13 +167,17 @@ void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, ui
     *x = display_.position.x;
     *y = display_.position.y;
 
+    *height = display_.size.height;
+    *width = display_.size.width;
+
+    // Windows always reports the widest dimension as width regardless of the
+    // orientation of the display. We need to flip these dimensions if the
+    // display is in portrait orientation.
+    //
+    // TODO Check to see how OS X and Linux handle this.
     const bool is_landscape = (osvr::display::Rotation::Zero == display_.rotation || osvr::display::Rotation::OneEighty == display_.rotation);
     if (is_landscape) {
-        *height = display_.size.height;
-        *width = display_.size.width;
-    } else {
-        *height = display_.size.width;
-        *width = display_.size.height;
+        std::swap(*height, *width);
     }
 #endif
 
@@ -219,7 +221,16 @@ void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t*
     // We have to duplicate this logic from OSVR-Core's DisplayConfig.cpp file
     // because that version doesn't handle the *detected* rotation, only the
     // rotation set in the config file.
-    const auto display_mode = displayConfiguration_.getDisplayMode();
+    auto display_mode = displayConfiguration_.getDisplayMode();
+    const bool is_landscape = (osvr::display::Rotation::Zero == display_.rotation || osvr::display::Rotation::OneEighty == display_.rotation);
+    if (!is_landscape) {
+        if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+            display_mode = OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE;
+        } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
+            display_mode = OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE;
+        }
+    }
+
     if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
         *x = 0;
         *y = 0;
@@ -231,11 +242,12 @@ void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t*
         *width = display_width / 2;
         *height = display_height;
     } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
-        *x = (vr::Eye_Left == eye) ? display_height : 0;
         *x = 0;
+        *y = (vr::Eye_Left == eye) ? display_height / 2 : 0;
         *width = display_width;
         *height = display_height / 2;
     } else {
+        OSVR_LOG(err) << "Unknown display mode [" << display_mode << "]! Defaulting to horizontal side-by-side.";
         // Default to horizontal side-by-side mode
         *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
         *y = 0;
@@ -260,12 +272,17 @@ void OSVRTrackedHMD::GetProjectionRaw(vr::EVREye eye, float* left, float* right,
 
 vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
+    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
+
+    // Rotate the (u, v) coordinates as appropriate to the display orientation.
+    std::tie(u, v) = rotateTextureCoordinates(display_.rotation, u, v);
+
     // Note that RenderManager expects the (0, 0) to be the lower-left corner
     // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
     // upper-left and (1, 1) is lower-right.  To accommodate this, we need to
     // flip the y-coordinate before passing it to RenderManager and flip it
     // again before returning the value to SteamVR.
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
+    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") rotated.";
 
     using osvr::renderkit::DistortionCorrectTextureCoordinate;
     static const size_t COLOR_RED = 0;
@@ -298,6 +315,12 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     coords.rfGreen[1] = 1.0f - coords_green[1];
     coords.rfBlue[0] = coords_blue[0];
     coords.rfBlue[1] = 1.0f - coords_blue[1];
+
+    // Unrotate the coordinates
+    const auto reverse_rotation = static_cast<osvr::display::Rotation>((4 - static_cast<int>(display_.rotation)) % 4);
+    std::tie(coords.rfRed[0], coords.rfRed[1]) = rotateTextureCoordinates(reverse_rotation, coords.rfRed[0], coords.rfRed[1]);
+    std::tie(coords.rfGreen[0], coords.rfGreen[1]) = rotateTextureCoordinates(reverse_rotation, coords.rfGreen[0], coords.rfGreen[1]);
+    std::tie(coords.rfBlue[0], coords.rfBlue[1]) = rotateTextureCoordinates(reverse_rotation, coords.rfBlue[0], coords.rfBlue[1]);
 
     return coords;
 }
@@ -533,10 +556,10 @@ void OSVRTrackedHMD::configureProperties()
     //setProperty<float>(vr::Prop_DisplayGCOffset_Float, 0.0f);
     //setProperty<float>(vr::Prop_DisplayGCScale_Float, 0.0f);
     //setProperty<float>(vr::Prop_DisplayGCPrescale_Float, 0.0f);
-    //setProperty<float>(vr::Prop_LensCenterLeftU_Float, 0.0f);
-    //setProperty<float>(vr::Prop_LensCenterLeftV_Float, 0.0f);
-    //setProperty<float>(vr::Prop_LensCenterRightU_Float, 0.0f);
-    //setProperty<float>(vr::Prop_LensCenterRightV_Float, 0.0f);
+    //setProperty<float>(vr::Prop_LensCenterLeftU_Float, 0.5f); // TODO
+    //setProperty<float>(vr::Prop_LensCenterLeftV_Float, 0.5f); // TODO
+    //setProperty<float>(vr::Prop_LensCenterRightU_Float, 0.5f); // TODO
+    //setProperty<float>(vr::Prop_LensCenterRightV_Float, 0.5f); // TODO
     //setProperty<float>(vr::Prop_UserHeadToEyeDepthMeters_Float, 0.0f);
 
     //setProperty<int32_t>(vr::Prop_DisplayMCType_Int32, 0);
@@ -562,5 +585,27 @@ void OSVRTrackedHMD::configureProperties()
     //setProperty<std::string>(vr::Prop_CameraFirmwareDescription_String, "");
 
     OSVR_LOG(trace) << "OSVRTrackedHMD::configureProperties() exiting.";
+}
+
+std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::Rotation rotation, float& u, float& v) const
+{
+    // Rotate the (u, v) coordinates as appropriate to the display orientation
+    // and translate the results back to the first quadrant.
+    if (osvr::display::Rotation::Zero == rotation) {
+        // Rotate 0 degrees counter-clockwise (landscape)
+        return std::make_pair(u, v);
+    } else if (osvr::display::Rotation::Ninety == rotation) {
+        // Rotate 90 degrees counter-clockwise (portrait)
+        return std::make_pair(1 - v, u);
+    } else if (osvr::display::Rotation::OneEighty == rotation) {
+        // Rotate 180 degrees counter-clockwise (landscape, flipped)
+        return std::make_pair(1 - u, 1 - v);
+    } else if (osvr::display::Rotation::TwoSeventy == rotation) {
+        // Rotate 270 degrees counter-clockwise (portrait, flipped)
+        return std::make_pair(v, 1 - u);
+    }
+
+    OSVR_LOG(err) << "rotateTextureCoordinates(): Invalid rotation requested: " << static_cast<int>(rotation) << ".";
+    return std::make_pair(u, v);
 }
 
