@@ -180,7 +180,7 @@ protected:
     std::string name_;
     vr::DriverPose_t pose_;
     std::unique_ptr<Settings> settings_;
-    uint32_t objectId_ = 0;
+    uint32_t objectId_ = vr::k_unTrackedDeviceIndexInvalid;
 
 private:
     // Use GetTrackedDeviceProperty() or setProperty() instead.
