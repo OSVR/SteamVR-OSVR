@@ -98,6 +98,13 @@ enum class Rotation {
     TwoSeventy
 };
 
+enum class DesktopOrientation {
+    Landscape,
+    Portrait,
+    LandscapeFlipped,
+    PortraitFlipped
+};
+
 struct Display {
     DisplayAdapter adapter;
     std::string name;

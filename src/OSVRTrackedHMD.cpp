@@ -167,9 +167,6 @@ void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, ui
     *x = display_.position.x;
     *y = display_.position.y;
 
-    *height = display_.size.height;
-    *width = display_.size.width;
-
     // Windows always reports the widest dimension as width regardless of the
     // orientation of the display. We need to flip these dimensions if the
     // display is in portrait orientation.
@@ -178,13 +175,15 @@ void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, ui
     // portrait mode, a display's resolution might be 1080x1920).
     //
     // TODO Check to see how Linux handles this.
-#if defined(OSVR_WINDOWS)
-    const bool is_portrait = (osvr::display::Rotation::Ninety == display_.rotation || osvr::display::Rotation::TwoSeventy == display_.rotation);
+    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    const bool is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
     if (is_portrait) {
-        *height = display_.size.width;
-        *width = display_.size.height;
+        *height = std::max(display_.size.width, display_.size.height);
+        *width = std::min(display_.size.width, display_.size.height);
+    } else {
+        *height = std::min(display_.size.width, display_.size.height);
+        *width = std::max(display_.size.width, display_.size.height);
     }
-#endif // OSVR_WINDOWS
 #endif // OSVR_WINDOWS or OSVR_MACOSX
 
     OSVR_LOG(trace) << "GetWindowBounds(): x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
@@ -614,4 +613,3 @@ std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::
     OSVR_LOG(err) << "rotateTextureCoordinates(): Invalid rotation requested: " << static_cast<int>(rotation) << ".";
     return std::make_pair(u, v);
 }
-

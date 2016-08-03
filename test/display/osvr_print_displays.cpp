@@ -36,13 +36,31 @@ inline std::string to_string(osvr::display::Rotation rotation)
 {
     switch (rotation) {
     case osvr::display::Rotation::Zero:
-        return "Landscape";
+        return "0 degrees counter-clockwise";
     case osvr::display::Rotation::Ninety:
-        return "Portrait";
+        return "90 degrees counter-clockwise";
     case osvr::display::Rotation::OneEighty:
-        return "Landscape (flipped)";
+        return "180 degrees counter-clockwise";
     case osvr::display::Rotation::TwoSeventy:
+        return "270 degrees counter-clockwise";
+    default:
+        return "Unknown rotation: " + std::to_string(static_cast<int>(rotation));
+    }
+}
+
+inline std::string to_string(osvr::display::DesktopOrientation orientation)
+{
+    switch (orientation) {
+    case osvr::display::DesktopOrientation::Landscape:
+        return "Landscape";
+    case osvr::display::DesktopOrientation::Portrait:
+        return "Portrait";
+    case osvr::display::DesktopOrientation::LandscapeFlipped:
+        return "Landscape (flipped)";
+    case osvr::display::DesktopOrientation::PortraitFlipped:
         return "Portrait (flipped)";
+    default:
+        return "Unknown orientation: " + std::to_string(static_cast<int>(orientation));
     }
 }
 
@@ -60,6 +78,7 @@ int main(int argc, char* argv[])
         cout << "  Resolution: " << display.size.width << "x" << display.size.height << endl;
         cout << "  Position: (" << display.position.x << ", " << display.position.y << ")" << endl;
         cout << "  Rotation: " << to_string(display.rotation) << endl;
+        cout << "  Orientation: " << to_string(osvr::display::getDesktopOrientation(display)) << endl;
         cout << "  Refresh rate: " << display.verticalRefreshRate << endl;
         cout << "  " << (display.attachedToDesktop ? "Extended mode" : "Direct mode") << endl;
         cout << "  EDID vendor ID: 0x" << std::hex << display.edidVendorId << std::dec << endl;

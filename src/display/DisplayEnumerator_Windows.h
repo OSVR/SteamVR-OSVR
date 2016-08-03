@@ -331,6 +331,30 @@ std::vector<Display> getDisplays()
     return displays;
 }
 
+DesktopOrientation getDesktopOrientation(const Display& display)
+{
+    // TODO test in Windows: AMD
+
+    // Windows reports the hardware resolution and rotation. We need
+    // to apply the rotation to get the desktop orientation.
+    const auto is_hardware_portrait = display.size.width < display.size.height;
+    const auto corrected_rotation = static_cast<osvr::display::Rotation>((static_cast<int>(display.rotation) - 1) % 4);
+    const auto rotation = is_hardware_portrait ? corrected_rotation : display.rotation;
+
+    if (osvr::display::Rotation::Zero == rotation) {
+        return DesktopOrientation::Landscape;
+    } else if (osvr::display::Rotation::Ninety == rotation) {
+        return DesktopOrientation::Portrait;
+    } else if (osvr::display::Rotation::OneEighty == rotation) {
+        return DesktopOrientation::LandscapeFlipped;
+    } else if (osvr::display::Rotation::TwoSeventy == rotation) {
+        return DesktopOrientation::PortraitFlipped;
+    } else {
+        std::cerr << "Invalid rotation value: " << static_cast<int>(rotation) << ".";
+        return DesktopOrientation::Landscape;
+    }
+}
+
 } // end namespace display
 } // end namespace osvr
 

@@ -40,6 +40,8 @@ namespace display {
 
 std::vector<Display> getDisplays();
 
+DesktopOrientation getDesktopOrientation(const Display& display);
+
 } // end namespace display
 } // end namespace osvr
 

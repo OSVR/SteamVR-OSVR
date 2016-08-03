@@ -315,6 +315,28 @@ std::vector<Display> getDisplays()
     return displays;
 }
 
+DesktopOrientation getDesktopOrientation(const Display& display)
+{
+    // TODO test in OS X: AMD
+
+    // OS X reports the desktop orientation as the rotation and
+    // reports the resolution to match (i.e., not the native hardware resolution).
+    const auto rotation = display_.rotation;
+
+    if (osvr::display::Rotation::Zero == rotation) {
+        return DesktopOrientation::Landscape;
+    } else if (osvr::display::Rotation::Ninety == rotation) {
+        return DesktopOrientation::Portrait;
+    } else if (osvr::display::Rotation::OneEighty == rotation) {
+        return DesktopOrientation::LandscapeFlipped;
+    } else if (osvr::display::Rotation::TwoSeventy == rotation) {
+        return DesktopOrientation::PortraitFlipped;
+    } else {
+        OSVR_LOG(err) << "Invalid rotation value: " << static_cast<int>(rotation) << ".";
+        return DesktopOrientation::Landscape;
+    }
+}
+
 } // end namespace display
 } // end namespace osvr
 

@@ -41,7 +41,14 @@ namespace display {
 
 std::vector<Display> getDisplays()
 {
+	// TODO
     return {};
+}
+
+DesktopOrientation getDesktopOrientation(const Display& display)
+{
+	// TODO
+	return DesktopOrientation::Landscape;
 }
 
 } // end namespace display
