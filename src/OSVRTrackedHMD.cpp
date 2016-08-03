@@ -174,19 +174,25 @@ void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, ui
     // orientation of the display. We need to flip these dimensions if the
     // display is in portrait orientation.
     //
-    // TODO Check to see how OS X and Linux handle this.
-    const bool is_landscape = (osvr::display::Rotation::Zero == display_.rotation || osvr::display::Rotation::OneEighty == display_.rotation);
-    if (is_landscape) {
-        std::swap(*height, *width);
+    // OS X reports the resolution with respect to the orientation (e.g., in
+    // portrait mode, a display's resolution might be 1080x1920).
+    //
+    // TODO Check to see how Linux handles this.
+#if defined(OSVR_WINDOWS)
+    const bool is_portrait = (osvr::display::Rotation::Ninety == display_.rotation || osvr::display::Rotation::TwoSeventy == display_.rotation);
+    if (is_portrait) {
+        *height = display_.size.width;
+        *width = display_.size.height;
     }
-#endif
+#endif // OSVR_WINDOWS
+#endif // OSVR_WINDOWS or OSVR_MACOSX
 
     OSVR_LOG(trace) << "GetWindowBounds(): x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
 }
 
 bool OSVRTrackedHMD::IsDisplayOnDesktop()
 {
-    // If the current display still appeara in the active displays list,
+    // If the current display still appears in the active displays list,
     // then it's attached to the desktop.
     const auto displays = osvr::display::getDisplays();
     const auto display_on_desktop = (end(displays) != std::find(begin(displays), end(displays), display_));
