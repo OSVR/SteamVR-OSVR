@@ -40,6 +40,7 @@
 #include <string>
 #include <codecvt>
 #include <locale>
+#include <cmath>
 
 namespace osvr {
 namespace display {
@@ -338,7 +339,7 @@ DesktopOrientation getDesktopOrientation(const Display& display)
     // Windows reports the hardware resolution and rotation. We need
     // to apply the rotation to get the desktop orientation.
     const auto is_hardware_portrait = display.size.width < display.size.height;
-    const auto corrected_rotation = static_cast<osvr::display::Rotation>((static_cast<int>(display.rotation) - 1) % 4);
+    const auto corrected_rotation = static_cast<osvr::display::Rotation>(std::abs((static_cast<int>(display.rotation) - 1) % 4));
     const auto rotation = is_hardware_portrait ? corrected_rotation : display.rotation;
 
     if (osvr::display::Rotation::Zero == rotation) {
@@ -350,7 +351,7 @@ DesktopOrientation getDesktopOrientation(const Display& display)
     } else if (osvr::display::Rotation::TwoSeventy == rotation) {
         return DesktopOrientation::PortraitFlipped;
     } else {
-        std::cerr << "Invalid rotation value: " << static_cast<int>(rotation) << ".";
+        std::cerr << "Invalid rotation value: " << static_cast<int>(rotation) << "." << std::endl;
         return DesktopOrientation::Landscape;
     }
 }
