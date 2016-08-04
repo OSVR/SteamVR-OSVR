@@ -227,7 +227,9 @@ void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t*
     // because that version doesn't handle the *detected* rotation, only the
     // rotation set in the config file.
     auto display_mode = displayConfiguration_.getDisplayMode();
-    const bool is_landscape = (osvr::display::Rotation::Zero == display_.rotation || osvr::display::Rotation::OneEighty == display_.rotation);
+    const bool is_landscape = (osvr::display::DesktopOrientation::Landscape == osvr::display::getDesktopOrientation(display_)
+        || osvr::display::DesktopOrientation::LandscapeFlipped == osvr::display::getDesktopOrientation(display_));
+
     if (!is_landscape) {
         if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
             display_mode = OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE;
@@ -280,7 +282,8 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
     // Rotate the (u, v) coordinates as appropriate to the display orientation.
-    std::tie(u, v) = rotateTextureCoordinates(display_.rotation, u, v);
+    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    std::tie(u, v) = rotateTextureCoordinates(orientation, u, v);
 
     // Note that RenderManager expects the (0, 0) to be the lower-left corner
     // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
@@ -322,10 +325,10 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     coords.rfBlue[1] = 1.0f - coords_blue[1];
 
     // Unrotate the coordinates
-    const auto reverse_rotation = static_cast<osvr::display::Rotation>((4 - static_cast<int>(display_.rotation)) % 4);
-    std::tie(coords.rfRed[0], coords.rfRed[1]) = rotateTextureCoordinates(reverse_rotation, coords.rfRed[0], coords.rfRed[1]);
-    std::tie(coords.rfGreen[0], coords.rfGreen[1]) = rotateTextureCoordinates(reverse_rotation, coords.rfGreen[0], coords.rfGreen[1]);
-    std::tie(coords.rfBlue[0], coords.rfBlue[1]) = rotateTextureCoordinates(reverse_rotation, coords.rfBlue[0], coords.rfBlue[1]);
+    const auto reverse_orientation = static_cast<osvr::display::DesktopOrientation>((4 - static_cast<int>(orientation)) % 4);
+    std::tie(coords.rfRed[0], coords.rfRed[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfRed[0], coords.rfRed[1]);
+    std::tie(coords.rfGreen[0], coords.rfGreen[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfGreen[0], coords.rfGreen[1]);
+    std::tie(coords.rfBlue[0], coords.rfBlue[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfBlue[0], coords.rfBlue[1]);
 
     return coords;
 }
@@ -592,24 +595,24 @@ void OSVRTrackedHMD::configureProperties()
     OSVR_LOG(trace) << "OSVRTrackedHMD::configureProperties() exiting.";
 }
 
-std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::Rotation rotation, float& u, float& v) const
+std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::DesktopOrientation orientation, float& u, float& v) const
 {
     // Rotate the (u, v) coordinates as appropriate to the display orientation
     // and translate the results back to the first quadrant.
-    if (osvr::display::Rotation::Zero == rotation) {
+    if (osvr::display::DesktopOrientation::Landscape == orientation) {
         // Rotate 0 degrees counter-clockwise (landscape)
         return std::make_pair(u, v);
-    } else if (osvr::display::Rotation::Ninety == rotation) {
+    } else if (osvr::display::DesktopOrientation::Portrait == orientation) {
         // Rotate 90 degrees counter-clockwise (portrait)
         return std::make_pair(1 - v, u);
-    } else if (osvr::display::Rotation::OneEighty == rotation) {
+    } else if (osvr::display::DesktopOrientation::LandscapeFlipped == orientation) {
         // Rotate 180 degrees counter-clockwise (landscape, flipped)
         return std::make_pair(1 - u, 1 - v);
-    } else if (osvr::display::Rotation::TwoSeventy == rotation) {
+    } else if (osvr::display::DesktopOrientation::PortraitFlipped == orientation) {
         // Rotate 270 degrees counter-clockwise (portrait, flipped)
         return std::make_pair(v, 1 - u);
     }
 
-    OSVR_LOG(err) << "rotateTextureCoordinates(): Invalid rotation requested: " << static_cast<int>(rotation) << ".";
+    OSVR_LOG(err) << "rotateTextureCoordinates(): Invalid orientation requested: " << static_cast<int>(orientation) << ".";
     return std::make_pair(u, v);
 }

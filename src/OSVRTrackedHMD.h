@@ -119,7 +119,7 @@ private:
     void configureProperties();
     //@}
 
-    std::pair<float, float> rotateTextureCoordinates(osvr::display::Rotation rotation, float& u, float& v) const;
+    std::pair<float, float> rotateTextureCoordinates(osvr::display::DesktopOrientation orientation, float& u, float& v) const;
 
     osvr::clientkit::DisplayConfig displayConfig_;
     osvr::client::RenderManagerConfig renderManagerConfig_;
