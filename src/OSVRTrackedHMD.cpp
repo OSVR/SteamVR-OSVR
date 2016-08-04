@@ -227,10 +227,11 @@ void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t*
     // because that version doesn't handle the *detected* rotation, only the
     // rotation set in the config file.
     auto display_mode = displayConfiguration_.getDisplayMode();
-    const bool is_landscape = (osvr::display::DesktopOrientation::Landscape == osvr::display::getDesktopOrientation(display_)
-        || osvr::display::DesktopOrientation::LandscapeFlipped == osvr::display::getDesktopOrientation(display_));
+    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    const auto is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation
+        || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
 
-    if (!is_landscape) {
+    if (is_portrait) {
         if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
             display_mode = OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE;
         } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
@@ -599,6 +600,7 @@ std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::
 {
     // Rotate the (u, v) coordinates as appropriate to the display orientation
     // and translate the results back to the first quadrant.
+#if 0
     if (osvr::display::DesktopOrientation::Landscape == orientation) {
         // Rotate 0 degrees counter-clockwise (landscape)
         return std::make_pair(u, v);
@@ -611,6 +613,20 @@ std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::
     } else if (osvr::display::DesktopOrientation::PortraitFlipped == orientation) {
         // Rotate 270 degrees counter-clockwise (portrait, flipped)
         return std::make_pair(v, 1 - u);
+    }
+#endif
+    if (osvr::display::DesktopOrientation::Landscape == orientation) {
+        // Rotate 0 degrees clockwise (landscape)
+        return std::make_pair(u, v);
+    } else if (osvr::display::DesktopOrientation::Portrait == orientation) {
+        // Rotate 90 degrees clockwise (portrait)
+        return std::make_pair(v, 1 - u);
+    } else if (osvr::display::DesktopOrientation::LandscapeFlipped == orientation) {
+        // Rotate 180 degrees clockwise (landscape, flipped)
+        return std::make_pair(1 - u, 1 - v);
+    } else if (osvr::display::DesktopOrientation::PortraitFlipped == orientation) {
+        // Rotate 270 degrees clockwise (portrait, flipped)
+        return std::make_pair(1 - v, u);
     }
 
     OSVR_LOG(err) << "rotateTextureCoordinates(): Invalid orientation requested: " << static_cast<int>(orientation) << ".";
