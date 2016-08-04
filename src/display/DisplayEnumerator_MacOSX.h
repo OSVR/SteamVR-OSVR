@@ -63,6 +63,48 @@ uint32_t getDisplayEDIDProductID(const CGDirectDisplayID& display_id);
 Display getDisplay(const CGDirectDisplayID& display_id);
 
 //
+// Utility functions
+//
+
+namespace {
+
+void printDict(CFDictionaryRef dict)
+{
+    const auto size = CFDictionaryGetCount(dict);
+    CFTypeRef* keys_ref = new CFTypeRef[size];
+    CFTypeRef* values_ref = new CFTypeRef[size];
+    CFDictionaryGetKeysAndValues(dict, (const void**)keys_ref, (const void**)values_ref);
+
+    std::cout << "Dictionary contents:" << std::endl;
+    for (size_t i = 0; i < size; ++i) {
+        std::cout << "  " << std::flush;
+        CFShow(keys_ref[i]);
+        std::cout << "    = " << std::flush;
+        CFShow(values_ref[i]);
+        //const auto key = keys_ref[i];
+        //const auto value = values_ref[i];
+        //std::cout << "  " << key << ": [" << value << "]." << std::endl;
+    }
+    std::cout << "\n" << std::endl;
+}
+
+std::string getString(const CFDictionaryRef& dict, const char* key, const std::string& default_value = "")
+{
+    const auto key_str = CFStringCreateWithCString(nullptr, key, kCFStringEncodingMacRoman);
+    CFStringRef str_ref;
+    if (CFDictionaryGetValueIfPresent(dict, key_str, (const void**)&str_ref)) {
+        CFRelease(key_str);
+        return to_string(str_ref);
+    }
+
+    CFRelease(key_str);
+    return default_value;
+}
+
+} // anonymous namespace
+
+
+//
 // Implementations
 //
 
@@ -190,15 +232,20 @@ DisplayAdapter getDisplayAdapter(const CGDirectDisplayID& display_id)
 
 std::string getDisplayName(const CGDirectDisplayID& display_id)
 {
-    std::string display_name = "Unknown";
+    std::string display_name = "[Unknown]";
 
     CFDictionaryRef display_info = IODisplayCreateInfoDictionary(getIOServicePort(display_id), kIODisplayOnlyPreferredName);
-    CFDictionaryRef display_names = static_cast<CFDictionaryRef>(CFDictionaryGetValue(display_info, CFSTR(kDisplayProductName)));
 
-    CFStringRef name_ref;
-    if (CFDictionaryGetValueIfPresent(display_names, CFSTR("en_US"), (const void**)&name_ref)) {
-        display_name = to_string(name_ref);
+    //printDict(display_info);
+
+    CFDictionaryRef display_names;
+    if (!CFDictionaryGetValueIfPresent(display_info, CFSTR(kDisplayProductName), (const void**)&display_names)) {
+        // No display names were available
+        CFRelease(display_info);
+        return display_name;
     }
+
+    display_name = getString(display_names, "en_US", display_name);
 
     CFRelease(display_info);
     return display_name;
