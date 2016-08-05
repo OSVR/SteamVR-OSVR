@@ -233,59 +233,47 @@ void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t*
     const auto is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation
         || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
 
-    if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
-        using osvr::display::DesktopOrientation;
-        if (DesktopOrientation::Portrait == orientation) {
-            *x = 0;
-            *y = (vr::Eye_Left == eye) ? 0 : display_height / 2;
-            // flipped these in portrait orientation
-            //*width = display_height / 2;
-            //*height = display_width;
-            *width = display_width;
-            *height = display_height / 2;
-        } else {
-            OSVR_LOG(err) << "This orientation hasn't been implemented yet!";
-        }
-    } else {
-        OSVR_LOG(err) << "This display mode hasn't been implemented yet!";
-    }
-
-    // Horizontal side-by-size
-
-
-#if 0
-    if (is_portrait) {
-        if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
-            display_mode = OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE;
-        } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
-            display_mode = OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE;
-        }
-    }
-
+    // TODO Simplify this code after verifying it works properly
     if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
         *x = 0;
         *y = 0;
         *width = display_width;
         *height = display_height;
     } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
-        *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
-        *y = 0;
-        *width = display_width / 2;
-        *height = display_height;
-    } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
+        using osvr::display::DesktopOrientation;
+        if (DesktopOrientation::Portrait == orientation) {
+            *x = 0;
+            *y = (vr::Eye_Left == eye) ? 0 : display_height / 2;
+            *width = display_width;
+            *height = display_height / 2;
+        } else if (DesktopOrientation::PortraitFlipped == orientation) {
+            *x = 0;
+            *y = (vr::Eye_Left == eye) ? display_height / 2 : 0;
+            *width = display_width;
+            *height = display_height / 2;
+        } else if (DesktopOrientation::Landscape == orientation) {
+            *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
+            *y = 0;
+            *width = display_width / 2;
+            *height = display_height / 2;
+        } else if (DesktopOrientation::LandscapeFlipped == orientation) {
+            *x = (vr::Eye_Left == eye) ? display_width / 2 : 0;
+            *y = 0;
+            *width = display_width / 2;
+            *height = display_height / 2;
+        } else {
+            OSVR_LOG(err) << "Unknown display orientation [" << static_cast<int>(orientation) << "]!";
+        }
+    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        OSVR_LOG(err) << "This display mode hasn't been implemented yet!";
+        // TODO
         *x = 0;
-        *y = (vr::Eye_Left == eye) ? display_height / 2 : 0;
+        *y = 0;
         *width = display_width;
         *height = display_height / 2;
     } else {
-        OSVR_LOG(err) << "Unknown display mode [" << display_mode << "]! Defaulting to horizontal side-by-side.";
-        // Default to horizontal side-by-side mode
-        *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
-        *y = 0;
-        *width = display_width / 2;
-        *height = display_height;
+        OSVR_LOG(err) << "Unknown display mode [" << static_cast<int>(display_mode) << "]!";
     }
-#endif
 
     const auto eye_str = (vr::Eye_Left == eye) ? "left" : "right";
     OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
@@ -358,20 +346,28 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
 
     return coords;
 #endif
-    // XXX Try rendering to a landscape buffer and rotating it in
-    // ComputeDistortion().
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
-    // Note that RenderManager expects the (0, 0) to be the lower-left corner
-    // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
-    // upper-left and (1, 1) is lower-right.  To accommodate this, we need to
-    // flip the y-coordinate before passing it to RenderManager and flip it
-    // again before returning the value to SteamVR.
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") rotated.";
+    // Rotate the texture coordinates to match the display orientation
+    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    using osvr::display::DesktopOrientation;
+    if (DesktopOrientation::Landscape == orientation) {
+        // Rotate 0 degrees (do nothing)
+        std::tie(u, v) = std::make_pair(u, v);
+    } else if (DesktopOrientation::Portrait == orientation) {
+        // Rotate 90 degrees counter-clockwise
+        std::tie(u, v) = std::make_pair(1.0f - v, u);
+    } else if (DesktopOrientation::LandscapeFlipped == orientation) {
+        // Rotate 180 degrees
+        std::tie(u, v) = std::make_pair(1.0f - u, 1.0f - v);
+    } else if (DesktopOrientation::PortraitFlipped == orientation) {
+        // Rotate 270 degrees counter-clockwise
+        std::tie(u, v) = std::make_pair(v, 1.0f - u);
+    } else {
+        OSVR_LOG(err) << "ComputeDistortion(): Unknown desktop orientation [" << static_cast<int>(orientation) << "]!";
+    }
 
-    // Rotate by 90 degrees CCW
-    std::tie(u, v) = std::make_pair(1.0 - v, u);
-
+    // Skip distortion during testing
+    // FIXME
     vr::DistortionCoordinates_t coords;
     coords.rfRed[0] = u;
     coords.rfRed[1] = v;
@@ -379,13 +375,6 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     coords.rfGreen[1] = v;
     coords.rfBlue[0] = u;
     coords.rfBlue[1] = v;
-
-    // Unrotate the coordinates
-    // Rotate the (u, v) coordinates as appropriate to the display orientation.
-    //const auto orientation = osvr::display::getDesktopOrientation(display_);
-    //std::tie(coords.rfRed[0], coords.rfRed[1]) = rotateTextureCoordinates(orientation, coords.rfRed[0], coords.rfRed[1]);
-    //std::tie(coords.rfGreen[0], coords.rfGreen[1]) = rotateTextureCoordinates(orientation, coords.rfGreen[0], coords.rfGreen[1]);
-    //std::tie(coords.rfBlue[0], coords.rfBlue[1]) = rotateTextureCoordinates(orientation, coords.rfBlue[0], coords.rfBlue[1]);
 
     return coords;
 }
