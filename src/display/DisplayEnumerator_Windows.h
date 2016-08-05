@@ -342,6 +342,11 @@ DesktopOrientation getDesktopOrientation(const Display& display)
     const auto corrected_rotation = static_cast<osvr::display::Rotation>(std::abs((static_cast<int>(display.rotation) - 1) % 4));
     const auto rotation = is_hardware_portrait ? corrected_rotation : display.rotation;
 
+    std::cout << "is_hardware_portrait = " << (is_hardware_portrait ? "true" : "false") << std::endl;
+    std::cout << "reported rotation = " << to_string(display.rotation) << std::endl;
+    std::cout << "corrected_rotation = " << to_string(corrected_rotation) << std::endl;
+    std::cout << "final rotation = " << to_string(rotation) << std::endl;
+
     if (osvr::display::Rotation::Zero == rotation) {
         return DesktopOrientation::Landscape;
     } else if (osvr::display::Rotation::Ninety == rotation) {
