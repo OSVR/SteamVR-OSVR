@@ -235,36 +235,43 @@ void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t*
 
     // TODO Simplify this code after verifying it works properly
     if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
+        OSVR_LOG(trace) << "Display mode: full-screen.";
         *x = 0;
         *y = 0;
         *width = display_width;
         *height = display_height;
     } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        OSVR_LOG(trace) << "Display mode: horizontal side-by-side.";
         using osvr::display::DesktopOrientation;
         if (DesktopOrientation::Portrait == orientation) {
+            OSVR_LOG(trace) << "Display orientation: portrait.";
             *x = 0;
             *y = (vr::Eye_Left == eye) ? 0 : display_height / 2;
             *width = display_width;
             *height = display_height / 2;
         } else if (DesktopOrientation::PortraitFlipped == orientation) {
+            OSVR_LOG(trace) << "Display orientation: portrait flipped.";
             *x = 0;
             *y = (vr::Eye_Left == eye) ? display_height / 2 : 0;
             *width = display_width;
             *height = display_height / 2;
         } else if (DesktopOrientation::Landscape == orientation) {
+            OSVR_LOG(trace) << "Display orientation: landscape.";
             *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
             *y = 0;
             *width = display_width / 2;
-            *height = display_height / 2;
+            *height = display_height;
         } else if (DesktopOrientation::LandscapeFlipped == orientation) {
+            OSVR_LOG(trace) << "Display orientation: landscape flipped.";
             *x = (vr::Eye_Left == eye) ? display_width / 2 : 0;
             *y = 0;
             *width = display_width / 2;
-            *height = display_height / 2;
+            *height = display_height;
         } else {
             OSVR_LOG(err) << "Unknown display orientation [" << static_cast<int>(orientation) << "]!";
         }
     } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        OSVR_LOG(trace) << "Display mode: vertical side-by-side.";
         OSVR_LOG(err) << "This display mode hasn't been implemented yet!";
         // TODO
         *x = 0;
