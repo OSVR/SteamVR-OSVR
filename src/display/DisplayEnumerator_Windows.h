@@ -338,26 +338,35 @@ DesktopOrientation getDesktopOrientation(const Display& display)
 
     // Windows reports the hardware resolution and rotation. We need
     // to apply the rotation to get the desktop orientation.
-    const auto is_hardware_portrait = display.size.width < display.size.height;
-    const auto corrected_rotation = static_cast<osvr::display::Rotation>(std::abs((static_cast<int>(display.rotation) - 1) % 4));
-    const auto rotation = is_hardware_portrait ? corrected_rotation : display.rotation;
-
-    std::cout << "is_hardware_portrait = " << (is_hardware_portrait ? "true" : "false") << std::endl;
-    std::cout << "reported rotation = " << to_string(display.rotation) << std::endl;
-    std::cout << "corrected_rotation = " << to_string(corrected_rotation) << std::endl;
-    std::cout << "final rotation = " << to_string(rotation) << std::endl;
-
-    if (osvr::display::Rotation::Zero == rotation) {
-        return DesktopOrientation::Landscape;
-    } else if (osvr::display::Rotation::Ninety == rotation) {
-        return DesktopOrientation::Portrait;
-    } else if (osvr::display::Rotation::OneEighty == rotation) {
-        return DesktopOrientation::LandscapeFlipped;
-    } else if (osvr::display::Rotation::TwoSeventy == rotation) {
-        return DesktopOrientation::PortraitFlipped;
+    const auto is_hardware_landscaope = display.size.width < display.size.height;
+    if (is_hardware_landscape) {
+        // Landscape resolution
+        if (osvr::display::Rotation::Zero == rotation) {
+            return DesktopOrientation::Landscape;
+        } else if (osvr::display::Rotation::Ninety == rotation) {
+            return DesktopOrientation::Portrait;
+        } else if (osvr::display::Rotation::OneEighty == rotation) {
+            return DesktopOrientation::LandscapeFlipped;
+        } else if (osvr::display::Rotation::TwoSeventy == rotation) {
+            return DesktopOrientation::PortraitFlipped;
+        } else {
+            std::cerr << "Invalid rotation value: " << static_cast<int>(rotation) << "." << std::endl;
+            return DesktopOrientation::Landscape;
+        }
     } else {
-        std::cerr << "Invalid rotation value: " << static_cast<int>(rotation) << "." << std::endl;
-        return DesktopOrientation::Landscape;
+        // Portrait resolution
+        if (osvr::display::Rotation::Zero == rotation) {
+            return DesktopOrientation::Portrait;
+        } else if (osvr::display::Rotation::Ninety == rotation) {
+            return DesktopOrientation::Landscape;
+        } else if (osvr::display::Rotation::OneEighty == rotation) {
+            return DesktopOrientation::PortraitFlipped;
+        } else if (osvr::display::Rotation::TwoSeventy == rotation) {
+            return DesktopOrientation::LandscapeFlipped;
+        } else {
+            std::cerr << "Invalid rotation value: " << static_cast<int>(rotation) << "." << std::endl;
+            return DesktopOrientation::Portrait;
+        }
     }
 }
 
