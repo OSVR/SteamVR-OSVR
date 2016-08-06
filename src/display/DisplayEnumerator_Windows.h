@@ -339,7 +339,7 @@ DesktopOrientation getDesktopOrientation(const Display& display)
     // Windows reports the hardware resolution and rotation. We need
     // to apply the rotation to get the desktop orientation.
     const auto rotation = display.rotation;
-    const auto is_hardware_landscaope = display.size.width < display.size.height;
+    const auto is_hardware_landscape = display.size.height < display.size.width;
     if (is_hardware_landscape) {
         // Landscape resolution
         if (osvr::display::Rotation::Zero == rotation) {
