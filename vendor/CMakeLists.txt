@@ -22,3 +22,6 @@ if(BUILD_TESTS)
 	add_subdirectory(googletest)
 endif()
 
+# OSVR-Display
+add_subdirectory(OSVR-Display)
+

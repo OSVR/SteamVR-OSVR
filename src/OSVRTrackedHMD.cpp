@@ -27,7 +27,6 @@
 
 #include "Logging.h"
 #include "ValveStrCpy.h"
-#include "display/DisplayEnumerator.h"
 #include "make_unique.h"
 #include "make_unique.h"
 #include "matrix_cast.h"
@@ -37,6 +36,7 @@
 // Library/third-party includes
 #include <osvr/Client/RenderManagerConfig.h>
 #include <osvr/ClientKit/Display.h>
+#include <osvr/Display/DisplayEnumerator.h>
 #include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Util/PlatformConfig.h>

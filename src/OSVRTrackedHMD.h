@@ -27,13 +27,13 @@
 
 // Internal Includes
 #include "OSVRTrackedDevice.h"
-#include "display/Display.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
 
 #include <osvr/Client/RenderManagerConfig.h>
 #include <osvr/ClientKit/Display.h>
+#include <osvr/Display/Display.h>
 #include <osvr/RenderKit/DistortionParameters.h>
 #include <osvr/RenderKit/UnstructuredMeshInterpolator.h>
 #include <osvr/RenderKit/osvr_display_configuration.h>

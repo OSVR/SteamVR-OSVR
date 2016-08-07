@@ -29,7 +29,9 @@ target_link_libraries(test_hmd_driver
 target_include_directories(test_hmd_driver
 	PRIVATE
 	${CMAKE_SOURCE_DIR}/src
-	${CMAKE_BINARY_DIR}/src)
+	${CMAKE_BINARY_DIR}/src
+    ${CMAKE_SOURCE_DIR}/vendor/OSVR-Display
+    ${CMAKE_BINARY_DIR}/vendor/OSVR-Display)
 target_include_directories(test_hmd_driver
 	SYSTEM PRIVATE
 	${OPENVR_INCLUDE_DIRS})
