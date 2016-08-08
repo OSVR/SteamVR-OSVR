@@ -421,8 +421,10 @@ void OSVRTrackedController::buttonCallback(void* userdata, const OSVR_TimeValue*
 
     self->controllerState_.unPacketNum++;
     if (OSVR_BUTTON_PRESSED == report->state) {
+        OSVR_LOG(trace) << self->name_ << ": Button " << button_callback_data->button_id << " pressed.";
         self->driverHost_->TrackedDeviceButtonPressed(self->objectId_, button_callback_data->button_id, 0.0);
     } else {
+        OSVR_LOG(trace) << self->name_ << ": Button " << button_callback_data->button_id << " released.";
         self->driverHost_->TrackedDeviceButtonUnpressed(self->objectId_, button_callback_data->button_id, 0.0);
     }
 }
