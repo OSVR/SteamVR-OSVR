@@ -74,7 +74,7 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 
 void OSVRTrackedDevice::Deactivate()
 {
-    // do nothing
+    objectId_ = vr::k_unTrackedDeviceIndexInvalid;
 }
 
 void OSVRTrackedDevice::PowerOff()

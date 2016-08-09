@@ -101,7 +101,6 @@ OSVRTrackedController::~OSVRTrackedController()
 vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
 {
     OSVR_LOG(trace) << name_ << ": Activate() called.";
-
     OSVRTrackedDevice::Activate(object_id);
 
     const std::time_t wait_time = 5; // wait up to 5 seconds for init
@@ -128,6 +127,8 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
 void OSVRTrackedController::Deactivate()
 {
     freeInterfaces();
+
+    OSVRTrackedDevice::Deactivate();
 }
 
 vr::VRControllerState_t OSVRTrackedController::GetControllerState()

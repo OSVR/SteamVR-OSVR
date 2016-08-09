@@ -66,8 +66,7 @@ OSVRTrackedHMD::~OSVRTrackedHMD()
 vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 {
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate() called.";
-
-    objectId_ = object_id;
+    OSVRTrackedDevice::Activate(object_id);
 
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
 
@@ -148,6 +147,8 @@ void OSVRTrackedHMD::Deactivate()
     if (trackerInterface_.notEmpty()) {
         trackerInterface_.free();
     }
+
+    OSVRTrqckedDevice::Deactivate();
 }
 
 void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
@@ -608,7 +609,7 @@ void OSVRTrackedHMD::configureProperties()
     //setProperty(vr::Prop_ReportsTimeSinceVSync_Bool, false);
     setProperty(vr::Prop_IsOnDesktop_Bool, IsDisplayOnDesktop());
 
-    //setProperty<float>(vr::Prop_SecondsFromVsyncToPhotons_Float, 0.0f);
+    setProperty<float>(vr::Prop_SecondsFromVsyncToPhotons_Float, 0.0f); // TODO
     setProperty<float>(vr::Prop_DisplayFrequency_Float, display_.verticalRefreshRate);
     setProperty<float>(vr::Prop_UserIpdMeters_Float, GetIPD());
     //setProperty<float>(vr::Prop_DisplayMCOffset_Float, 0.0f);
@@ -621,7 +622,7 @@ void OSVRTrackedHMD::configureProperties()
     //setProperty<float>(vr::Prop_LensCenterLeftV_Float, 0.5f); // TODO
     //setProperty<float>(vr::Prop_LensCenterRightU_Float, 0.5f); // TODO
     //setProperty<float>(vr::Prop_LensCenterRightV_Float, 0.5f); // TODO
-    //setProperty<float>(vr::Prop_UserHeadToEyeDepthMeters_Float, 0.0f);
+    setProperty<float>(vr::Prop_UserHeadToEyeDepthMeters_Float, 0.0f); // TODO
 
     //setProperty<int32_t>(vr::Prop_DisplayMCType_Int32, 0);
     setProperty<int32_t>(vr::Prop_EdidVendorID_Int32, display_.edidVendorId);
