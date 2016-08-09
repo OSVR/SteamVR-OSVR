@@ -34,13 +34,13 @@
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
 #include "osvr_platform.h"
-#include "display/DisplayEnumerator.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
 
 // Library/third-party includes
 #include <osvr/ClientKit/Display.h>
+#include <osvr/Display/DisplayEnumerator.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>

@@ -28,7 +28,6 @@
 // Internal Includes
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 #include "Settings.h"
-#include "display/Display.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -36,6 +35,7 @@
 // Library/third-party includes
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Client/RenderManagerConfig.h>
+#include <osvr/Display/Display.h>
 #include <osvr/RenderKit/DistortionParameters.h>
 #include <osvr/RenderKit/UnstructuredMeshInterpolator.h>
 #include <osvr/RenderKit/osvr_display_configuration.h>
