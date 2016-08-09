@@ -29,13 +29,13 @@
 #include "OSVRTrackingReference.h"  // for OSVRTrackingReference
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
-#include "osvr_platform.h"          // for OSVR_PATH_SEPARATOR
 #include "Logging.h"                // for OSVR_LOG, Logging
 
 // Library/third-party includes
 #include <openvr_driver.h>          // for everything in vr namespace
 
 #include <osvr/ClientKit/Context.h> // for osvr::clientkit::ClientContext
+#include <osvr/Util/PlatformConfig.h>
 
 // Standard includes
 #include <vector>                   // for std::vector

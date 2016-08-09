@@ -33,7 +33,6 @@
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
-#include "osvr_platform.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -42,6 +41,7 @@
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Display/DisplayEnumerator.h>
 #include <osvr/Util/EigenInterop.h>
+#include <osvr/Util/PlatformConfig.h>
 #include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>
 #include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
