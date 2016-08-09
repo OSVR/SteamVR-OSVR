@@ -53,19 +53,19 @@
 
 OSVRTrackedHMD::OSVRTrackedHMD(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, const std::string& user_driver_config_dir) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_HMD, user_driver_config_dir, "OSVRTrackedHMD")
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::OSVRTrackedHMD() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::OSVRTrackedHMD()");
     configure();
-    OSVR_LOG(trace) << "OSVRTrackedHMD::OSVRTrackedHMD() exiting.";
 }
 
 OSVRTrackedHMD::~OSVRTrackedHMD()
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::~OSVRTrackedHMD()");
     // do nothing
 }
 
 vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::Activate()");
     OSVRTrackedDevice::Activate(object_id);
 
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
@@ -135,24 +135,24 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
         OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
-    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation complete.\n";
     return vr::VRInitError_None;
 }
 
 void OSVRTrackedHMD::Deactivate()
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::Deactivate() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::Deactivate()");
 
     /// Have to force freeing here
     if (trackerInterface_.notEmpty()) {
         trackerInterface_.free();
     }
 
-    OSVRTrqckedDevice::Deactivate();
+    OSVRTrackedDevice::Deactivate();
 }
 
 void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::GetWindowBounds()");
     int nDisplays = displayConfig_.getNumDisplayInputs();
     if (nDisplays != 1) {
         OSVR_LOG(err) << "OSVRTrackedHMD::OSVRTrackedHMD(): Unexpected display number of displays!\n";
@@ -192,6 +192,7 @@ void OSVRTrackedHMD::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, ui
 
 bool OSVRTrackedHMD::IsDisplayOnDesktop()
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::IsDisplayOnDesktop()");
     // If the current display still appears in the active displays list,
     // then it's attached to the desktop.
     const auto displays = osvr::display::getDisplays();
@@ -202,12 +203,14 @@ bool OSVRTrackedHMD::IsDisplayOnDesktop()
 
 bool OSVRTrackedHMD::IsDisplayRealDisplay()
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::IsDisplayRealDisplay()");
     // TODO get this info from display description?
     return true;
 }
 
 void OSVRTrackedHMD::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::GetRecommendedRenderTargetSize()");
     /// @todo calculate overfill factor properly
     double overfill_factor = 1.0;
     int32_t x, y;
@@ -222,6 +225,7 @@ void OSVRTrackedHMD::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* h
 
 void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::GetEyeOutputViewport()");
     int32_t display_x, display_y;
     uint32_t display_width, display_height;
     GetWindowBounds(&display_x, &display_y, &display_width, &display_height);
@@ -289,6 +293,7 @@ void OSVRTrackedHMD::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t*
 
 void OSVRTrackedHMD::GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom)
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::GetProjectionRaw()");
     // Reference: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetProjectionRaw
     // SteamVR expects top and bottom to be swapped!
     osvr::clientkit::ProjectionClippingPlanes pl = displayConfig_.getViewer(0).getEye(eye).getSurface(0).getProjectionClippingPlanes();
@@ -300,6 +305,7 @@ void OSVRTrackedHMD::GetProjectionRaw(vr::EVREye eye, float* left, float* right,
 
 vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::ComputeDistortion()");
 #if 0
     OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
@@ -389,6 +395,7 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
 
 void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, const OSVR_PoseReport* report)
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::HmdTrackerCallback()");
     if (!userdata || !report)
         return;
 
@@ -429,7 +436,7 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, c
 
 float OSVRTrackedHMD::GetIPD()
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::GetIPD() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::GetIPD()");
 
     if (!displayConfig_.valid()) {
         OSVR_LOG(trace) << "OSVRTrackedHMD::GetIPD(): DisplayConfig is invalid.";
@@ -447,23 +454,21 @@ float OSVRTrackedHMD::GetIPD()
     }
 
     float ipd = static_cast<float>((osvr::util::vecMap(leftEye.translation) - osvr::util::vecMap(rightEye.translation)).norm());
-    OSVR_LOG(trace) << "OSVRTrackedHMD::GetIPD() exiting.";
     return ipd;
 }
 
 void OSVRTrackedHMD::configure()
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::configure() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::configure()");
 
     configureDisplay();
     configureDistortionParameters();
     configureProperties();
-    OSVR_LOG(trace) << "OSVRTrackedHMD::configure() exiting.";
 }
 
 void OSVRTrackedHMD::configureDisplay()
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::configureDisplay() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::configureDisplay()");
 
     // The name of the display we want to use
     const std::string display_name = settings_->getSetting<std::string>("displayName", "OSVR");
@@ -529,7 +534,7 @@ void OSVRTrackedHMD::configureDisplay()
 
 void OSVRTrackedHMD::configureDistortionParameters()
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::configureDistortionParameters() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::configureDistortionParameters()");
 
     // Parse the display descriptor
     const auto display_description = context_.getStringParameter("/display");
@@ -561,7 +566,7 @@ void OSVRTrackedHMD::configureDistortionParameters()
 
 void OSVRTrackedHMD::configureProperties()
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::configureProperties() called.";
+    OSVR_FunctionGuard("OSVRTrackedHMD::configureProperties()");
 
     // General properties that apply to all device classes
 
@@ -645,12 +650,11 @@ void OSVRTrackedHMD::configureProperties()
     //setProperty<std::string>(vr::Prop_DisplayMCImageRight_String, "");
     //setProperty<std::string>(vr::Prop_DisplayGCImage_String, "");
     //setProperty<std::string>(vr::Prop_CameraFirmwareDescription_String, "");
-
-    OSVR_LOG(trace) << "OSVRTrackedHMD::configureProperties() exiting.";
 }
 
 std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::DesktopOrientation orientation, float& u, float& v) const
 {
+    OSVR_FunctionGuard("OSVRTrackedHMD::rotateTextureCoordinates()");
     // Rotate the (u, v) coordinates as appropriate to the display orientation
     // and translate the results back to the first quadrant.
 #if 0
@@ -685,3 +689,4 @@ std::pair<float, float> OSVRTrackedHMD::rotateTextureCoordinates(osvr::display::
     OSVR_LOG(err) << "rotateTextureCoordinates(): Invalid orientation requested: " << static_cast<int>(orientation) << ".";
     return std::make_pair(u, v);
 }
+

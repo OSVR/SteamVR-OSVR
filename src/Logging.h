@@ -37,6 +37,7 @@
 #include <memory>
 #include <iostream>
 #include <ctime>
+#include <chrono>
 
 /**
  * @brief The NullLogger just swallows any log messages it's sent.
@@ -162,7 +163,7 @@ public:
     {
         if (shouldLog_)
             message_ += msg;
- 
+
         return *this;
     }
 
@@ -241,6 +242,39 @@ protected:
 };
 
 #define OSVR_LOG(x) Logging::instance().log(x)
+
+/**
+ * Prints a message to the log for function entry and exit and the execution time.
+ */
+class FunctionGuard {
+public:
+    inline FunctionGuard(const std::string& function_name, const char* filename, int line) : functionName_(function_name)
+    {
+        OSVR_LOG(trace) << functionName_ << " called [" << filename << ":" << line << "].";
+        //startTime_ = std::chrono::system_clock::now();
+    }
+
+    inline ~FunctionGuard()
+    {
+        const auto end_time = std::chrono::steady_clock::now();
+        const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end_time - startTime_);
+        OSVR_LOG(trace) << functionName_ << " exiting. Execution time: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << ".";
+    }
+
+private:
+    std::string functionName_; ///< the name of the method/function that we're recording the scope of
+    std::chrono::steady_clock::time_point startTime_ = std::chrono::steady_clock::now();
+};
+
+/** \name Concatenation macros. */
+//@{
+#define OSVR_CONCAT_3_(a, b) a##b
+#define OSVR_CONCAT_2_(a, b) OSVR_CONCAT_3_(a, b)
+#define OSVR_CONCAT(a, b)    OSVR_CONCAT_2_(a, b)
+//@}
+
+#define OSVR_FunctionGuard(function_name) OSVR_CONCAT(FunctionGuard function_guard,__LINE__)(function_name, __FILE__, __LINE__)
 
 #endif // INCLUDED_Logging_h_GUID_E2F9C0D8_05AD_4D95_922B_3305E93990D3
 
