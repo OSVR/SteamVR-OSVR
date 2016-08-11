@@ -251,7 +251,7 @@ private:
     // Settings
     bool verboseLogging_ = false;
     osvr::display::Display display_ = {};
-    osvr::display::ScanOutOrigin scanOutOrigin_ = osvr::Display::ScanOutOrigin::UpperLeft;
+    osvr::display::ScanOutOrigin scanoutOrigin_ = osvr::display::ScanOutOrigin::UpperLeft;
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

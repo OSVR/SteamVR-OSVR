@@ -270,7 +270,7 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32
     // because that version doesn't handle the *detected* rotation, only the
     // rotation set in the config file.
     auto display_mode = displayConfiguration_.getDisplayMode();
-    const auto orientation = scanoutOrientation_ + display_.rotation;
+    const auto orientation = scanoutOrigin_ + display_.rotation;
     const auto is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation
         || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
 
@@ -1039,7 +1039,7 @@ void OSVRTrackedDevice::configure()
     const auto display_name = settings_->getSetting<std::string>("displayName", "OSVR");
 
     // The scan-out origin of the display
-    const auto scan_out_origin_str = settings_->getSettings<std::string>("scanoutOrigin", "");
+    const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
     if (scan_out_origin_str.empty()) {
         // Calculate the scan-out origin based on the display parameters
         // TODO
@@ -1101,7 +1101,7 @@ void OSVRTrackedDevice::configure()
         OSVR_LOG(info) << "  Rotation: Landscape";
         break;
     }
-    OSVR_LOG(info) << "  Scan-out origin: " << scan_out_origin;
+    OSVR_LOG(info) << "  Scan-out origin: " << scanoutOrigin_;
     OSVR_LOG(info) << "  Refresh rate: " << display_.verticalRefreshRate;
     OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
     OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
