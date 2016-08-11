@@ -223,6 +223,11 @@ private:
     template <typename T>
     vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&);
 
+    /**
+     * Parses a string into a scan-out origin option.
+     */
+    osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str);
+
     osvr::clientkit::ClientContext& context_;
     std::string displayDescription_;
     osvr::clientkit::DisplayConfig displayConfig_;
@@ -246,6 +251,7 @@ private:
     // Settings
     bool verboseLogging_ = false;
     osvr::display::Display display_ = {};
+    osvr::display::ScanOutOrigin scanOutOrigin_ = osvr::Display::ScanOutOrigin::UpperLeft;
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

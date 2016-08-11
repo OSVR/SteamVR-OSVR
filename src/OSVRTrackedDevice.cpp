@@ -218,7 +218,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     // portrait mode, a display's resolution might be 1080x1920).
     //
     // TODO Check to see how Linux handles this.
-    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    const auto orientation = scanoutOrigin_ + display_.rotation;
     const bool is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
     if (is_portrait) {
         *height = std::max(display_.size.width, display_.size.height);
@@ -270,7 +270,7 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32
     // because that version doesn't handle the *detected* rotation, only the
     // rotation set in the config file.
     auto display_mode = displayConfiguration_.getDisplayMode();
-    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    const auto orientation = scanoutOrientation_ + display_.rotation;
     const auto is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation
         || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
 
@@ -343,7 +343,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
 #if 0
     OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
     // Rotate the (u, v) coordinates as appropriate to the display orientation.
-    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    const auto orientation = scanoutOrigin_ + display_.rotation;
     std::tie(u, v) = rotateTextureCoordinates(orientation, u, v);
     // Note that RenderManager expects the (0, 0) to be the lower-left corner
     // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
@@ -385,7 +385,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
 #endif
 
     // Rotate the texture coordinates to match the display orientation
-    const auto orientation = osvr::display::getDesktopOrientation(display_);
+    const auto orientation = scanoutOrigin_ + display_.rotation;
     using osvr::display::DesktopOrientation;
     if (DesktopOrientation::Landscape == orientation) {
         // Rotate 0 degrees (do nothing)
@@ -1036,7 +1036,17 @@ void OSVRTrackedDevice::configure()
     }
 
     // The name of the display we want to use
-    const std::string display_name = settings_->getSetting<std::string>("displayName", "OSVR");
+    const auto display_name = settings_->getSetting<std::string>("displayName", "OSVR");
+
+    // The scan-out origin of the display
+    const auto scan_out_origin_str = settings_->getSettings<std::string>("scanoutOrigin", "");
+    if (scan_out_origin_str.empty()) {
+        // Calculate the scan-out origin based on the display parameters
+        // TODO
+        OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaultingn to upper-left.";
+    } else {
+        scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+    }
 
     // Detect displays and find the one we're using as an HMD
     bool display_found = false;
@@ -1091,6 +1101,7 @@ void OSVRTrackedDevice::configure()
         OSVR_LOG(info) << "  Rotation: Landscape";
         break;
     }
+    OSVR_LOG(info) << "  Scan-out origin: " << scan_out_origin;
     OSVR_LOG(info) << "  Refresh rate: " << display_.verticalRefreshRate;
     OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
     OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
@@ -1143,5 +1154,28 @@ vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDevicePro
     }
 
     return vr::TrackedProp_Success;
+}
+
+osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string str)
+{
+    // Make the string lowercase
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+
+    if ("lower-left" == str || "ll" == str || "lowerleft" == str || "lower left" == str
+        || "bottom-left" == str || "bl" == str || "bottomleft" == str || "bottom left" == str) {
+        return osvr::display::ScanOutOrigin::LowerLeft;
+    } else if ("lower-right" == str || "lr" == str || "lowerright" == str || "lower right" == str
+        || "bottom-right" == str || "br" == str || "bottomright" == str || "bottom right" == str) {
+        return osvr::display::ScanOutOrigin::LowerRight;
+    } else if ("upper-left" == str || "ul" == str || "upperleft" == str || "upper left" == str
+        || "top-left" == str || "tl" == str || "topleft" == str || "top left" == str) {
+        return osvr::display::ScanOutOrigin::UpperLeft;
+    } else if ("upper-right" == str || "ur" == str || "upperright" == str || "upper right" == str
+        || "top-right" == str || "tr" == str || "topright" == str || "top right" == str) {
+        return osvr::display::ScanOutOrigin::UpperRight;
+    } else {
+        OSVR_LOG(err) << "The string [" + str + "] could not be parsed as a scan-out origin. Use one of: lower-left, upper-left, lower-right, upper-right.";
+        return osvr::display::ScanOutOrigin::LowerLeft;
+    }
 }
 
