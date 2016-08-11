@@ -205,6 +205,8 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     *width = static_cast<uint32_t>(displayDims.width);
     *height = static_cast<uint32_t>(displayDims.height);
 
+    OSVR_LOG(trace) << "GetWindowBounds(): Config file settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
+
 #if defined(OSVR_WINDOWS) || defined(OSVR_MACOSX)
     // ... until we've added code for other platforms
     *x = display_.position.x;
@@ -229,7 +231,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
     }
 #endif // OSVR_WINDOWS or OSVR_MACOSX
 
-    OSVR_LOG(trace) << "GetWindowBounds(): x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
+    OSVR_LOG(trace) << "GetWindowBounds(): Calculated settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
 }
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
@@ -262,6 +264,17 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
+    const auto eye_str = (vr::Eye_Left == eye) ? "left" : "right";
+    {
+        osvr::clientkit::RelativeViewport viewPort = displayConfig_.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
+        *x = static_cast<uint32_t>(viewPort.left);
+        *y = static_cast<uint32_t>(viewPort.bottom);
+        *width = static_cast<uint32_t>(viewPort.width);
+        *height = static_cast<uint32_t>(viewPort.height);
+
+        OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): Config file settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
+    }
+
     int32_t display_x, display_y;
     uint32_t display_width, display_height;
     GetWindowBounds(&display_x, &display_y, &display_width, &display_height);
@@ -323,8 +336,7 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32
         OSVR_LOG(err) << "Unknown display mode [" << static_cast<int>(display_mode) << "]!";
     }
 
-    const auto eye_str = (vr::Eye_Left == eye) ? "left" : "right";
-    OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
+    OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): Calculated settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
 }
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom)
@@ -1084,28 +1096,12 @@ void OSVRTrackedDevice::configure()
     OSVR_LOG(info) << "  Monitor name: " << display_.name;
     OSVR_LOG(info) << "  Resolution: " << display_.size.width << "x" << display_.size.height;
     OSVR_LOG(info) << "  Position: (" << display_.position.x << ", " << display_.position.y << ")";
-    switch (display_.rotation) {
-    case osvr::display::Rotation::Zero:
-        OSVR_LOG(info) << "  Rotation: Landscape";
-        break;
-    case osvr::display::Rotation::Ninety:
-        OSVR_LOG(info) << "  Rotation: Portrait";
-        break;
-    case osvr::display::Rotation::OneEighty:
-        OSVR_LOG(info) << "  Rotation: Landscape (flipped)";
-        break;
-    case osvr::display::Rotation::TwoSeventy:
-        OSVR_LOG(info) << "  Rotation: Portrait (flipped)";
-        break;
-    default:
-        OSVR_LOG(info) << "  Rotation: Landscape";
-        break;
-    }
+    OSVR_LOG(info) << "  Rotation: " << display_.rotation;
     OSVR_LOG(info) << "  Scan-out origin: " << scanoutOrigin_;
     OSVR_LOG(info) << "  Refresh rate: " << display_.verticalRefreshRate;
     OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
-    OSVR_LOG(info) << "  EDID vendor ID: " << display_.edidVendorId;
-    OSVR_LOG(info) << "  EDID product ID: " << display_.edidProductId;
+    OSVR_LOG(info) << "  EDID vendor ID: " << as_hex_0x(display_.edidVendorId);
+    OSVR_LOG(info) << "  EDID product ID: " << as_hex_0x(display_.edidProductId);
 }
 
 void OSVRTrackedDevice::configureDistortionParameters()
