@@ -236,7 +236,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
 {
-    // If the current display still appeara in the active displays list,
+    // If the current display still appears in the active displays list,
     // then it's attached to the desktop.
     const auto displays = osvr::display::getDisplays();
     const auto display_on_desktop = (end(displays) != std::find(begin(displays), end(displays), display_));
