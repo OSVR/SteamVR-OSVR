@@ -1043,9 +1043,12 @@ void OSVRTrackedDevice::configure()
     bool display_found = false;
     auto displays = osvr::display::getDisplays();
     for (const auto& display : displays) {
-        if (std::string::npos == display.name.find(display_name))
+        if (std::string::npos == display.name.find(display_name)) {
+            OSVR_LOG(trace) << "Rejecting display [" << display.name << "] since it doesn't match [" << display_name << "].";
             continue;
+        }
 
+        OSVR_LOG(trace) << "Found a match! Display [" << display.name << "] matches [" << display_name << "].";
         display_ = display;
         display_found = true;
         break;
