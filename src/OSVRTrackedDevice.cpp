@@ -395,6 +395,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     std::tie(coords.rfBlue[0], coords.rfBlue[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfBlue[0], coords.rfBlue[1]);
     return coords;
 #endif
+    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
     // Rotate the texture coordinates to match the display orientation
     const auto orientation = scanoutOrigin_ + display_.rotation;
@@ -414,6 +415,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     } else {
         OSVR_LOG(err) << "ComputeDistortion(): Unknown desktop orientation [" << static_cast<int>(orientation) << "]!";
     }
+    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") post-rotation.";
 
     // Skip distortion during testing
     // FIXME
@@ -448,7 +450,7 @@ bool OSVRTrackedDevice::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 #include "ignore-warning/switch-enum"
 
     // Prop_ContainsProximitySensor_Bool spams our log files. Ignoring it here.
-    //OSVR_LOG(trace) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackedDevice::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // Properties that apply to all device classes
@@ -542,7 +544,7 @@ float OSVRTrackedDevice::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePropert
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackedDevice::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -656,7 +658,7 @@ int32_t OSVRTrackedDevice::GetInt32TrackedDeviceProperty(vr::ETrackedDevicePrope
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::GetInt32TrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackedDevice::GetInt32TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -730,7 +732,7 @@ uint64_t OSVRTrackedDevice::GetUint64TrackedDeviceProperty(vr::ETrackedDevicePro
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::GetUint64TrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackedDevice::GetUint64TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -823,7 +825,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -857,7 +859,7 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
         return default_value;
     }
 
-    OSVR_LOG(trace) << "OSVRTrackedDevice::GetStringTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackedDevice::GetStringTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     std::string sValue = GetStringTrackedDeviceProperty(prop, error);
     if (*error == vr::TrackedProp_Success) {

@@ -145,7 +145,7 @@ bool OSVRTrackingReference::GetBoolTrackedDeviceProperty(vr::ETrackedDevicePrope
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    //OSVR_LOG(trace) << "OSVRTrackingReference::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackingReference::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // Properties that apply to all device classes
@@ -239,7 +239,7 @@ float OSVRTrackingReference::GetFloatTrackedDeviceProperty(vr::ETrackedDevicePro
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackingReference::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackingReference::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -307,7 +307,7 @@ int32_t OSVRTrackingReference::GetInt32TrackedDeviceProperty(vr::ETrackedDeviceP
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackingReference::GetInt32TrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackingReference::GetInt32TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -350,7 +350,7 @@ uint64_t OSVRTrackingReference::GetUint64TrackedDeviceProperty(vr::ETrackedDevic
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackingReference::GetUint64TrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackingReference::GetUint64TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -415,7 +415,7 @@ vr::HmdMatrix34_t OSVRTrackingReference::GetMatrix34TrackedDeviceProperty(vr::ET
 #include "ignore-warning/push"
 #include "ignore-warning/switch-enum"
 
-    OSVR_LOG(trace) << "OSVRTrackingReference::GetMatrix34TrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackingReference::GetMatrix34TrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     switch (prop) {
     // General properties that apply to all device classes
@@ -454,7 +454,7 @@ uint32_t OSVRTrackingReference::GetStringTrackedDeviceProperty(vr::ETrackedDevic
         return default_value;
     }
 
-    OSVR_LOG(trace) << "OSVRTrackingReference::GetStringTrackedDeviceProperty(): Requested property: " << prop << "\n";
+    OSVR_LOG(properties) << "OSVRTrackingReference::GetStringTrackedDeviceProperty(): Requested property: " << prop << "\n";
 
     std::string sValue = GetStringTrackedDeviceProperty(prop, pError);
     if (*pError == vr::TrackedProp_Success) {
