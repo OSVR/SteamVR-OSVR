@@ -582,6 +582,8 @@ void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue
     pose.poseIsValid = true;
     pose.willDriftInYaw = false;
     pose.shouldApplyHeadModel = false;
+    pose.deviceIsConnected = true;
+
     self->pose_ = pose;
     self->driver_host_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
 }
