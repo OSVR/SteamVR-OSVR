@@ -1036,16 +1036,6 @@ void OSVRTrackedDevice::configure()
     // The name of the display we want to use
     const auto display_name = settings_->getSetting<std::string>("displayName", "OSVR");
 
-    // The scan-out origin of the display
-    const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
-    if (scan_out_origin_str.empty()) {
-        // Calculate the scan-out origin based on the display parameters
-        // TODO
-        OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaultingn to upper-left.";
-    } else {
-        scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
-    }
-
     // Detect displays and find the one we're using as an HMD
     bool display_found = false;
     auto displays = osvr::display::getDisplays();
@@ -1073,6 +1063,17 @@ void OSVRTrackedDevice::configure()
         display_.edidProductId = 0x1019; // 4121
     }
 
+    // The scan-out origin of the display
+    const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
+    if (scan_out_origin_str.empty()) {
+        // Calculate the scan-out origin based on the display parameters
+        scanoutOrigin_ = getScanOutOrigin();
+        OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
+    } else {
+        scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+    }
+
+    // Print the display settings we're running with
     if (display_found) {
         OSVR_LOG(info) << "Detected display named [" << display_.name << "]:";
     } else {
@@ -1157,7 +1158,24 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string s
         return osvr::display::ScanOutOrigin::UpperRight;
     } else {
         OSVR_LOG(err) << "The string [" + str + "] could not be parsed as a scan-out origin. Use one of: lower-left, upper-left, lower-right, upper-right.";
-        return osvr::display::ScanOutOrigin::LowerLeft;
+        return osvr::display::ScanOutOrigin::UpperLeft;
+    }
+}
+
+osvr::display::ScanOutOrigin OSVRTrackedDevice::getScanOutOrigin() const
+{
+    // TODO Use RenderManager and OSVR config files to determine scan-out
+    // origin. But since some of those are currently broken, we'll base the
+    // defaults on our knowledge of the HDK 1.x and 2.0.
+    using SO = osvr::display::ScanOutOrigin;
+    if ("OSVR HDK2" == display_.name) {
+        return SO::LowerRight;
+    } else if ("OSVR HDK" == display_.name) {
+        const auto is_landscape = (display_.size.height < display_.size.width);
+        return (is_landscape ? SO::UpperLeft : SO::UpperRight);
+    } else {
+        // Unknown HMD. Punt!
+        return SO::UpperLeft;
     }
 }
 
@@ -1166,13 +1184,16 @@ std::pair<float, float> OSVRTrackedDevice::rotate(float u, float v, osvr::displa
     // Rotates normalized coordinates counter-clockwise
     using R = osvr::display::Rotation;
     if (R::Zero == rotation) {
-        std::tie(u, v) = std::make_pair(u, v);
+        return { u, v };
     } else if (R::Ninety == rotation) {
-        std::tie(u, v) = std::make_pair(1.0f - v, u);
+        return { 1.0f - v, u };
     } else if (R::OneEighty == rotation) {
-        std::tie(u, v) = std::make_pair(1.0f - u, 1.0f - v);
+        return { 1.0f - u, 1.0f - v };
     } else if (R::TwoSeventy == rotation) {
-        std::tie(u, v) = std::make_pair(v, 1.0f - u);
+        return { v, 1.0f - u };
+    } else {
+        OSVR_LOG(err) << "Unknown rotation [" << rotation << "] Assuming 0 degrees.";
+        return { u, v };
     }
 }
 
