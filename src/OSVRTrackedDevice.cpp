@@ -236,7 +236,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
 {
-    // If the current display still appeara in the active displays list,
+    // If the current display still appears in the active displays list,
     // then it's attached to the desktop.
     const auto displays = osvr::display::getDisplays();
     const auto display_on_desktop = (end(displays) != std::find(begin(displays), end(displays), display_));
@@ -284,8 +284,6 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32
     // rotation set in the config file.
     auto display_mode = displayConfiguration_.getDisplayMode();
     const auto orientation = scanoutOrigin_ + display_.rotation;
-    const auto is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation
-        || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
 
     // TODO Simplify this code after verifying it works properly
     if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
@@ -296,26 +294,26 @@ void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32
         *height = display_height;
     } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
         OSVR_LOG(trace) << "Display mode: horizontal side-by-side.";
-        using osvr::display::DesktopOrientation;
-        if (DesktopOrientation::Portrait == orientation) {
+        using Orientation = osvr::display::DesktopOrientation;
+        if (Orientation::Portrait == orientation) {
             OSVR_LOG(trace) << "Display orientation: portrait.";
             *x = 0;
             *y = (vr::Eye_Left == eye) ? 0 : display_height / 2;
             *width = display_width;
             *height = display_height / 2;
-        } else if (DesktopOrientation::PortraitFlipped == orientation) {
+        } else if (Orientation::PortraitFlipped == orientation) {
             OSVR_LOG(trace) << "Display orientation: portrait flipped.";
             *x = 0;
             *y = (vr::Eye_Left == eye) ? display_height / 2 : 0;
             *width = display_width;
             *height = display_height / 2;
-        } else if (DesktopOrientation::Landscape == orientation) {
+        } else if (Orientation::Landscape == orientation) {
             OSVR_LOG(trace) << "Display orientation: landscape.";
             *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
             *y = 0;
             *width = display_width / 2;
             *height = display_height;
-        } else if (DesktopOrientation::LandscapeFlipped == orientation) {
+        } else if (Orientation::LandscapeFlipped == orientation) {
             OSVR_LOG(trace) << "Display orientation: landscape flipped.";
             *x = (vr::Eye_Left == eye) ? display_width / 2 : 0;
             *y = 0;
@@ -399,22 +397,10 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
 
     // Rotate the texture coordinates to match the display orientation
     const auto orientation = scanoutOrigin_ + display_.rotation;
-    using osvr::display::DesktopOrientation;
-    if (DesktopOrientation::Landscape == orientation) {
-        // Rotate 0 degrees (do nothing)
-        std::tie(u, v) = std::make_pair(u, v);
-    } else if (DesktopOrientation::Portrait == orientation) {
-        // Rotate 90 degrees counter-clockwise
-        std::tie(u, v) = std::make_pair(1.0f - v, u);
-    } else if (DesktopOrientation::LandscapeFlipped == orientation) {
-        // Rotate 180 degrees
-        std::tie(u, v) = std::make_pair(1.0f - u, 1.0f - v);
-    } else if (DesktopOrientation::PortraitFlipped == orientation) {
-        // Rotate 270 degrees counter-clockwise
-        std::tie(u, v) = std::make_pair(v, 1.0f - u);
-    } else {
-        OSVR_LOG(err) << "ComputeDistortion(): Unknown desktop orientation [" << static_cast<int>(orientation) << "]!";
-    }
+    const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
+    const auto rotation = desired_orientation - orientation;
+
+    std::tie(u, v) = rotate(u, v, rotation);
     OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") post-rotation.";
 
     // Skip distortion during testing
@@ -1052,16 +1038,6 @@ void OSVRTrackedDevice::configure()
     // The name of the display we want to use
     const auto display_name = settings_->getSetting<std::string>("displayName", "OSVR");
 
-    // The scan-out origin of the display
-    const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
-    if (scan_out_origin_str.empty()) {
-        // Calculate the scan-out origin based on the display parameters
-        // TODO
-        OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaultingn to upper-left.";
-    } else {
-        scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
-    }
-
     // Detect displays and find the one we're using as an HMD
     bool display_found = false;
     auto displays = osvr::display::getDisplays();
@@ -1089,6 +1065,17 @@ void OSVRTrackedDevice::configure()
         display_.edidProductId = 0x1019; // 4121
     }
 
+    // The scan-out origin of the display
+    const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
+    if (scan_out_origin_str.empty()) {
+        // Calculate the scan-out origin based on the display parameters
+        scanoutOrigin_ = getScanOutOrigin();
+        OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
+    } else {
+        scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+    }
+
+    // Print the display settings we're running with
     if (display_found) {
         OSVR_LOG(info) << "Detected display named [" << display_.name << "]:";
     } else {
@@ -1137,7 +1124,7 @@ void OSVRTrackedDevice::configureDistortionParameters()
 }
 
 template <typename T>
-vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDeviceProperty prop, const T&)
+vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDeviceProperty prop, const T&) const
 {
     if (isWrongDataType(prop, T())) {
         return vr::TrackedProp_WrongDataType;
@@ -1154,7 +1141,7 @@ vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDevicePro
     return vr::TrackedProp_Success;
 }
 
-osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string str)
+osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string str) const
 {
     // Make the string lowercase
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
@@ -1173,7 +1160,42 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string s
         return osvr::display::ScanOutOrigin::UpperRight;
     } else {
         OSVR_LOG(err) << "The string [" + str + "] could not be parsed as a scan-out origin. Use one of: lower-left, upper-left, lower-right, upper-right.";
-        return osvr::display::ScanOutOrigin::LowerLeft;
+        return osvr::display::ScanOutOrigin::UpperLeft;
+    }
+}
+
+osvr::display::ScanOutOrigin OSVRTrackedDevice::getScanOutOrigin() const
+{
+    // TODO Use RenderManager and OSVR config files to determine scan-out
+    // origin. But since some of those are currently broken, we'll base the
+    // defaults on our knowledge of the HDK 1.x and 2.0.
+    using SO = osvr::display::ScanOutOrigin;
+    if ("OSVR HDK2" == display_.name) {
+        return SO::LowerRight;
+    } else if ("OSVR HDK" == display_.name) {
+        const auto is_landscape = (display_.size.height < display_.size.width);
+        return (is_landscape ? SO::UpperLeft : SO::UpperRight);
+    } else {
+        // Unknown HMD. Punt!
+        return SO::UpperLeft;
+    }
+}
+
+std::pair<float, float> OSVRTrackedDevice::rotate(float u, float v, osvr::display::Rotation rotation) const
+{
+    // Rotates normalized coordinates counter-clockwise
+    using R = osvr::display::Rotation;
+    if (R::Zero == rotation) {
+        return { u, v };
+    } else if (R::Ninety == rotation) {
+        return { 1.0f - v, u };
+    } else if (R::OneEighty == rotation) {
+        return { 1.0f - u, 1.0f - v };
+    } else if (R::TwoSeventy == rotation) {
+        return { v, 1.0f - u };
+    } else {
+        OSVR_LOG(err) << "Unknown rotation [" << rotation << "] Assuming 0 degrees.";
+        return { u, v };
     }
 }
 

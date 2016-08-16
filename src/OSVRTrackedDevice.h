@@ -221,12 +221,24 @@ private:
      * vr::ETrackedPropertyError values on failure
      */
     template <typename T>
-    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&);
+    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&) const;
 
     /**
      * Parses a string into a scan-out origin option.
      */
-    osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str);
+    osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str) const;
+
+    /**
+     * Gets the default scan-out origin based the detected HMD and/or OSVR
+     * configuration.
+     */
+    osvr::display::ScanOutOrigin getScanOutOrigin() const;
+
+    /**
+     * Rotates a normalized (u, v) texture coordinate by a rotation
+     * (counter-clockwise).
+     */
+    std::pair<float, float> rotate(float u, float v, osvr::display::Rotation rotation) const;
 
     osvr::clientkit::ClientContext& context_;
     std::string displayDescription_;
