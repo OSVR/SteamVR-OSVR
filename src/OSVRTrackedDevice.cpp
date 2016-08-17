@@ -58,7 +58,9 @@ OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr
     OSVR_LOG(trace) << "OSVRTrackedDevice::OSVRTrackedDevice() called.";
 
     settings_ = std::make_unique<Settings>(driverHost_->GetSettings(vr::IVRSettings_Version));
-    properties_[vr::Prop_DeviceClass_Int32] = deviceClass_;
+
+    setProperty<int32_t>(vr::Prop_DeviceClass_Int32, deviceClass_);
+    setProperty(vr::Prop_SerialNumber_String, name_);
 }
 
 OSVRTrackedDevice::~OSVRTrackedDevice()
@@ -193,7 +195,7 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
 // Protected Methods
 // ------------------------------------
 
-std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error)
+std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error) const
 {
     return GetTrackedDeviceProperty(prop, error, std::string{""});
 }

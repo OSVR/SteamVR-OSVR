@@ -38,10 +38,11 @@
 #include <cstdint>
 #include <string>
 #include <map>
+#include <boost/container/flat_map.hpp>
 
 using Property = boost::variant<bool, float, int32_t, uint64_t, vr::HmdMatrix34_t, uint32_t, std::string>;
 
-using PropertyMap = std::map<vr::ETrackedDeviceProperty, Property>;
+using PropertyMap = boost::container::flat_map<vr::ETrackedDeviceProperty, Property>;
 
 #endif // INCLUDED_PropertyMap_h_GUID_D9C1D812_9B04_485C_BD5D_4316974D0043
 

@@ -265,5 +265,70 @@ inline std::ostream& operator<<(std::ostream& out, const vr::HmdMatrix34_t& valu
     return out;
 }
 
+/**
+ * Helper class to wrap a value that should be output as hex to a stream.
+ */
+template <typename T>
+class AsHex {
+public:
+    explicit AsHex(T val, bool leading0x = false) : val_(val), leading0x_(leading0x)
+    {
+        // do nothing
+    }
+
+    T get() const
+    {
+        return val_;
+    }
+
+    bool leading0x() const
+    {
+        return leading0x_;
+    }
+
+private:
+    T val_;
+    bool leading0x_;
+};
+
+/**
+ * Output streaming operator for AsHex, found by ADL.
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const AsHex<T>& val)
+{
+    if (val.leading0x()) {
+        os << "0x";
+    }
+    os << std::hex << val.get() << std::dec;
+    return os;
+}
+
+/**
+ * Function template to wrap a value to indicate it should be output as a hex
+ * value (no leading 0x)
+ */
+template <typename T>
+inline AsHex<T> as_hex(T val) {
+    return AsHex<T>(val);
+}
+
+/**
+ * Function template to wrap a value to indicate it should be output as a hex
+ * value (with leading 0x)
+ */
+template <typename T>
+inline AsHex<T> as_hex_0x(T val) {
+    return AsHex<T>(val, true);
+}
+
+template <typename T>
+std::string to_string(const T& val)
+{
+    std::ostringstream oss;
+    oss << val;
+    return oss.str();
+}
+
 #endif // INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
 

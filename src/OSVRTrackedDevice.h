@@ -149,7 +149,7 @@ public:
     virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
 
 protected:
-    std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
+    std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error) const;
 
     /**
      * Checks to see if the requested property is valid for the device class and
@@ -162,10 +162,10 @@ protected:
      * vr::ETrackedPropertyError values on failure
      */
     template <typename T>
-    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&);
+    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&) const;
 
     template <typename T>
-    T GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value);
+    T GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value) const;
 
     /**
      * Sets a device property after performing safety checks.
@@ -188,7 +188,7 @@ private:
 };
 
 template <typename T>
-inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value)
+inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error, const T& default_value) const
 {
     const auto result = checkProperty(prop, T());
     if (vr::TrackedProp_Success != result) {
@@ -198,8 +198,9 @@ inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty 
         return default_value;
     }
 
-    if (properties_.find(prop) != end(properties_)) {
-        auto value = boost::get<T>(properties_[prop]);
+    const auto iter = properties_.find(prop);
+    if (iter != end(properties_)) {
+        auto value = boost::get<T>(iter->second);
         OSVR_LOG(trace) << name_ << ": Property [" << prop << "] has value [" << value << "].";
         if (error)
             *error = vr::TrackedProp_Success;
@@ -213,7 +214,7 @@ inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty 
 }
 
 template <typename T>
-inline vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDeviceProperty prop, const T&)
+inline vr::ETrackedPropertyError OSVRTrackedDevice::checkProperty(vr::ETrackedDeviceProperty prop, const T&) const
 {
     if (isWrongDataType(prop, T())) {
         return vr::TrackedProp_WrongDataType;

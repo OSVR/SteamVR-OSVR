@@ -119,7 +119,22 @@ private:
     void configureProperties();
     //@}
 
-    std::pair<float, float> rotateTextureCoordinates(osvr::display::DesktopOrientation orientation, float& u, float& v) const;
+    /**
+     * Parses a string into a scan-out origin option.
+     */
+    osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str) const;
+
+    /**
+     * Gets the default scan-out origin based the detected HMD and/or OSVR
+     * configuration.
+     */
+    osvr::display::ScanOutOrigin getScanOutOrigin() const;
+
+    /**
+     * Rotates a normalized (u, v) texture coordinate by a rotation
+     * (counter-clockwise).
+     */
+    std::pair<float, float> rotateTextureCoordinates(float u, float v, osvr::display::Rotation rotation) const;
 
     osvr::clientkit::DisplayConfig displayConfig_;
     osvr::client::RenderManagerConfig renderManagerConfig_;
@@ -136,6 +151,7 @@ private:
 
     // Settings
     osvr::display::Display display_ = {};
+    osvr::display::ScanOutOrigin scanoutOrigin_ = osvr::display::ScanOutOrigin::UpperLeft;
 };
 
 #endif // INCLUDED_OSVRTrackedHMD_h_GUID_233AC6EA_4833_4EE2_B4ED_1F60A2208C9D
