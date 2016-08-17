@@ -69,7 +69,9 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 
     const std::time_t waitTime = 5; // wait up to 5 seconds for init
 
-    trackerInterface_.free();
+    if (trackerInterface_.notEmpty()) {
+        trackerInterface_.free();
+    }
 
     // Ensure context is fully started up
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Waiting for the context to fully start up...\n";
@@ -137,7 +139,9 @@ void OSVRTrackedHMD::Deactivate()
     OSVR_FunctionGuard("OSVRTrackedHMD::Deactivate()");
 
     /// Have to force freeing here
-    trackerInterface_.free();
+    if (trackerInterface_.notEmpty()) {
+        trackerInterface_.free();
+    }
 
     OSVRTrackedDevice::Deactivate();
 }
