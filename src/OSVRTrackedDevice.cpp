@@ -252,8 +252,8 @@ bool OSVRTrackedDevice::IsDisplayRealDisplay()
 
 void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
-    /// @todo calculate overfill factor properly
-    double overfill_factor = 1.0;
+    //const double overfill_factor = renderManagerConfig_.getRenderOverfillFactor();
+    const double overfill_factor = 1.0;
     int32_t x, y;
     uint32_t w, h;
     GetWindowBounds(&x, &y, &w, &h);
@@ -1055,18 +1055,30 @@ void OSVRTrackedDevice::configure()
     }
 
     if (!display_found) {
-        // Default to OSVR HDK display settings
+        // If the desired display wasn't detected, use the settings from the
+        // display descriptor instead.
+        //
+        // This will most frequently occur when the HMD is in direct mode or if
+        // the HMD is disconnected.
+        displayDescription_ = context_.getStringParameter("/display");
+        displayConfiguration_ = OSVRDisplayConfiguration(displayDescription_);
+        const auto d = OSVRDisplayConfiguration(displayDescription_);
+        const auto active_resolution = d.activeResolution();
+
+        // FIXME not yet available.. only works post-Activate();
+        //const double vertical_refresh = renderManagerConfig_.getVerticalSync();
+
         display_.adapter.description = "Unknown";
-        display_.name = "OSVR HDK";
-        display_.size.width = 1920;
-        display_.size.height = 1080;
-        display_.position.x = 1920;
-        display_.position.y = 0;
-        display_.rotation = osvr::display::Rotation::Zero;
-        display_.verticalRefreshRate = 60.0;
-        display_.attachedToDesktop = true;
-        display_.edidVendorId = 0xd24e;// 53838
-        display_.edidProductId = 0x1019; // 4121
+        display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel();
+        display_.size.width = active_resolution.width;
+        display_.size.height = active_resolution.height;
+        display_.position.x = 1920; // TODO
+        display_.position.y = 0; // TODO
+        display_.rotation = osvr::display::Rotation::Zero; // TODO
+        display_.verticalRefreshRate = 60.0; // TODO
+        display_.attachedToDesktop = false; // TODO
+        display_.edidVendorId = 0xd24e; // SVR // TODO
+        display_.edidProductId = 0x1019; // TODO
     }
 
     // The scan-out origin of the display
@@ -1093,7 +1105,7 @@ void OSVRTrackedDevice::configure()
     OSVR_LOG(info) << "  Scan-out origin: " << scanoutOrigin_;
     OSVR_LOG(info) << "  Refresh rate: " << display_.verticalRefreshRate;
     OSVR_LOG(info) << "  " << (display_.attachedToDesktop ? "Extended mode" : "Direct mode");
-    OSVR_LOG(info) << "  EDID vendor ID: " << as_hex_0x(display_.edidVendorId);
+    OSVR_LOG(info) << "  EDID vendor ID: " << as_hex_0x(display_.edidVendorId) << " (" << osvr::display::decodeEdidVendorId(display_.edidVendorId) << ")";
     OSVR_LOG(info) << "  EDID product ID: " << as_hex_0x(display_.edidProductId);
 }
 
