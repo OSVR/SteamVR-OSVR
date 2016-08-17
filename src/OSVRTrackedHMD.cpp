@@ -300,7 +300,6 @@ void OSVRTrackedHMD::GetProjectionRaw(vr::EVREye eye, float* left, float* right,
 
 vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
-    OSVR_FunctionGuard("OSVRTrackedHMD::ComputeDistortion()");
 #if 0
     OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
@@ -356,7 +355,7 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     return coords;
 #endif
 
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
+    //OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
 
     // Rotate the texture coordinates to match the display orientation
     const auto orientation = scanoutOrigin_ + display_.rotation;
@@ -364,7 +363,7 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     const auto rotation = desired_orientation - orientation;
 
     std::tie(u, v) = rotateTextureCoordinates(u, v, rotation);
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") post-rotation.";
+    //OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") post-rotation.";
 
     // Skip distortion during testing
     // FIXME
@@ -381,7 +380,6 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
 
 void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, const OSVR_PoseReport* report)
 {
-    OSVR_FunctionGuard("OSVRTrackedHMD::HmdTrackerCallback()");
     if (!userdata || !report)
         return;
 

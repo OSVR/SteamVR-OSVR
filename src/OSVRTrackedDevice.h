@@ -201,7 +201,7 @@ inline T OSVRTrackedDevice::GetTrackedDeviceProperty(vr::ETrackedDeviceProperty 
     const auto iter = properties_.find(prop);
     if (iter != end(properties_)) {
         auto value = boost::get<T>(iter->second);
-        OSVR_LOG(trace) << name_ << ": Property [" << prop << "] has value [" << value << "].";
+        OSVR_LOG(properties) << name_ << ": Property [" << prop << "] has value [" << value << "].";
         if (error)
             *error = vr::TrackedProp_Success;
         return value;
