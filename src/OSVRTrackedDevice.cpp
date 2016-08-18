@@ -64,8 +64,6 @@ OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr
     if (driver_log) {
         Logging::instance().setDriverLog(driver_log);
     }
-
-    configure();
 }
 
 OSVRTrackedDevice::~OSVRTrackedDevice()
@@ -97,6 +95,7 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
         }
     }
 
+    configure();
     configureDistortionParameters();
 
     displayConfig_ = osvr::clientkit::DisplayConfig(context_);
@@ -1065,20 +1064,38 @@ void OSVRTrackedDevice::configure()
         const auto d = OSVRDisplayConfiguration(displayDescription_);
         const auto active_resolution = d.activeResolution();
 
-        // FIXME not yet available.. only works post-Activate();
-        //const double vertical_refresh = renderManagerConfig_.getVerticalSync();
+        const double vertical_refresh = renderManagerConfig_.getVerticalSync();
+
+        const auto position_x = renderManagerConfig_.getWindowXPosition();
+        const auto position_y = renderManagerConfig_.getWindowYPosition();
+
+        // Rotation
+        using osvr::display::Rotation;
+        auto rotation = Rotation::Zero;
+        const auto rot = renderManagerConfig_.getDisplayRotation();
+        if (0 == rot) {
+            rotation = Rotation::Zero;
+        } else if (90 == rot) {
+            rotation = Rotation::Ninety;
+        } else if (180 == rot) {
+            rotation = Rotation::OneEighty;
+        } else if (270 == rot) {
+            rotation = Rotation::TwoSeventy;
+        } else {
+            OSVR_LOG(err) << "Invalid rotation from RenderManager configuration: " << rot << ".";
+        }
 
         display_.adapter.description = "Unknown";
         display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel();
         display_.size.width = active_resolution.width;
         display_.size.height = active_resolution.height;
-        display_.position.x = 1920; // TODO
-        display_.position.y = 0; // TODO
-        display_.rotation = osvr::display::Rotation::Zero; // TODO
-        display_.verticalRefreshRate = 60.0; // TODO
-        display_.attachedToDesktop = false; // TODO
-        display_.edidVendorId = 0xd24e; // SVR // TODO
-        display_.edidProductId = 0x1019; // TODO
+        display_.position.x = position_x;
+        display_.position.y = position_y;
+        display_.rotation = rotation;
+        display_.verticalRefreshRate = vertical_refresh;
+        display_.attachedToDesktop = false; // assuming direct mode
+        display_.edidVendorId = 0xd24e; // SVR // TODO not provided by config files
+        display_.edidProductId = 0x1019; // TODO not provided by config files
     }
 
     // The scan-out origin of the display
@@ -1095,7 +1112,7 @@ void OSVRTrackedDevice::configure()
     if (display_found) {
         OSVR_LOG(info) << "Detected display named [" << display_.name << "]:";
     } else {
-        OSVR_LOG(info) << "Default display:";
+        OSVR_LOG(info) << "Display parameters from configuration files:";
     }
     OSVR_LOG(info) << "  Adapter: " << display_.adapter.description;
     OSVR_LOG(info) << "  Monitor name: " << display_.name;
