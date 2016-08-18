@@ -392,25 +392,49 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     std::tie(coords.rfBlue[0], coords.rfBlue[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfBlue[0], coords.rfBlue[1]);
     return coords;
 #endif
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
-
     // Rotate the texture coordinates to match the display orientation
     const auto orientation = scanoutOrigin_ + display_.rotation;
     const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
     const auto rotation = desired_orientation - orientation;
 
     std::tie(u, v) = rotate(u, v, rotation);
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") post-rotation.";
 
-    // Skip distortion during testing
-    // FIXME
+    // Note that RenderManager expects the (0, 0) to be the lower-left corner
+    // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
+    // upper-left and (1, 1) is lower-right.  To accommodate this, we need to
+    // flip the y-coordinate before passing it to RenderManager and flip it
+    // again before returning the value to SteamVR.
+    using osvr::renderkit::DistortionCorrectTextureCoordinate;
+    static const size_t COLOR_RED = 0;
+    static const size_t COLOR_GREEN = 1;
+    static const size_t COLOR_BLUE = 2;
+
+    const auto osvr_eye = static_cast<size_t>(eye);
+    const auto distortion_parameters = distortionParameters_[osvr_eye];
+    const auto in_coords = osvr::renderkit::Float2 {{u, 1.0f - v}}; // flip v-coordinate
+
+    const auto interpolators = (vr::Eye_Left == eye) ? &leftEyeInterpolators_ : &rightEyeInterpolators_;
+
+    auto coords_red = DistortionCorrectTextureCoordinate(
+        osvr_eye, in_coords, distortion_parameters,
+        COLOR_RED, overfillFactor_, *interpolators);
+
+    auto coords_green = DistortionCorrectTextureCoordinate(
+        osvr_eye, in_coords, distortion_parameters,
+        COLOR_GREEN, overfillFactor_, *interpolators);
+
+    auto coords_blue = DistortionCorrectTextureCoordinate(
+        osvr_eye, in_coords, distortion_parameters,
+        COLOR_BLUE, overfillFactor_, *interpolators);
+
     vr::DistortionCoordinates_t coords;
-    coords.rfRed[0] = u;
-    coords.rfRed[1] = v;
-    coords.rfGreen[0] = u;
-    coords.rfGreen[1] = v;
-    coords.rfBlue[0] = u;
-    coords.rfBlue[1] = v;
+    // flip v-coordinates again
+    coords.rfRed[0] = coords_red[0];
+    coords.rfRed[1] = 1.0f - coords_red[1];
+    coords.rfGreen[0] = coords_green[0];
+    coords.rfGreen[1] = 1.0f - coords_green[1];
+    coords.rfBlue[0] = coords_blue[0];
+    coords.rfBlue[1] = 1.0f - coords_blue[1];
 
     return coords;
 }
