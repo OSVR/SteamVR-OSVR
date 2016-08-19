@@ -23,5 +23,11 @@ if(BUILD_TESTS)
 endif()
 
 # OSVR-Display
+set(_build_tests ${BUILD_TESTS})
+set(BUILD_TESTS OFF)
+set(BUILD_APPS OFF)
 add_subdirectory(OSVR-Display)
+unset(BUILD_APPS)
+set(BUILD_TESTS ${_build_tests})
+unset(_build_tests)
 
