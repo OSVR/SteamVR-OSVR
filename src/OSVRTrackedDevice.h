@@ -28,7 +28,6 @@
 // Internal Includes
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 #include "Settings.h"
-#include "display/Display.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -36,6 +35,7 @@
 // Library/third-party includes
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Client/RenderManagerConfig.h>
+#include <osvr/Display/Display.h>
 #include <osvr/RenderKit/DistortionParameters.h>
 #include <osvr/RenderKit/UnstructuredMeshInterpolator.h>
 #include <osvr/RenderKit/osvr_display_configuration.h>
@@ -221,7 +221,24 @@ private:
      * vr::ETrackedPropertyError values on failure
      */
     template <typename T>
-    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&);
+    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&) const;
+
+    /**
+     * Parses a string into a scan-out origin option.
+     */
+    osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str) const;
+
+    /**
+     * Gets the default scan-out origin based the detected HMD and/or OSVR
+     * configuration.
+     */
+    osvr::display::ScanOutOrigin getScanOutOrigin() const;
+
+    /**
+     * Rotates a normalized (u, v) texture coordinate by a rotation
+     * (counter-clockwise).
+     */
+    std::pair<float, float> rotate(float u, float v, osvr::display::Rotation rotation) const;
 
     osvr::clientkit::ClientContext& context_;
     std::string displayDescription_;
@@ -246,6 +263,7 @@ private:
     // Settings
     bool verboseLogging_ = false;
     osvr::display::Display display_ = {};
+    osvr::display::ScanOutOrigin scanoutOrigin_ = osvr::display::ScanOutOrigin::UpperLeft;
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

@@ -57,15 +57,16 @@ public:
  * @brief Log message severity levels.
  */
 enum LogLevel {
-    trace,     ///< function entry and exit, control flow.
-    debug,     ///< developer-facing messages.
-    info,      ///< user-facing messages.
-    notice,    ///< normal but significant condition.
-    warn,      ///< warning conditions.
-    err,       ///< error messages.
-    critical,  ///< critical conditions.
-    alert,     ///< action must be taken immediately.
-    emerg      ///< system is unusable.
+    properties, ///< property requests and changes.
+    trace,      ///< function entry and exit, control flow.
+    debug,      ///< developer-facing messages.
+    info,       ///< user-facing messages.
+    notice,     ///< normal but significant condition.
+    warn,       ///< warning conditions.
+    err,        ///< error messages.
+    critical,   ///< critical conditions.
+    alert,      ///< action must be taken immediately.
+    emerg       ///< system is unusable.
 };
 
 /**
