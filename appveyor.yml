@@ -29,8 +29,8 @@ install:
   - ps: Start-FileDownload "${env:RM_URL}"
   - ps: 7z x -aoa -oc:\osvr OSVR-RenderManager-*-latest-ci.7z
   - git clone --recursive https://github.com/open-source-parsers/jsoncpp.git
-  - md jsoncpp/build
-  - cd jsoncpp/build
+  - mkdir jsoncpp\build
+  - cd jsoncpp\build
   - cmake .. -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="c:\osvr" -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_CMAKE_PACKAGE=ON -DBUILD_TESTS=1
   - cmake --build . --config "%CONFIG%" --target install
   - cd ..
