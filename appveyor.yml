@@ -27,7 +27,7 @@ install:
   - ps: 7z x OSVR-Core-Snapshot-latest-*bit.7z
   - ps: move OSVR-Core-Snapshot-* c:\osvr
   - ps: Start-FileDownload "${env:RM_URL}"
-  - ps: 7z x -oc:\osvr OSVR-RenderManager-*-latest-ci.7z
+  - ps: 7z x -aoa -oc:\osvr OSVR-RenderManager-*-latest-ci.7z
 
 # TODO set up cache for dependencies
 
