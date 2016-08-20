@@ -47,7 +47,7 @@ build_script:
   - git submodule update --init --recursive
   - mkdir build
   - cd build
-  - cmake .. -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="c:\steamvr-osvr" -DCMAKE_PREFIX_PATH="c:\osvr" -Dosvr_DIR="C:\osvr\lib\cmake\osvr" -DBUILD_HEADER_DEPENDENCY_TESTS=1  -DBUILD_APPS=1 -DBUILD_TESTS=1
+  - cmake .. -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="c:\steamvr-osvr" -DCMAKE_PREFIX_PATH="c:\osvr" -Dosvr_DIR="C:\osvr\lib\cmake\osvr" -DBOOST_ROOT="C:\Libraries\boost_1_60_0" -DBUILD_HEADER_DEPENDENCY_TESTS=1  -DBUILD_APPS=1 -DBUILD_TESTS=1
   - cmake --build . --config "%CONFIG%" --target install
   - ctest --build-config %CONFIG% --extra-verbose
 
