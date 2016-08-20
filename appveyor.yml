@@ -28,12 +28,12 @@ install:
   - ps: move OSVR-Core-Snapshot-* c:\osvr
   - ps: Start-FileDownload "${env:RM_URL}"
   - ps: 7z x -aoa -oc:\osvr OSVR-RenderManager-*-latest-ci.7z
-  - ps: git clone --recursive https://github.com/open-source-parsers/jsoncpp.git
-  - ps: mkdir -p jsoncpp/build
-  - ps: cd jsoncpp/build
-  - ps: cmake .. -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="c:\osvr" -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_CMAKE_PACKAGE=ON -DBUILD_TESTS=1
-  - ps: cmake --build . --config "%CONFIG%" --target install
-  - ps: cd ..
+  - git clone --recursive https://github.com/open-source-parsers/jsoncpp.git
+  - mkdir -p jsoncpp/build
+  - cd jsoncpp/build
+  - cmake .. -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="c:\osvr" -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_CMAKE_PACKAGE=ON -DBUILD_TESTS=1
+  - cmake --build . --config "%CONFIG%" --target install
+  - cd ..
 
 # TODO set up cache for dependencies
 
