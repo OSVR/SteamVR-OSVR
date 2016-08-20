@@ -103,8 +103,8 @@ target_link_libraries(test_hmd_driver
 	driver_osvr
 	osvr::osvrClientKitCpp
 	eigen-headers
+	JsonCpp::JsonCpp
 	util-headers
-	jsoncpp_lib
 	osvrRenderManager::osvrRenderManager)
 
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
