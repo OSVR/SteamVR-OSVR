@@ -32,7 +32,6 @@ find_package(osvrRenderManager REQUIRED)
 find_package(JsonCpp REQUIRED)
 
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
 
 # For our generated file
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
