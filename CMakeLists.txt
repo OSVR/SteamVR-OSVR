@@ -29,14 +29,9 @@ option(BUILD_TESTS "Build test programs and unit tests." OFF)
 find_package(OpenVR REQUIRED)
 find_package(osvr REQUIRED)
 find_package(osvrRenderManager REQUIRED)
-find_package(jsoncpp REQUIRED)
-if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
-	add_library(jsoncpp_lib INTERFACE)
-	target_link_libraries(jsoncpp_lib INTERFACE jsoncpp_lib_static)
-endif()
+find_package(JsonCpp REQUIRED)
 
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
 
 # For our generated file
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

@@ -1,0 +1,62 @@
+#
+# Builds project on Appveyor <http://www.appveyor.com/>
+#
+
+environment:
+  matrix:
+    - GENERATOR: "Visual Studio 12 2013"
+      CONFIG: Release
+      SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-32bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-32-latest-ci.7z"
+    - GENERATOR: "Visual Studio 12 2013 Win64"
+      CONFIG: Release
+      SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-64bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-64-latest-ci.7z"
+    - GENERATOR: "Visual Studio 14 2015"
+      CONFIG: Release
+      SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-32bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-32-latest-ci.7z"
+    - GENERATOR: "Visual Studio 14 2015 Win64"
+      CONFIG: Release
+      SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-64bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-64-latest-ci.7z"
+
+
+install:
+  - ps: Start-FileDownload "${env:SDK_URL}"
+  - ps: 7z x OSVR-Core-Snapshot-latest-*bit.7z
+  - ps: move OSVR-Core-Snapshot-* c:\osvr
+  - ps: Start-FileDownload "${env:RM_URL}"
+  - ps: 7z x -aoa -oc:\osvr OSVR-RenderManager-*-latest-ci.7z
+  - git clone --recursive https://github.com/open-source-parsers/jsoncpp.git
+  - mkdir jsoncpp\build
+  - cd jsoncpp\build
+  - cmake .. -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="c:\osvr" -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_CMAKE_PACKAGE=ON -DBUILD_TESTS=1
+  - cmake --build . --config "%CONFIG%" --target install
+  - cd ..\..
+
+# TODO set up cache for dependencies
+
+# build dependencies
+before_build:
+
+build:
+  parallel: true
+
+build_script:
+  - git submodule update --init --recursive
+  - mkdir build
+  - cd build
+  - cmake .. -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="c:\steamvr-osvr" -DCMAKE_PREFIX_PATH="c:\osvr" -Dosvr_DIR="C:\osvr\lib\cmake\osvr" -DBOOST_ROOT="C:\Libraries\boost_1_60_0" -DBUILD_HEADER_DEPENDENCY_TESTS=1  -DBUILD_APPS=1 -DBUILD_TESTS=1
+  - cmake --build . --config "%CONFIG%" --target install
+  - ctest --build-config %CONFIG% --extra-verbose
+
+# Enable RDP access
+#init:
+#  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+# Keep an RDP connection open after the build has finished
+# until the lock file on the desktop is removed.
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
