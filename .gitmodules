@@ -7,3 +7,6 @@
 [submodule "vendor/OSVR-Display"]
 	path = vendor/OSVR-Display
 	url = https://github.com/OSVR/OSVR-Display.git
+[submodule "vendor/jsoncpp"]
+	path = vendor/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git

@@ -53,7 +53,7 @@ target_link_libraries(driver_osvr
 	osvr::osvrClientKitCpp
 	eigen-headers
 	util-headers
-	jsoncpp_lib
+	JsonCpp::JsonCpp
 	osvrDisplay_static
 	osvrRenderManager::osvrRenderManager
 )
