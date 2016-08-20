@@ -95,9 +95,6 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
         }
     }
 
-    configure();
-    configureDistortionParameters();
-
     displayConfig_ = osvr::clientkit::DisplayConfig(context_);
 
     // Ensure display is fully started up
@@ -146,6 +143,9 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
     } catch(const std::exception& e) {
         OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
+
+    configure();
+    configureDistortionParameters();
 
     driverHost_->ProximitySensorState(objectId_, true);
 
