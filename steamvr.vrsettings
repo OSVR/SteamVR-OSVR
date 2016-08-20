@@ -6,7 +6,7 @@
     "driver_osvr": {
         "verbose": false,
         "displayName": "OSVR",
-        "scanOutOrigin": "upper-left",
+        "scanoutOrigin": "upper-left",
         "cameraPath": "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera",
         "cameraFOVLeftDegrees": 35.235,
         "cameraFOVRightDegrees": 35.235,
