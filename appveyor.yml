@@ -7,22 +7,27 @@ environment:
     - GENERATOR: "Visual Studio 12 2013"
       CONFIG: Release
       SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-32bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-32-latest-ci.7z"
     - GENERATOR: "Visual Studio 12 2013 Win64"
       CONFIG: Release
       SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-64bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-64-latest-ci.7z"
     - GENERATOR: "Visual Studio 14 2015"
       CONFIG: Release
       SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-32bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-32-latest-ci.7z"
     - GENERATOR: "Visual Studio 14 2015 Win64"
       CONFIG: Release
       SDK_URL: "http://resource.osvr.com/public_download/OSVR-Core/OSVR-Core-Snapshot-latest-64bit.7z"
+      RM_URL: "http://resource.osvr.com/public_download/rmci/OSVR-RenderManager-64-latest-ci.7z"
 
 
 install:
   - ps: Start-FileDownload "${env:SDK_URL}"
   - ps: 7z x OSVR-Core-Snapshot-latest-*bit.7z
   - ps: move OSVR-Core-Snapshot-* c:\osvr
-
+  - ps: Start-FileDownload "${env:RM_URL}"
+  - ps: 7z x -oc:\osvr OSVR-RenderManager-*-latest-ci.7z
 
 # TODO set up cache for dependencies
 
