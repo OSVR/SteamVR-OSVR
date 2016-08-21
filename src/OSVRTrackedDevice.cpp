@@ -1088,8 +1088,6 @@ void OSVRTrackedDevice::configure()
         const auto d = OSVRDisplayConfiguration(displayDescription_);
         const auto active_resolution = d.activeResolution();
 
-        const auto vertical_refresh = getVerticalRefreshRate();
-
         const auto position_x = renderManagerConfig_.getWindowXPosition();
         const auto position_y = renderManagerConfig_.getWindowYPosition();
 
@@ -1116,7 +1114,7 @@ void OSVRTrackedDevice::configure()
         display_.position.x = position_x;
         display_.position.y = position_y;
         display_.rotation = rotation;
-        display_.verticalRefreshRate = vertical_refresh;
+        display_.verticalRefreshRate = getVerticalRefreshRate();
         display_.attachedToDesktop = false; // assuming direct mode
         display_.edidVendorId = 0xd24e; // SVR // TODO not provided by config files
         display_.edidProductId = 0x1019; // TODO not provided by config files
@@ -1239,7 +1237,8 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::getScanOutOrigin() const
         const auto is_landscape = (display_.size.height < display_.size.width);
         return (is_landscape ? SO::UpperLeft : SO::UpperRight);
     } else if (is_hdk_20) {
-        return SO::LowerRight;
+        // change this if the HDK 2.0 display descriptor gets fixed
+        return SO::UpperLeft;
     }
 
     // Some unknown HDK!
@@ -1255,8 +1254,9 @@ double OSVRTrackedDevice::getVerticalRefreshRate() const
     // Otherwise, we'll fall back on OSVR HDK defaults or use a heuristic for
     // other HMDs.
     const auto refresh_rate = settings_->getSetting<float>("refreshRate", 0.0);
-    if (refresh_rate > 0.0)
+    if (refresh_rate > 0.0) {
         return refresh_rate;
+    }
 
     const auto is_hdk_1x = (std::string::npos != display_.name.find("OSVR HDK 1"));
     const auto is_hdk_20 = (std::string::npos != display_.name.find("OSVR HDK 2.0"));
