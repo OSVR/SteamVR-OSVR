@@ -103,6 +103,11 @@ As mentioned above, the `install` target will place the driver binary in a speci
 
 	- `/vendor/util-headers` - Select header files from [util-headers][] - licensed under the Boost Software License v1.0.
 
+	- `/vendor/OSVR-Display` - Used for detecting display parameters. Licensed under Apache 2.0.
+
+	- `/vendor/googletest` - A unit-test framework. Licensed under the [New BSD License](http://www.opensource.org/licenses/bsd-license.php).
+
+
 [CMake]: http://cmake.org
 [OSVR-Core]: https://github.com/OSVR/OSVR-Core
 [Boost]: http://boost.org
