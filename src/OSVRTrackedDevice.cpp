@@ -1088,7 +1088,7 @@ void OSVRTrackedDevice::configure()
         const auto d = OSVRDisplayConfiguration(displayDescription_);
         const auto active_resolution = d.activeResolution();
 
-        const double vertical_refresh = renderManagerConfig_.getVerticalSync();
+        const auto vertical_refresh = getVerticalRefreshRate();
 
         const auto position_x = renderManagerConfig_.getWindowXPosition();
         const auto position_y = renderManagerConfig_.getWindowYPosition();
@@ -1110,7 +1110,7 @@ void OSVRTrackedDevice::configure()
         }
 
         display_.adapter.description = "Unknown";
-        display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel();
+        display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion();
         display_.size.width = active_resolution.width;
         display_.size.height = active_resolution.height;
         display_.position.x = position_x;
@@ -1227,21 +1227,52 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::getScanOutOrigin() const
     // origin. But since some of those are currently broken, we'll base the
     // defaults on our knowledge of the HDK 1.x and 2.0.
     using SO = osvr::display::ScanOutOrigin;
-    if (std::string::npos == display_.name.find("HDK")) {
+    const auto is_hdk = (std::string::npos != display_.name.find("OSVR HDK"));
+    if (!is_hdk) {
         // Unknown HMD. Punt!
         return SO::UpperLeft;
     }
 
-    // The display descriptors use the same 'OSVR HDK' name for both the HDK 1.x
-    // and 2.0. We'll differentiate them using their resolutions.
-    const auto is_hdk_1x = (1920 == display_.size.height || 1920 == display_.size.width);
+    const auto is_hdk_1x = (std::string::npos != display_.name.find("OSVR HDK 1"));
+    const auto is_hdk_20 = (std::string::npos != display_.name.find("OSVR HDK 2.0"));
     if (is_hdk_1x) {
         const auto is_landscape = (display_.size.height < display_.size.width);
         return (is_landscape ? SO::UpperLeft : SO::UpperRight);
+    } else if (is_hdk_20) {
+        return SO::LowerRight;
     }
 
-    // Assuming it's an HDK 2
+    // Some unknown HDK!
     return SO::LowerRight;
+}
+
+double OSVRTrackedDevice::getVerticalRefreshRate() const
+{
+    // The vertical refresh rate is unavailable in direct mode and isn't
+    // currently provided via OSVR config file or API.
+    //
+    // We'll read an override value from steamvr.vrsettings if it exists.
+    // Otherwise, we'll fall back on OSVR HDK defaults or use a heuristic for
+    // other HMDs.
+    const auto refresh_rate = settings_->getSetting<float>("refreshRate", 0.0);
+    if (refresh_rate > 0.0)
+        return refresh_rate;
+
+    const auto is_hdk_1x = (std::string::npos != display_.name.find("OSVR HDK 1"));
+    const auto is_hdk_20 = (std::string::npos != display_.name.find("OSVR HDK 2.0"));
+    const auto is_high_res = (display_.size.width > 1920 || display_.size.height > 1920);
+
+    if (is_hdk_1x) {
+        return 60.0;
+    } else if (is_hdk_20) {
+        return 90.0;
+    } else if (is_high_res) {
+        // Assume all high-resolution displays operate at 90 Hz
+        return 90.0;
+    } else {
+        // Assume it's a lame HMD and can only handle 60 Hz
+        return 60.0;
+    }
 }
 
 std::pair<float, float> OSVRTrackedDevice::rotate(float u, float v, osvr::display::Rotation rotation) const
