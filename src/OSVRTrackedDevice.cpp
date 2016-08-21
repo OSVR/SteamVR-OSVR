@@ -1227,15 +1227,21 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::getScanOutOrigin() const
     // origin. But since some of those are currently broken, we'll base the
     // defaults on our knowledge of the HDK 1.x and 2.0.
     using SO = osvr::display::ScanOutOrigin;
-    if ("OSVR HDK2" == display_.name) {
-        return SO::LowerRight;
-    } else if ("OSVR HDK" == display_.name) {
-        const auto is_landscape = (display_.size.height < display_.size.width);
-        return (is_landscape ? SO::UpperLeft : SO::UpperRight);
-    } else {
+    if (std::string::npos == display_.name.find("HDK")) {
         // Unknown HMD. Punt!
         return SO::UpperLeft;
     }
+
+    // The display descriptors use the same 'OSVR HDK' name for both the HDK 1.x
+    // and 2.0. We'll differentiate them using their resolutions.
+    const auto is_hdk_1x = (1920 == display_.size.height || 1920 == display_.size.width);
+    if (is_hdk_1x) {
+        const auto is_landscape = (display_.size.height < display_.size.width);
+        return (is_landscape ? SO::UpperLeft : SO::UpperRight);
+    }
+
+    // Assuming it's an HDK 2
+    return SO::LowerRight;
 }
 
 std::pair<float, float> OSVRTrackedDevice::rotate(float u, float v, osvr::display::Rotation rotation) const
