@@ -235,6 +235,11 @@ private:
     osvr::display::ScanOutOrigin getScanOutOrigin() const;
 
     /**
+     * Gets the vertical refresh rate of the display.
+     */
+    double getVerticalRefreshRate() const;
+
+    /**
      * Rotates a normalized (u, v) texture coordinate by a rotation
      * (counter-clockwise).
      */
