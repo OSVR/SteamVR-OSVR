@@ -42,7 +42,7 @@ In all cases, hook up your hardware and launch OSVR Server first.
 
 **Simple:** Paste `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR\demo\bin\win32\hellovr_sdl.exe"` into the Windows Run dialog and click run to start the SteamVR simple demo app - you should get a command-prompt window with some text, the screen might flicker, then you should get a split-screen display that reacts to the movement of the HMD by changing your view of a world with infinite cubes of test patterns. (You might need to click to bring the demo window to the foreground.)
 
-**Real game:** You may wish to open the "VRMonitor" - the SteamVR status window, that should be accessible through the Start Menu. At this time, it appears to also launch Steam in VR or "Big Picture" mode, which may or may not be what you want, but you can close that interface and keep the VR Monitor open. It might say "Not Ready", but if you hover over the HMD icon it should say "HMD Connected, but not ready" - that's normal.
+**Real game:** SteamVR needs at least one initial run with the HDK in extended mode so it can detect the EDID vendor and product IDs. After that, SteamVR will store those IDs in the steamvr.vrsettings config file and attempt to automatically enter direct mode the next time you run SteamVR. You may wish to open the "VRMonitor" - the SteamVR status window, that should be accessible through the Start Menu. At this time, it appears to also launch Steam in VR or "Big Picture" mode, which may or may not be what you want, but you can close that interface and keep the VR Monitor open. It might say "Not Ready", but if you hover over the HMD icon it should say "HMD Connected, but not ready" - that's normal.
 
 Different games have different ways of turning on VR mode - some you right-click on them in Steam and specify in the options to pass `/vr` to launch in VR mode. You might find info about this on the Internet - many of these sources are outdated: for example, no command line switch is required for TF2 to run in VR.
 
@@ -63,7 +63,9 @@ In this example, we'll use TF2, which has it accessible in its menu: go to "Opti
 	- [Boost][]
 		- headers-only is fine: no compiled libraries are required
 	- [jsoncpp][]
-		- prebuilt Visual Studio binaries available at <http://access.osvr.com/binary/deps/jsoncpp>
+
+
+- prebuilt Visual Studio binaries available at <http://access.osvr.com/binary/deps/jsoncpp>
 - An installation of the [Valve Software OpenVR SDK][openvr]
     - This is currently provided as a git submodule.
     - Run `git submodule update --init --recursive` to download the OpenVR SDK.
