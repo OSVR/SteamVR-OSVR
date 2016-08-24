@@ -30,8 +30,24 @@ find_package(OpenVR REQUIRED)
 find_package(osvr REQUIRED)
 find_package(osvrRenderManager REQUIRED)
 find_package(JsonCpp REQUIRED)
-
 find_package(Threads REQUIRED)
+
+if(WIN32)
+	# RenderManager requires the d3dcompiler_47.dll file. This ships with
+	# Windows 8 and above by default, but we'll need to ship it for Windows 7
+	# users. To simplify our lives, we'll just ship it for everyone.
+	find_package(WindowsSDK REQUIRED COMPONENTS tools)
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		set(ARCH_DIR x64)
+	else()
+		set(ARCH_DIR x86)
+	endif()
+	find_file(DIRECT3D_COMPILER_REDISTRIBUTABLE d3dcompiler_47.dll
+		PATH_SUFFIXES Redist/D3D/${ARCH_DIR}
+		PATHS ${WINDOWSSDK_DIRS}
+		NO_DEFAULT_PATH)
+endif()
+
 
 # For our generated file
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -55,6 +71,16 @@ include(SteamVRPaths)
 #	DESTINATION
 #	${STEAMVR_CONFIG_DIR}/osvr
 #)
+
+file(TO_CMAKE_PATH
+	"${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/bin/${STEAMVR_PLATFORM}"
+	DRIVER_INSTALL_DIR)
+
+if(WIN32)
+	# Install d3dcompiler_47.dll
+	install(FILES ${DIRECT3D_COMPILER_REDISTRIBUTABLE}
+		DESTINATION ${DRIVER_INSTALL_DIR})
+endif()
 
 
 #
