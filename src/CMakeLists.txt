@@ -73,7 +73,6 @@ if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(driver_osvr PRIVATE make-unique-impl-header)
 endif()
 
-file(TO_CMAKE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/bin/${STEAMVR_PLATFORM}" DRIVER_INSTALL_DIR)
 install(TARGETS driver_osvr
 	DESTINATION "${DRIVER_INSTALL_DIR}")
 
