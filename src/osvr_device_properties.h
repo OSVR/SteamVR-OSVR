@@ -130,6 +130,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -233,6 +242,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -336,6 +354,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -439,6 +466,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -469,6 +505,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // could be any type
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
@@ -648,6 +693,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
         return true;
     }
 
@@ -753,6 +807,18 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_TrackingRangeMaximumMeters_Float:
     case vr::Prop_ModeLabel_String:
         return (vr::TrackedDeviceClass_TrackingReference != device_class);
+
+    // Properties that are used for user interface like icons names
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
+        return true;
 
     // Vendors are free to expose private debug data in this reserved region
     case vr::Prop_VendorSpecific_Reserved_Start:

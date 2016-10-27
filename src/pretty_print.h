@@ -226,6 +226,24 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_TrackingRangeMaximumMeters_Float";
         case vr::Prop_ModeLabel_String:
             return "Prop_ModeLabel_String";
+        case vr::Prop_IconPathName_String:
+            return "Prop_IconPathName_String";
+        case vr::Prop_NamedIconPathDeviceOff_String:
+            return "Prop_NamedIconPathDeviceOff_String";
+        case vr::Prop_NamedIconPathDeviceSearching_String:
+            return "Prop_NamedIconPathDeviceSearching_String";
+        case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+            return "Prop_NamedIconPathDeviceSearchingAlert_String";
+        case vr::Prop_NamedIconPathDeviceReady_String:
+            return "Prop_NamedIconPathDeviceReady_String";
+        case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+            return "Prop_NamedIconPathDeviceReadyAlert_String";
+        case vr::Prop_NamedIconPathDeviceNotReady_String:
+            return "Prop_NamedIconPathDeviceNotReady_String";
+        case vr::Prop_NamedIconPathDeviceStandby_String:
+            return "Prop_NamedIconPathDeviceStandby_String";
+        case vr::Prop_NamedIconPathDeviceAlertLow_String:
+            return "Prop_NamedIconPathDeviceAlertLow_String";
         case vr::Prop_VendorSpecific_Reserved_Start:
             return "Prop_VendorSpecific_Reserved_Start";
         case vr::Prop_VendorSpecific_Reserved_End:
