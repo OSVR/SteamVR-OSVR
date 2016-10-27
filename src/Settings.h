@@ -45,7 +45,8 @@ public:
 
     /**
      * Returns the setting value or returns @c value if the setting
-     * doesn't exist.
+     * doesn't exist or an error occurred (e.g., read error, failure to parse
+     * JSON settings file).
      */
     //@{
     template <typename T> T getSetting(const std::string& setting);
@@ -83,7 +84,7 @@ template<typename T> inline T Settings::getSetting(const std::string& setting, c
     // Redirect to the private method
     vr::EVRSettingsError error = vr::VRSettingsError_None;
     auto result = getSetting<T>(identity<T>(), setting, &error);
-    if (vr::VRSettingsError_JsonParseFailed == error) {
+    if (vr::VRSettingsError_None != error) {
         result = value;
     }
     return result;
