@@ -47,20 +47,18 @@ public:
      * Returns the setting value or returns @c value if the setting
      * doesn't exist.
      */
-    template <typename T> T getSetting(const std::string& setting, const T& value);
-
-private:
-    /** \name Accessors for general values. */
     //@{
-    template <typename T> T getSetting(identity<T>, const std::string& setting, const T& value);
+    template <typename T> T getSetting(const std::string& setting);
+    template <typename T> T getSetting(const std::string& setting, const T& value);
     //@}
 
-    /** \name Accessors and helper functions for boolean values. */
-    //@{
-    bool getSetting(identity<bool>, const std::string& setting, const bool& value);
-    int32_t getSetting(identity<int32_t>, const std::string& setting, const int32_t& value);
-    float getSetting(identity<float>, const std::string& setting, const float& value);
-    std::string getSetting(identity<std::string>, const std::string& setting, const std::string& value);
+private:
+    /** \name Accessors for settings values. */
+    template <typename T> T getSetting(identity<T>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    bool getSetting(identity<bool>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    int32_t getSetting(identity<int32_t>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    float getSetting(identity<float>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    std::string getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     //@}
 
     vr::IVRSettings* settings_ = nullptr;
@@ -74,36 +72,47 @@ inline Settings::Settings(vr::IVRSettings* settings, const std::string& section)
     }
 }
 
+template<typename T> inline T Settings::getSetting(const std::string& setting)
+{
+    // Redirect to the private method
+    return getSetting(identity<T>(), setting);
+}
+
 template<typename T> inline T Settings::getSetting(const std::string& setting, const T& value)
 {
     // Redirect to the private method
-    return getSetting(identity<T>(), setting, value);
+    vr::EVRSettingsError error = vr::VRSettingsError_None;
+    auto result = getSetting<T>(identity<T>(), setting, &error);
+    if (vr::VRSettingsError_JsonParseFailed == error) {
+        result = value;
+    }
+    return result;
 }
 
-template<typename T> inline T Settings::getSetting(identity<T>, const std::string& setting, const T& value)
+template<typename T> inline T Settings::getSetting(identity<T>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return getSetting<T>(identity<T>(), setting, value);
+    return getSetting<T>(identity<T>(), setting, error);
 }
 
-inline bool Settings::getSetting(identity<bool>, const std::string& setting, const bool& value)
+inline bool Settings::getSetting(identity<bool>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return settings_->GetBool(section_.c_str(), setting.c_str(), value);
+    return settings_->GetBool(section_.c_str(), setting.c_str(), error);
 }
 
-inline float Settings::getSetting(identity<float>, const std::string& setting, const float& value)
+inline float Settings::getSetting(identity<float>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return settings_->GetFloat(section_.c_str(), setting.c_str(), value);
+    return settings_->GetFloat(section_.c_str(), setting.c_str(), error);
 }
 
-inline int32_t Settings::getSetting(identity<int32_t>, const std::string& setting, const int32_t& value)
+inline int32_t Settings::getSetting(identity<int32_t>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return settings_->GetInt32(section_.c_str(), setting.c_str(), value);
+    return settings_->GetInt32(section_.c_str(), setting.c_str(), error);
 }
 
-inline std::string Settings::getSetting(identity<std::string>, const std::string& setting, const std::string& value)
+inline std::string Settings::getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    char buf[1024];
-    settings_->GetString(section_.c_str(), setting.c_str(), buf, sizeof(buf), value.c_str());
+    char buf[1024] = { 0 };
+    settings_->GetString(section_.c_str(), setting.c_str(), buf, sizeof(buf), error);
     std::string ret = buf;
     return ret;
 }
