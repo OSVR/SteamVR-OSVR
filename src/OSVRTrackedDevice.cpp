@@ -163,7 +163,7 @@ void OSVRTrackedDevice::Deactivate()
     }
 }
 
-void OSVRTrackedDevice::PowerOff()
+void OSVRTrackedDevice::EnterStandby()
 {
     // FIXME Implement
 }

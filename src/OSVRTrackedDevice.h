@@ -73,9 +73,10 @@ public:
     virtual void Deactivate() OSVR_OVERRIDE;
 
     /**
-     * Handles a request from the system to power off this device.
+     * Handles a request from the system to put this device into standby mode.
+     * What that means is defined per-device.
      */
-    virtual void PowerOff() OSVR_OVERRIDE;
+    virtual void EnterStandby() OSVR_OVERRIDE;
 
     /**
      * Requests a component interface of the driver for device-specific
