@@ -23,6 +23,10 @@ before_install_linux()
 
 before_install_osx()
 {
+    # Uninstall system numpy first, so brew
+    # can install its own version
+    yes | pip uninstall numpy
+
     brew update
     brew tap homebrew/science
     brew tap osvr/osvr
