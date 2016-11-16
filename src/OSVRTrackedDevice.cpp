@@ -1086,25 +1086,20 @@ void OSVRTrackedDevice::configure()
         displayDescription_ = context_.getStringParameter("/display");
         displayConfiguration_ = OSVRDisplayConfiguration(displayDescription_);
         const auto d = OSVRDisplayConfiguration(displayDescription_);
-        const auto active_resolution = d.activeResolution();
+        auto active_resolution = d.activeResolution();
 
         const auto position_x = renderManagerConfig_.getWindowXPosition();
         const auto position_y = renderManagerConfig_.getWindowYPosition();
 
         // Rotation
+        //   When the rotation is 90 or 180, we need to swap the resolution
+        //   values and zero out the rotation. Otherwise, just ignore the
+        //   rotation (as we compensate for it using the scan-out origin).
         using osvr::display::Rotation;
         auto rotation = Rotation::Zero;
         const auto rot = renderManagerConfig_.getDisplayRotation();
-        if (0 == rot) {
-            rotation = Rotation::Zero;
-        } else if (90 == rot) {
-            rotation = Rotation::Ninety;
-        } else if (180 == rot) {
-            rotation = Rotation::OneEighty;
-        } else if (270 == rot) {
-            rotation = Rotation::TwoSeventy;
-        } else {
-            OSVR_LOG(err) << "Invalid rotation from RenderManager configuration: " << rot << ".";
+        if (90 == rot || 180 == rot) {
+            std::swap(active_resolution.width, active_resolution.height);
         }
 
         display_.adapter.description = "Unknown";
