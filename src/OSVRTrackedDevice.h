@@ -230,12 +230,6 @@ private:
     osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str) const;
 
     /**
-     * Gets the default scan-out origin based the detected HMD and/or OSVR
-     * configuration.
-     */
-    osvr::display::ScanOutOrigin getScanOutOrigin() const;
-
-    /**
      * Gets the vertical refresh rate of the display.
      */
     double getVerticalRefreshRate() const;

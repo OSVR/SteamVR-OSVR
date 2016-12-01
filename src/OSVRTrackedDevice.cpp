@@ -33,6 +33,7 @@
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
+#include "OSVRDisplay.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -1119,7 +1120,7 @@ void OSVRTrackedDevice::configure()
     const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
     if (scan_out_origin_str.empty()) {
         // Calculate the scan-out origin based on the display parameters
-        scanoutOrigin_ = getScanOutOrigin();
+        scanoutOrigin_ = getScanOutOrigin(display_.name, display_.size.width, display_.size.height);
         OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
     } else {
         scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
@@ -1212,32 +1213,6 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string s
         OSVR_LOG(err) << "The string [" + str + "] could not be parsed as a scan-out origin. Use one of: lower-left, upper-left, lower-right, upper-right.";
         return osvr::display::ScanOutOrigin::UpperLeft;
     }
-}
-
-osvr::display::ScanOutOrigin OSVRTrackedDevice::getScanOutOrigin() const
-{
-    // TODO Use RenderManager and OSVR config files to determine scan-out
-    // origin. But since some of those are currently broken, we'll base the
-    // defaults on our knowledge of the HDK 1.x and 2.0.
-    using SO = osvr::display::ScanOutOrigin;
-    const auto is_hdk = (std::string::npos != display_.name.find("OSVR HDK"));
-    if (!is_hdk) {
-        // Unknown HMD. Punt!
-        return SO::UpperLeft;
-    }
-
-    const auto is_hdk_1x = (std::string::npos != display_.name.find("OSVR HDK 1"));
-    const auto is_hdk_20 = (std::string::npos != display_.name.find("OSVR HDK 2.0"));
-    if (is_hdk_1x) {
-        const auto is_landscape = (display_.size.height < display_.size.width);
-        return (is_landscape ? SO::UpperLeft : SO::UpperRight);
-    } else if (is_hdk_20) {
-        // change this if the HDK 2.0 display descriptor gets fixed
-        return SO::UpperLeft;
-    }
-
-    // Some unknown HDK!
-    return SO::LowerRight;
 }
 
 double OSVRTrackedDevice::getVerticalRefreshRate() const
