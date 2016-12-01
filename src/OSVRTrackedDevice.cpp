@@ -229,6 +229,7 @@ void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width,
         *height = std::min(display_.size.width, display_.size.height);
         *width = std::max(display_.size.width, display_.size.height);
     }
+    OSVR_LOG(trace) << "GetWindowBounds(): Scan-out origin: " << scanoutOrigin_ << ", rotation: " << display_.rotation << ", orientation: " << orientation;
 #endif // OSVR_WINDOWS or OSVR_MACOSX
 
     OSVR_LOG(trace) << "GetWindowBounds(): Calculated settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";

@@ -33,13 +33,13 @@
 #include <osvr/display/Display.h>
 
 // Standard includes
-// - none
+#include <cstdint>
 
 /**
  * Gets the default scan-out origin based the detected HMD and/or OSVR
  * configuration.
  */
-inline osvr::display::ScanOutOrigin getScanOutOrigin(const std::string& display_name, int width, int height)
+inline osvr::display::ScanOutOrigin getScanOutOrigin(const std::string& display_name, std::uint32_t width, std::uint32_t height)
 {
     // TODO Use RenderManager and OSVR config files to determine scan-out
     // origin. But since some of those are currently broken, we'll base the
