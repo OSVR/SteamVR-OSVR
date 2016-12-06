@@ -1107,8 +1107,8 @@ void OSVRTrackedDevice::configure()
 
         display_.adapter.description = "Unknown";
         display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion();
-        display_.size.width = active_resolution.width;
-        display_.size.height = active_resolution.height;
+        display_.size.width = static_cast<uint32_t>(active_resolution.width);
+        display_.size.height = static_cast<uint32_t>(active_resolution.height);
         display_.position.x = position_x;
         display_.position.y = position_y;
         display_.rotation = rotation;
@@ -1122,7 +1122,8 @@ void OSVRTrackedDevice::configure()
     const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
     if (scan_out_origin_str.empty()) {
         // Calculate the scan-out origin based on the display parameters
-        scanoutOrigin_ = osvr::display::ScanOutOrigin::UpperLeft + rot;
+        const auto rot = renderManagerConfig_.getDisplayRotation();
+        scanoutOrigin_ = osvr::display::to_ScanOutOrigin(osvr::display::ScanOutOrigin::UpperLeft + osvr::display::to_Rotation(static_cast<int>(rot)));
         OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
     } else {
         scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
