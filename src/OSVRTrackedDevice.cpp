@@ -1094,13 +1094,14 @@ void OSVRTrackedDevice::configure()
         const auto position_y = renderManagerConfig_.getWindowYPosition();
 
         // Rotation
-        //   When the rotation is 90 or 180, we need to swap the resolution
-        //   values and zero out the rotation. Otherwise, just ignore the
-        //   rotation (as we compensate for it using the scan-out origin).
+        //   Adjust the scan-out orientation based rotation value.  Also, when
+        //   the rotation is 90 or 270, we need to swap the resolution values
+        //   and zero out the rotation.. Otherwise, just ignore the rotation (as
+        //   we compensate for it using the scan-out origin).
         using osvr::display::Rotation;
         auto rotation = Rotation::Zero;
         const auto rot = renderManagerConfig_.getDisplayRotation();
-        if (90 == rot || 180 == rot) {
+        if (90 == rot || 270 == rot) {
             std::swap(active_resolution.width, active_resolution.height);
         }
 
@@ -1121,7 +1122,7 @@ void OSVRTrackedDevice::configure()
     const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
     if (scan_out_origin_str.empty()) {
         // Calculate the scan-out origin based on the display parameters
-        scanoutOrigin_ = getScanOutOrigin(display_.name, display_.size.width, display_.size.height);
+        scanoutOrigin_ = osvr::display::ScanOutOrigin::UpperLeft + rot;
         OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
     } else {
         scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
