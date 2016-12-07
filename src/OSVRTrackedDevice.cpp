@@ -255,10 +255,11 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* rig
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
     // Rotate the texture coordinates to match the display orientation
-    //const auto orientation = scanoutOrigin_ + display_.rotation;
-    //const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
-    //const auto rotation = desired_orientation - orientation;
-    //std::tie(u, v) = rotate(u, v, rotation);
+    const auto orientation = scanoutOrigin_ + display_.rotation;
+    const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
+    const auto rotation = desired_orientation - orientation;
+    OSVR_LOG(trace) << "ComputeDistortion(): Current orientation: " << orientation << ", desired orientation: " << desired_orientation << ", required rotation: " << rotation << ".";
+    std::tie(u, v) = rotate(u, v, rotation);
 
     // Note that RenderManager expects the (0, 0) to be the lower-left corner
     // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
