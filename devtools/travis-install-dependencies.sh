@@ -25,14 +25,13 @@ before_install_osx()
 {
     # Uninstall system numpy first, so brew
     # can install its own version
-    yes | pip uninstall numpy
+    pip uninstall -y numpy
 
     brew update
     brew tap homebrew/science
     brew tap osvr/osvr
 
-    pip uninstall -y numpy
-    brew uninstall json-c
+    #brew uninstall json-c
     brew install jsoncpp --HEAD
     brew install osvr-core --HEAD
     brew install eigen
