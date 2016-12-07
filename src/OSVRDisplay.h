@@ -27,13 +27,19 @@
 #define INCLUDED_OSVRDisplay_h_GUID_FAE2B8A6_1225_4344_9FA0_919856E66E8E
 
 // Internal Includes
-// - none
+#include "Logging.h"
 
 // Library/third-party includes
+#include <openvr_driver.h>
+
 #include <osvr/display/Display.h>
+#include <osvr/display/DisplayIO.h>
+#include <osvr/RenderKit/osvr_display_configuration.h>
+#include <osvr/Util/PlatformConfig.h>
 
 // Standard includes
 #include <cstdint>
+#include <ostream>
 
 /**
  * Gets the default scan-out origin based the detected HMD and/or OSVR
@@ -66,6 +72,233 @@ inline osvr::display::ScanOutOrigin getScanOutOrigin(const std::string& display_
 
     // Some unknown HDK!
     return SO::LowerRight;
+}
+
+/**
+ * Rectangle is used to define window bounds and eye viewport parameters.
+ */
+struct Rectangle {
+    int32_t x;
+    int32_t y;
+    uint32_t width;
+    uint32_t height;
+
+    bool operator==(const Rectangle& other) const
+    {
+        return (x == other.x && y == other.y && width == other.width && height == other.height);
+    }
+};
+
+inline std::string to_string(const Rectangle& r)
+{
+    using std::to_string;
+    std::string out = "(" + to_string(r.width) + ", " + to_string(r.height)
+        + ") at (" + to_string(r.x) + ", " + to_string(r.y) + ")";
+    return out;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Rectangle& r) {
+    os << "(" << r.width << ", " << r.height << ") at (" << r.x << ", " << r.y << ")";
+    return os;
+}
+
+
+inline Rectangle getWindowBounds(const osvr::display::Display& display, osvr::display::ScanOutOrigin scanout_origin)
+{
+    Rectangle bounds;
+#if 0
+    /* Would be used only in Linux at the moment. Linux needs OSVR-Display
+     * support.
+     */
+
+    int nDisplays = displayConfig_.getNumDisplayInputs();
+    if (nDisplays != 1) {
+        OSVR_LOG(err) << "OSVRTrackedHMD::OSVRTrackedHMD(): Unexpected display number of displays!\n";
+    }
+    osvr::clientkit::DisplayDimensions displayDims = displayConfig_.getDisplayDimensions(0);
+    bounds.x = renderManagerConfig_.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
+    bounds.y = renderManagerConfig_.getWindowYPosition();
+    bounds.width = static_cast<uint32_t>(displayDims.width);
+    bounds.height = static_cast<uint32_t>(displayDims.height);
+
+    OSVR_LOG(trace) << "GetWindowBounds(): Config file settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
+#endif
+
+#if defined(OSVR_WINDOWS) || defined(OSVR_MACOSX)
+    bounds.x = display.position.x;
+    bounds.y = display.position.y;
+
+    // Windows always reports the widest dimension as width regardless of the
+    // orientation of the display. We need to flip these dimensions if the
+    // display is in portrait orientation.
+    //
+    // OS X reports the resolution with respect to the orientation (e.g., in
+    // portrait mode, a display's resolution might be 1080x1920).
+    //
+    // TODO Check to see how Linux handles this.
+    const auto orientation = scanout_origin + display.rotation;
+    const bool is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
+    if (is_portrait) {
+        bounds.height = std::max(display.size.width, display.size.height);
+        bounds.width = std::min(display.size.width, display.size.height);
+    } else {
+        bounds.height = std::min(display.size.width, display.size.height);
+        bounds.width = std::max(display.size.width, display.size.height);
+    }
+    OSVR_LOG(trace) << "GetWindowBounds(): Scan-out origin: " << scanout_origin << ", rotation: " << display.rotation << ", orientation: " << orientation;
+#endif // OSVR_WINDOWS or OSVR_MACOSX
+
+    OSVR_LOG(trace) << "GetWindowBounds(): Calculated settings: x = " << bounds.x << ", y = " << bounds.y << ", width = " << bounds.width << ", height = " << bounds.height << ".";
+    return bounds;
+}
+
+
+/**
+ * Returns the eye viewport.
+ */
+inline Rectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode)
+{
+    Rectangle viewport;
+
+    const auto bounds = getWindowBounds(display, scanout_origin);
+
+    // We have to duplicate this logic from OSVR-Core's DisplayConfig.cpp file
+    // because that version doesn't handle the *detected* rotation, only the
+    // rotation set in the config file.
+    const auto orientation = scanout_origin + display.rotation;
+
+#if 0
+    // TODO Simplify this code after verifying it works properly
+    if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
+        OSVR_LOG(trace) << "Display mode: full-screen.";
+        std::cout << "Display mode: full-screen.\n";
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = bounds.width;
+        viewport.height = bounds.height;
+    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        OSVR_LOG(trace) << "Display mode: horizontal side-by-side.";
+        std::cout << "Display mode: horizontal side-by-side.\n";
+        using Orientation = osvr::display::DesktopOrientation;
+        if (Orientation::Portrait == orientation) {
+            OSVR_LOG(trace) << "Display orientation: portrait.";
+            std::cout << "Display orientation: portrait.\n";
+            viewport.x = 0;
+            viewport.y = (vr::Eye_Left == eye) ? 0 : bounds.height / 2;
+            viewport.width = bounds.width;
+            viewport.height = bounds.height / 2;
+        } else if (Orientation::PortraitFlipped == orientation) {
+            OSVR_LOG(trace) << "Display orientation: portrait flipped.";
+            std::cout << "Display orientation: portrait flipped.\n";
+            viewport.x = 0;
+            viewport.y = (vr::Eye_Left == eye) ? bounds.height / 2 : 0;
+            viewport.width = bounds.width;
+            viewport.height = bounds.height / 2;
+        } else if (Orientation::Landscape == orientation) {
+            OSVR_LOG(trace) << "Display orientation: landscape.";
+            std::cout << "Display orientation: landscape.\n";
+            viewport.x = (vr::Eye_Left == eye) ? 0 : bounds.width / 2;
+            viewport.y = 0;
+            viewport.width = bounds.width / 2;
+            viewport.height = bounds.height;
+        } else if (Orientation::LandscapeFlipped == orientation) {
+            OSVR_LOG(trace) << "Display orientation: landscape flipped.";
+            std::cout << "Display orientation: landscape flipped.\n";
+            viewport.x = (vr::Eye_Left == eye) ? bounds.width / 2 : 0;
+            viewport.y = 0;
+            viewport.width = bounds.width / 2;
+            viewport.height = bounds.height;
+        } else {
+            OSVR_LOG(err) << "Unknown display orientation [" << static_cast<int>(orientation) << "]!";
+            std::cerr << "Unknown display orientation [" << static_cast<int>(orientation) << "]!\n";
+        }
+    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        OSVR_LOG(trace) << "Display mode: vertical side-by-side.";
+        std::cout << "Display mode: vertical side-by-side.\n";
+        OSVR_LOG(err) << "This display mode hasn't been implemented yet!";
+        std::cerr << "This display mode hasn't been implemented yet!\n";
+        // TODO
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = bounds.width;
+        viewport.height = bounds.height / 2;
+    } else {
+        OSVR_LOG(err) << "Unknown display mode [" << static_cast<int>(display_mode) << "]!";
+        std::cerr << "Unknown display mode [" << static_cast<int>(display_mode) << "]!\n";
+    }
+
+    const auto eye_str = (vr::Eye_Left == eye) ? "left" : "right";
+    OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): Calculated settings: x = " << viewport.x << ", y = " << viewport.y << ", width = " << viewport.width << ", height = " << viewport.height << ".";
+    std::cout << "GetEyeOutputViewport(" << eye_str << " eye): Calculated settings: x = " << viewport.x << ", y = " << viewport.y << ", width = " << viewport.width << ", height = " << viewport.height << ".\n";
+
+    return viewport;
+#endif
+
+    // TODO Simplify this code after verifying it works properly
+    if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
+        OSVR_LOG(trace) << "Display mode: full-screen.";
+        std::cout << "Display mode: full-screen.\n";
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = bounds.width;
+        viewport.height = bounds.height;
+    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        OSVR_LOG(trace) << "Display mode: horizontal side-by-side.";
+        std::cout << "Display mode: horizontal side-by-side.\n";
+        using Orientation = osvr::display::DesktopOrientation;
+        if (Orientation::Portrait == orientation) {
+            OSVR_LOG(trace) << "Display orientation: portrait.";
+            std::cout << "Display orientation: portrait.\n";
+            viewport.x = 0;
+            viewport.y = (vr::Eye_Left == eye) ? 0 : bounds.height / 2;
+            viewport.width = bounds.width;
+            viewport.height = bounds.height / 2;
+        } else if (Orientation::PortraitFlipped == orientation) {
+            OSVR_LOG(trace) << "Display orientation: portrait flipped.";
+            std::cout << "Display orientation: portrait flipped.\n";
+            viewport.x = 0;
+            viewport.y = (vr::Eye_Left == eye) ? bounds.height / 2 : 0;
+            viewport.width = bounds.width;
+            viewport.height = bounds.height / 2;
+        } else if (Orientation::Landscape == orientation) {
+            OSVR_LOG(trace) << "Display orientation: landscape.";
+            std::cout << "Display orientation: landscape.\n";
+            viewport.x = (vr::Eye_Left == eye) ? 0 : bounds.width / 2;
+            viewport.y = 0;
+            viewport.width = bounds.width / 2;
+            viewport.height = bounds.height;
+        } else if (Orientation::LandscapeFlipped == orientation) {
+            OSVR_LOG(trace) << "Display orientation: landscape flipped.";
+            std::cout << "Display orientation: landscape flipped.\n";
+            viewport.x = (vr::Eye_Left == eye) ? bounds.width / 2 : 0;
+            viewport.y = 0;
+            viewport.width = bounds.width / 2;
+            viewport.height = bounds.height;
+        } else {
+            OSVR_LOG(err) << "Unknown display orientation [" << static_cast<int>(orientation) << "]!";
+            std::cerr << "Unknown display orientation [" << static_cast<int>(orientation) << "]!\n";
+        }
+    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        OSVR_LOG(trace) << "Display mode: vertical side-by-side.";
+        std::cout << "Display mode: vertical side-by-side.\n";
+        OSVR_LOG(err) << "This display mode hasn't been implemented yet!";
+        std::cerr << "This display mode hasn't been implemented yet!\n";
+        // TODO
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = bounds.width;
+        viewport.height = bounds.height / 2;
+    } else {
+        OSVR_LOG(err) << "Unknown display mode [" << static_cast<int>(display_mode) << "]!";
+        std::cerr << "Unknown display mode [" << static_cast<int>(display_mode) << "]!\n";
+    }
+
+    const auto eye_str = (vr::Eye_Left == eye) ? "left" : "right";
+    OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): Calculated settings: x = " << viewport.x << ", y = " << viewport.y << ", width = " << viewport.width << ", height = " << viewport.height << ".";
+    std::cout << "GetEyeOutputViewport(" << eye_str << " eye): Calculated settings: x = " << viewport.x << ", y = " << viewport.y << ", width = " << viewport.width << ", height = " << viewport.height << ".\n";
+
+    return viewport;
+
 }
 
 #endif // INCLUDED_OSVRDisplay_h_GUID_FAE2B8A6_1225_4344_9FA0_919856E66E8E
