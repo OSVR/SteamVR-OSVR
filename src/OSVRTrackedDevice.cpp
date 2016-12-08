@@ -78,7 +78,8 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 
     objectId_ = object_id;
 
-    const std::time_t waitTime = 5; // wait up to 5 seconds for init
+    // TODO use C++11 <chrono>
+    const std::time_t waitTime = settings_->getSetting<int32_t>("serverTimeout", 5);
 
     // Register tracker callback
     if (trackerInterface_.notEmpty()) {
@@ -765,19 +766,19 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
     case vr::Prop_ModelNumber_String:
         if (error)
             *error = vr::TrackedProp_Success;
-        return "OSVR HMD";
+        return settings_->getSetting<std::string>("modelNumber", displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion());
     case vr::Prop_SerialNumber_String:
         if (error)
             *error = vr::TrackedProp_Success;
-        return this->GetId();
+        return settings_->getSetting<std::string>("serialNumber", this->GetId());
     case vr::Prop_RenderModelName_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     case vr::Prop_ManufacturerName_String:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return settings_->getSetting<std::string>("manufacturer", displayConfiguration_.getVendor());
     case vr::Prop_TrackingFirmwareVersion_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -972,10 +973,10 @@ void OSVRTrackedDevice::configure()
         display_.position.x = position_x;
         display_.position.y = position_y;
         display_.rotation = rotation;
-        display_.verticalRefreshRate = getVerticalRefreshRate();
+        display_.verticalRefreshRate = settings_->getSetting<float>("verticalRefreshRate", getVerticalRefreshRate());
         display_.attachedToDesktop = false; // assuming direct mode
-        display_.edidVendorId = 0xd24e; // SVR // TODO not provided by config files
-        display_.edidProductId = 0x1019; // TODO not provided by config files
+        display_.edidVendorId = settings_->getSetting<int32_t>("edidVendorId", 0xd24e); // SVR
+        display_.edidProductId = settings_->getSetting<int32_t>("edidProductId", 0x1019);
     }
 
     // The scan-out origin of the display
