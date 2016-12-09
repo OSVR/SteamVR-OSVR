@@ -312,7 +312,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     coords.rfBlue[1] = 1.0f - coords_blue[1];
 
     return coords;
-#endif 0
+#endif
 }
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
