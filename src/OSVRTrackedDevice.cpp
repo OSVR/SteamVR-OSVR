@@ -255,6 +255,18 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* rig
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
+    vr::DistortionCoordinates_t coords;
+    coords.rfRed[0] = u;
+    coords.rfRed[1] = v;
+    coords.rfGreen[0] = u;
+    coords.rfGreen[1] = v;
+    coords.rfBlue[0] = u;
+    coords.rfBlue[1] = v;
+    return coords;
+
+#if 0
+    /* This code does the real work. Disabling it while debugging. */
+
     // Rotate the texture coordinates to match the display orientation
     const auto orientation = scanoutOrigin_ + display_.rotation;
     const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
@@ -300,6 +312,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     coords.rfBlue[1] = 1.0f - coords_blue[1];
 
     return coords;
+#endif 0
 }
 
 vr::DriverPose_t OSVRTrackedDevice::GetPose()
