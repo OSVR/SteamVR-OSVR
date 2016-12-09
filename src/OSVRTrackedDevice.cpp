@@ -223,12 +223,11 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
 {
     //const double overfill_factor = renderManagerConfig_.getRenderOverfillFactor();
     const double overfill_factor = 1.0;
-    int32_t x, y;
-    uint32_t w, h;
-    GetWindowBounds(&x, &y, &w, &h);
+    const auto bounds = getWindowBounds(display_, scanoutOrigin_);
 
-    *width = static_cast<uint32_t>(w * overfill_factor);
-    *height = static_cast<uint32_t>(h * overfill_factor);
+    *width = static_cast<uint32_t>(bounds.width * overfill_factor);
+    *height = static_cast<uint32_t>(bounds.height * overfill_factor);
+    OSVR_LOG(trace) << "GetRecommendedRenderTargetSize(): width = " << *width << ", height = " << *height << ".";
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
