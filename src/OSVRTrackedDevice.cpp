@@ -949,6 +949,17 @@ void OSVRTrackedDevice::configure()
         OSVR_LOG(trace) << "Found a match! Display [" << display.name << "] matches [" << display_name << "].";
         display_ = display;
         display_found = true;
+
+        // The scan-out origin of the display
+        const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
+        if (scan_out_origin_str.empty()) {
+            // Calculate the scan-out origin based on the display parameters
+            scanoutOrigin_ = osvr::display::to_ScanOutOrigin(osvr::display::ScanOutOrigin::UpperLeft + display_.rotation);
+            OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
+        } else {
+            scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+        }
+
         break;
     }
 
@@ -989,17 +1000,16 @@ void OSVRTrackedDevice::configure()
         display_.attachedToDesktop = false; // assuming direct mode
         display_.edidVendorId = settings_->getSetting<int32_t>("edidVendorId", 0xd24e); // SVR
         display_.edidProductId = settings_->getSetting<int32_t>("edidProductId", 0x1019);
-    }
 
-    // The scan-out origin of the display
-    const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
-    if (scan_out_origin_str.empty()) {
-        // Calculate the scan-out origin based on the display parameters
-        const auto rot = renderManagerConfig_.getDisplayRotation();
-        scanoutOrigin_ = osvr::display::to_ScanOutOrigin(osvr::display::ScanOutOrigin::UpperLeft + osvr::display::to_Rotation(static_cast<int>(rot)));
-        OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
-    } else {
-        scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+        // The scan-out origin of the display
+        const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
+        if (scan_out_origin_str.empty()) {
+            // Calculate the scan-out origin based on the display parameters
+            scanoutOrigin_ = osvr::display::to_ScanOutOrigin(osvr::display::ScanOutOrigin::UpperLeft + osvr::display::to_Rotation(static_cast<int>(rot)));
+            OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
+        } else {
+            scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+        }
     }
 
     // Print the display settings we're running with
