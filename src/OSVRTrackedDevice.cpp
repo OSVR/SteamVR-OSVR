@@ -259,6 +259,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
     const auto rotation = desired_orientation - orientation;
     OSVR_LOG(trace) << "ComputeDistortion(): Current orientation: " << orientation << ", desired orientation: " << desired_orientation << ", required rotation: " << rotation << ".";
+    const auto input_uv = std::make_tuple(u, v);
     std::tie(u, v) = rotate(u, v, rotation);
 
     // Note that RenderManager expects the (0, 0) to be the lower-left corner
@@ -297,6 +298,8 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     coords.rfGreen[1] = 1.0f - coords_green[1];
     coords.rfBlue[0] = coords_blue[0];
     coords.rfBlue[1] = 1.0f - coords_blue[1];
+
+    OSVR_LOG(trace) << "Input (" << std::get<0>(input_uv) << ", " << std::get<1>(input_uv) << ") -> (" << coords.rfRed[0] << ", " << coords.rfRed[1] << ").";
 
     return coords;
 }
