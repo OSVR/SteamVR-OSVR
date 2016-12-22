@@ -76,10 +76,11 @@ public:
 
 private:
     /** \name Accessors for settings values. */
-    //template <typename T> T getSetting(identity<T>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     bool getSetting(identity<bool>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     int32_t getSetting(identity<int32_t>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    uint32_t getSetting(identity<uint32_t>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     float getSetting(identity<float>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    double getSetting(identity<double>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     std::string getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     //@}
 
@@ -156,9 +157,19 @@ inline float Settings::getSetting(identity<float>, const std::string& setting, v
     return settings_->GetFloat(section_.c_str(), setting.c_str(), error);
 }
 
+inline double Settings::getSetting(identity<double>, const std::string& setting, vr::EVRSettingsError* error)
+{
+    return static_cast<double>(getSetting(identity<float>(), setting, error));
+}
+
 inline int32_t Settings::getSetting(identity<int32_t>, const std::string& setting, vr::EVRSettingsError* error)
 {
     return settings_->GetInt32(section_.c_str(), setting.c_str(), error);
+}
+
+inline uint32_t Settings::getSetting(identity<uint32_t>, const std::string& setting, vr::EVRSettingsError* error)
+{
+    return static_cast<uint32_t>(getSetting(identity<int32_t>(), setting, error));
 }
 
 inline std::string Settings::getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error)

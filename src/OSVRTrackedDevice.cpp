@@ -259,7 +259,6 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
     const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
     const auto rotation = desired_orientation - orientation;
 
-    const auto input_uv = std::make_tuple(u, v);
     std::tie(u, v) = rotate(u, v, rotation);
 
     // Note that RenderManager expects the (0, 0) to be the lower-left corner
@@ -986,10 +985,10 @@ void OSVRTrackedDevice::configure()
         display_.position.x = position_x;
         display_.position.y = position_y;
         display_.rotation = rotation;
-        display_.verticalRefreshRate = settings_->getSetting<float>("verticalRefreshRate", getVerticalRefreshRate());
+        display_.verticalRefreshRate = settings_->getSetting<double>("verticalRefreshRate", getVerticalRefreshRate());
         display_.attachedToDesktop = false; // assuming direct mode
-        display_.edidVendorId = settings_->getSetting<int32_t>("edidVendorId", 0xd24e); // SVR
-        display_.edidProductId = settings_->getSetting<int32_t>("edidProductId", 0x1019);
+        display_.edidVendorId = settings_->getSetting<uint32_t>("edidVendorId", 0xd24e); // SVR
+        display_.edidProductId = settings_->getSetting<uint32_t>("edidProductId", 0x1019);
 
         // The scan-out origin of the display
         const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
