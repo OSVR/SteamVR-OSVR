@@ -36,6 +36,8 @@
 // Standard includes
 #include <memory>
 #include <ostream>
+#include <string>
+#include <utility>
 
 /**
  * @brief The NullLogger just swallows any log messages it's sent.
@@ -95,7 +97,7 @@ public:
     {
         if (shouldLog_)
             message_ += msg;
- 
+
         return *this;
     }
 

@@ -48,13 +48,14 @@
 #include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
 
 // Standard includes
+#include <algorithm>        // for std::find
 #include <cstring>
 #include <ctime>
-#include <string>
-#include <iostream>
 #include <exception>
 #include <fstream>
-#include <algorithm>        // for std::find
+#include <iostream>
+#include <string>
+#include <tuple>
 
 OSVRTrackedDevice::OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : context_(context), driverHost_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_HMD)
 {

@@ -33,8 +33,10 @@
 #include <openvr_driver.h>
 
 // Standard includes
+#include <ios>
 #include <ostream>
 #include <sstream>
+#include <string>
 
 using std::to_string;
 
