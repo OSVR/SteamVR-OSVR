@@ -56,6 +56,8 @@ inline std::string to_string(void* value)
 inline std::string to_string(const vr::ETrackedDeviceProperty& value)
 {
     switch (value) {
+        case vr::Prop_Invalid:
+            return "Prop_Invalid";
         case vr::Prop_TrackingSystemName_String:
             return "Prop_TrackingSystemName_String";
         case vr::Prop_ModelNumber_String:

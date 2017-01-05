@@ -60,6 +60,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -180,6 +182,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -283,6 +287,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -400,6 +406,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -526,6 +534,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -615,6 +625,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -832,6 +844,10 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_NamedIconPathDeviceNotReady_String:
     case vr::Prop_NamedIconPathDeviceStandby_String:
     case vr::Prop_NamedIconPathDeviceAlertLow_String:
+        return true;
+
+    // Invalid
+    case vr::Prop_Invalid:
         return true;
 
     // Vendors are free to expose private debug data in this reserved region
