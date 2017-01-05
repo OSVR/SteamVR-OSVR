@@ -29,6 +29,8 @@ add_library(driver_osvr
 	ClientDriver_OSVR.cpp
 	ClientDriver_OSVR.h
 	Logging.h
+	OSVRDisplay.h
+	OSVRDisplay.cpp
 	OSVRTrackedDevice.cpp
 	OSVRTrackedDevice.h
 	OSVRTrackingReference.cpp

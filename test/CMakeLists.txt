@@ -2,7 +2,7 @@
 # Unit tests and test programs
 #
 
-add_executable(test_OSVRDisplay test_OSVRDisplay.cpp)
+add_executable(test_OSVRDisplay test_OSVRDisplay.cpp ${CMAKE_SOURCE_DIR}/src/OSVRDisplay.cpp)
 target_include_directories(test_OSVRDisplay
     SYSTEM
     PRIVATE
