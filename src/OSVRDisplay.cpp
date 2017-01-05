@@ -70,12 +70,12 @@ osvr::display::ScanOutOrigin getScanOutOrigin(const std::string& display_name, s
     return SO::LowerRight;
 }
 
-bool Rectangle::operator==(const Rectangle& other) const
+bool OSVRRectangle::operator==(const OSVRRectangle& other) const
 {
     return (x == other.x && y == other.y && width == other.width && height == other.height);
 }
 
-std::string to_string(const Rectangle& r)
+std::string to_string(const OSVRRectangle& r)
 {
     using std::to_string;
     std::string out = "(" + to_string(r.width) + ", " + to_string(r.height)
@@ -83,16 +83,16 @@ std::string to_string(const Rectangle& r)
     return out;
 }
 
-std::ostream& operator<<(std::ostream& os, const Rectangle& r)
+std::ostream& operator<<(std::ostream& os, const OSVRRectangle& r)
 {
     os << "(" << r.width << ", " << r.height << ") at (" << r.x << ", " << r.y << ")";
     return os;
 }
 
 
-Rectangle getWindowBounds(const osvr::display::Display& display, osvr::display::ScanOutOrigin scanout_origin)
+OSVRRectangle getWindowBounds(const osvr::display::Display& display, osvr::display::ScanOutOrigin scanout_origin)
 {
-    Rectangle bounds;
+    OSVRRectangle bounds;
 #if 0
     /* Would be used only in Linux at the moment. Linux needs OSVR-Display
      * support.
@@ -143,9 +143,9 @@ Rectangle getWindowBounds(const osvr::display::Display& display, osvr::display::
 /**
  * Returns the eye viewport.
  */
-Rectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode)
+OSVRRectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode)
 {
-    Rectangle viewport;
+    OSVRRectangle viewport;
 
     const auto bounds = getWindowBounds(display, scanout_origin);
 

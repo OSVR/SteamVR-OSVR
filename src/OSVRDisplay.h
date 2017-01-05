@@ -48,28 +48,28 @@
 osvr::display::ScanOutOrigin getScanOutOrigin(const std::string& display_name, std::uint32_t width, std::uint32_t height);
 
 /**
- * Rectangle is used to define window bounds and eye viewport parameters.
+ * OSVRRectangle is used to define window bounds and eye viewport parameters.
  */
-class Rectangle {
+class OSVRRectangle {
 public:
     int32_t x;
     int32_t y;
     uint32_t width;
     uint32_t height;
 
-    bool operator==(const Rectangle& other) const;
+    bool operator==(const OSVRRectangle& other) const;
 };
 
-std::string to_string(const Rectangle& r);
+std::string to_string(const OSVRRectangle& r);
 
-std::ostream& operator<<(std::ostream& os, const Rectangle& r);
+std::ostream& operator<<(std::ostream& os, const OSVRRectangle& r);
 
-Rectangle getWindowBounds(const osvr::display::Display& display, osvr::display::ScanOutOrigin scanout_origin);
+OSVRRectangle getWindowBounds(const osvr::display::Display& display, osvr::display::ScanOutOrigin scanout_origin);
 
 /**
  * Returns the eye viewport.
  */
-Rectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode);
+OSVRRectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode);
 
 #endif // INCLUDED_OSVRDisplay_h_GUID_FAE2B8A6_1225_4344_9FA0_919856E66E8E
 

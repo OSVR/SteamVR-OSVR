@@ -125,20 +125,20 @@ public:
 
 TEST_CASE_METHOD(HDK13TestFixture, "getWindowBounds HDK13", "[getWindowBounds]")
 {
-    const auto bounds_hdk13 = Rectangle { 1920, 0, 1080, 1920 };
+    const auto bounds_hdk13 = OSVRRectangle { 1920, 0, 1080, 1920 };
     CHECK(getWindowBounds(getDisplay(), getScanOutOrigin()) == bounds_hdk13);
 }
 
 TEST_CASE_METHOD(HDK20TestFixture, "getWindowBounds_HDK20", "[getWindowBounds]")
 {
-    const auto bounds_hdk20 = Rectangle { 1920, 0, 2160, 1200 };
+    const auto bounds_hdk20 = OSVRRectangle { 1920, 0, 2160, 1200 };
     CHECK(getWindowBounds(getDisplay(), getScanOutOrigin()) == bounds_hdk20);
 }
 
 TEST_CASE_METHOD(HDK13TestFixture, "getEyeOutputViewPort HDK13", "[getEyeOutputViewport")
 {
-    const auto left_eye = Rectangle { 0, 0, 1080, 1920 / 2 };
-    const auto right_eye = Rectangle { 0, 1920 / 2, 1080, 1920 / 2 };
+    const auto left_eye = OSVRRectangle { 0, 0, 1080, 1920 / 2 };
+    const auto right_eye = OSVRRectangle { 0, 1920 / 2, 1080, 1920 / 2 };
 
     CHECK(getEyeOutputViewport(vr::Eye_Left, getDisplay(), getScanOutOrigin(), getDisplayMode()) == left_eye);
     CHECK(getEyeOutputViewport(vr::Eye_Right, getDisplay(), getScanOutOrigin(), getDisplayMode()) == right_eye);
@@ -146,8 +146,8 @@ TEST_CASE_METHOD(HDK13TestFixture, "getEyeOutputViewPort HDK13", "[getEyeOutputV
 
 TEST_CASE_METHOD(HDK20TestFixture, "getEyeOutputViewPort HDK20", "[getEyeOutputViewport")
 {
-    const auto left_eye = Rectangle { 2160 / 2, 0, 2160 / 2, 1200 };
-    const auto right_eye = Rectangle { 0, 0, 2160 / 2, 1200 };
+    const auto left_eye = OSVRRectangle { 2160 / 2, 0, 2160 / 2, 1200 };
+    const auto right_eye = OSVRRectangle { 0, 0, 2160 / 2, 1200 };
 
     CHECK(getEyeOutputViewport(vr::Eye_Left, getDisplay(), getScanOutOrigin(), getDisplayMode()) == left_eye);
     CHECK(getEyeOutputViewport(vr::Eye_Right, getDisplay(), getScanOutOrigin(), getDisplayMode()) == right_eye);
