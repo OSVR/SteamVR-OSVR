@@ -77,7 +77,8 @@ inline osvr::display::ScanOutOrigin getScanOutOrigin(const std::string& display_
 /**
  * Rectangle is used to define window bounds and eye viewport parameters.
  */
-struct Rectangle {
+class Rectangle {
+public:
     int32_t x;
     int32_t y;
     uint32_t width;
