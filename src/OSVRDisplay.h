@@ -40,6 +40,7 @@
 // Standard includes
 #include <cstdint>
 #include <ostream>
+#include <string>
 
 /**
  * Gets the default scan-out origin based the detected HMD and/or OSVR
