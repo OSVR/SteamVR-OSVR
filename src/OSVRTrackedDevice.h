@@ -181,8 +181,7 @@ public:
      * will return 0 and @p error will be set to an error. Otherwise it returns
      * the length of the number of bytes necessary to hold this string including
      * the trailing null. If the buffer is too small the error will be
-     * @c TrackedProp_BufferTooSmall. Strings will generally fit in buffers of
-     * @c k_unTrackingStringSize characters. Drivers may not return strings longer
+     * @c TrackedProp_BufferTooSmall. Drivers may not return strings longer
      * than @c k_unMaxPropertyStringSize.
      */
     virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;

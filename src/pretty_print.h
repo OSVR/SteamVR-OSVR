@@ -122,6 +122,8 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_DriverVersion_String";
         case vr::Prop_Firmware_ForceUpdateRequired_Bool:
             return "Prop_Firmware_ForceUpdateRequired_Bool";
+        case vr::Prop_ViveSystemButtonFixRequired_Bool:
+            return "Prop_ViveSystemButtonFixRequired_Bool";
         case vr::Prop_ReportsTimeSinceVSync_Bool:
             return "Prop_ReportsTimeSinceVSync_Bool";
         case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -196,6 +198,8 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_ScreenshotVerticalFieldOfViewDegrees_Float";
         case vr::Prop_DisplaySuppressed_Bool:
             return "Prop_DisplaySuppressed_Bool";
+        case vr::Prop_DisplayAllowNightMode_Bool:
+            return "Prop_DisplayAllowNightMode_Bool";
         case vr::Prop_AttachedDeviceId_String:
             return "Prop_AttachedDeviceId_String";
         case vr::Prop_SupportedButtons_Uint64:
