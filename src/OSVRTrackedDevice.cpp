@@ -906,6 +906,10 @@ float OSVRTrackedDevice::GetIPD()
 
 const char* OSVRTrackedDevice::GetId()
 {
+    if (display_.name.empty()) {
+        display_.name = "OSVR HMD";
+    }
+
     return display_.name.c_str();
 }
 
