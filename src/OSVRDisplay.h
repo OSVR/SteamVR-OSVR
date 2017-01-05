@@ -38,6 +38,7 @@
 #include <osvr/Util/PlatformConfig.h>
 
 // Standard includes
+#include <algorithm>
 #include <cstdint>
 #include <ostream>
 #include <string>
