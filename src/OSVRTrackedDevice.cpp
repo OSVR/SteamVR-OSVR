@@ -33,6 +33,7 @@
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
+#include "OSVRDisplay.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -77,7 +78,8 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 
     objectId_ = object_id;
 
-    const std::time_t waitTime = 5; // wait up to 5 seconds for init
+    // TODO use C++11 <chrono>
+    const std::time_t waitTime = settings_->getSetting<int32_t>("serverTimeout", 5);
 
     // Register tracker callback
     if (trackerInterface_.notEmpty()) {
@@ -163,7 +165,7 @@ void OSVRTrackedDevice::Deactivate()
     }
 }
 
-void OSVRTrackedDevice::PowerOff()
+void OSVRTrackedDevice::EnterStandby()
 {
     // FIXME Implement
 }
@@ -194,43 +196,11 @@ void OSVRTrackedDevice::DebugRequest(const char* request, char* response_buffer,
 
 void OSVRTrackedDevice::GetWindowBounds(int32_t* x, int32_t* y, uint32_t* width, uint32_t* height)
 {
-    int nDisplays = displayConfig_.getNumDisplayInputs();
-    if (nDisplays != 1) {
-        OSVR_LOG(err) << "OSVRTrackedHMD::OSVRTrackedHMD(): Unexpected display number of displays!\n";
-    }
-    osvr::clientkit::DisplayDimensions displayDims = displayConfig_.getDisplayDimensions(0);
-    *x = renderManagerConfig_.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
-    *y = renderManagerConfig_.getWindowYPosition();
-    *width = static_cast<uint32_t>(displayDims.width);
-    *height = static_cast<uint32_t>(displayDims.height);
-
-    OSVR_LOG(trace) << "GetWindowBounds(): Config file settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
-
-#if defined(OSVR_WINDOWS) || defined(OSVR_MACOSX)
-    // ... until we've added code for other platforms
-    *x = display_.position.x;
-    *y = display_.position.y;
-
-    // Windows always reports the widest dimension as width regardless of the
-    // orientation of the display. We need to flip these dimensions if the
-    // display is in portrait orientation.
-    //
-    // OS X reports the resolution with respect to the orientation (e.g., in
-    // portrait mode, a display's resolution might be 1080x1920).
-    //
-    // TODO Check to see how Linux handles this.
-    const auto orientation = scanoutOrigin_ + display_.rotation;
-    const bool is_portrait = (osvr::display::DesktopOrientation::Portrait == orientation || osvr::display::DesktopOrientation::PortraitFlipped == orientation);
-    if (is_portrait) {
-        *height = std::max(display_.size.width, display_.size.height);
-        *width = std::min(display_.size.width, display_.size.height);
-    } else {
-        *height = std::min(display_.size.width, display_.size.height);
-        *width = std::max(display_.size.width, display_.size.height);
-    }
-#endif // OSVR_WINDOWS or OSVR_MACOSX
-
-    OSVR_LOG(trace) << "GetWindowBounds(): Calculated settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
+    const auto bounds = getWindowBounds(display_, scanoutOrigin_);
+    *x = bounds.x;
+    *y = bounds.y;
+    *width = bounds.width;
+    *height = bounds.height;
 }
 
 bool OSVRTrackedDevice::IsDisplayOnDesktop()
@@ -253,87 +223,22 @@ void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t
 {
     //const double overfill_factor = renderManagerConfig_.getRenderOverfillFactor();
     const double overfill_factor = 1.0;
-    int32_t x, y;
-    uint32_t w, h;
-    GetWindowBounds(&x, &y, &w, &h);
+    const auto bounds = getWindowBounds(display_, scanoutOrigin_);
 
-    *width = static_cast<uint32_t>(w * overfill_factor);
-    *height = static_cast<uint32_t>(h * overfill_factor);
+    *width = static_cast<uint32_t>(bounds.width * overfill_factor);
+    *height = static_cast<uint32_t>(bounds.height * overfill_factor);
+    OSVR_LOG(trace) << "GetRecommendedRenderTargetSize(): width = " << *width << ", height = " << *height << ".";
 }
 
 void OSVRTrackedDevice::GetEyeOutputViewport(vr::EVREye eye, uint32_t* x, uint32_t* y, uint32_t* width, uint32_t* height)
 {
-    const auto eye_str = (vr::Eye_Left == eye) ? "left" : "right";
-    {
-        osvr::clientkit::RelativeViewport viewPort = displayConfig_.getViewer(0).getEye(eye).getSurface(0).getRelativeViewport();
-        *x = static_cast<uint32_t>(viewPort.left);
-        *y = static_cast<uint32_t>(viewPort.bottom);
-        *width = static_cast<uint32_t>(viewPort.width);
-        *height = static_cast<uint32_t>(viewPort.height);
+    const auto display_mode = displayConfiguration_.getDisplayMode();
+    const auto viewport = getEyeOutputViewport(eye, display_, scanoutOrigin_, display_mode);
 
-        OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): Config file settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
-    }
-
-    int32_t display_x, display_y;
-    uint32_t display_width, display_height;
-    GetWindowBounds(&display_x, &display_y, &display_width, &display_height);
-
-    // We have to duplicate this logic from OSVR-Core's DisplayConfig.cpp file
-    // because that version doesn't handle the *detected* rotation, only the
-    // rotation set in the config file.
-    auto display_mode = displayConfiguration_.getDisplayMode();
-    const auto orientation = scanoutOrigin_ + display_.rotation;
-
-    // TODO Simplify this code after verifying it works properly
-    if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
-        OSVR_LOG(trace) << "Display mode: full-screen.";
-        *x = 0;
-        *y = 0;
-        *width = display_width;
-        *height = display_height;
-    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
-        OSVR_LOG(trace) << "Display mode: horizontal side-by-side.";
-        using Orientation = osvr::display::DesktopOrientation;
-        if (Orientation::Portrait == orientation) {
-            OSVR_LOG(trace) << "Display orientation: portrait.";
-            *x = 0;
-            *y = (vr::Eye_Left == eye) ? 0 : display_height / 2;
-            *width = display_width;
-            *height = display_height / 2;
-        } else if (Orientation::PortraitFlipped == orientation) {
-            OSVR_LOG(trace) << "Display orientation: portrait flipped.";
-            *x = 0;
-            *y = (vr::Eye_Left == eye) ? display_height / 2 : 0;
-            *width = display_width;
-            *height = display_height / 2;
-        } else if (Orientation::Landscape == orientation) {
-            OSVR_LOG(trace) << "Display orientation: landscape.";
-            *x = (vr::Eye_Left == eye) ? 0 : display_width / 2;
-            *y = 0;
-            *width = display_width / 2;
-            *height = display_height;
-        } else if (Orientation::LandscapeFlipped == orientation) {
-            OSVR_LOG(trace) << "Display orientation: landscape flipped.";
-            *x = (vr::Eye_Left == eye) ? display_width / 2 : 0;
-            *y = 0;
-            *width = display_width / 2;
-            *height = display_height;
-        } else {
-            OSVR_LOG(err) << "Unknown display orientation [" << static_cast<int>(orientation) << "]!";
-        }
-    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
-        OSVR_LOG(trace) << "Display mode: vertical side-by-side.";
-        OSVR_LOG(err) << "This display mode hasn't been implemented yet!";
-        // TODO
-        *x = 0;
-        *y = 0;
-        *width = display_width;
-        *height = display_height / 2;
-    } else {
-        OSVR_LOG(err) << "Unknown display mode [" << static_cast<int>(display_mode) << "]!";
-    }
-
-    OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): Calculated settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
+    *x = static_cast<uint32_t>(viewport.x);
+    *y = static_cast<uint32_t>(viewport.y);
+    *width = viewport.width;
+    *height = viewport.height;
 }
 
 void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* right, float* top, float* bottom)
@@ -349,49 +254,6 @@ void OSVRTrackedDevice::GetProjectionRaw(vr::EVREye eye, float* left, float* rig
 
 vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye, float u, float v)
 {
-#if 0
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") called.";
-    // Rotate the (u, v) coordinates as appropriate to the display orientation.
-    const auto orientation = scanoutOrigin_ + display_.rotation;
-    std::tie(u, v) = rotateTextureCoordinates(orientation, u, v);
-    // Note that RenderManager expects the (0, 0) to be the lower-left corner
-    // and (1, 1) to be the upper-right corner while SteamVR assumes (0, 0) is
-    // upper-left and (1, 1) is lower-right.  To accommodate this, we need to
-    // flip the y-coordinate before passing it to RenderManager and flip it
-    // again before returning the value to SteamVR.
-    OSVR_LOG(trace) << "OSVRTrackedHMD::ComputeDistortion(" << eye << ", " << u << ", " << v << ") rotated.";
-    using osvr::renderkit::DistortionCorrectTextureCoordinate;
-    static const size_t COLOR_RED = 0;
-    static const size_t COLOR_GREEN = 1;
-    static const size_t COLOR_BLUE = 2;
-    const auto osvr_eye = static_cast<size_t>(eye);
-    const auto distortion_parameters = distortionParameters_[osvr_eye];
-    const auto in_coords = osvr::renderkit::Float2 {{u, 1.0f - v}}; // flip v-coordinate
-    const auto interpolators = (vr::Eye_Left == eye) ? &leftEyeInterpolators_ : &rightEyeInterpolators_;
-    auto coords_red = DistortionCorrectTextureCoordinate(
-        osvr_eye, in_coords, distortion_parameters,
-        COLOR_RED, overfillFactor_, *interpolators);
-    auto coords_green = DistortionCorrectTextureCoordinate(
-        osvr_eye, in_coords, distortion_parameters,
-        COLOR_GREEN, overfillFactor_, *interpolators);
-    auto coords_blue = DistortionCorrectTextureCoordinate(
-        osvr_eye, in_coords, distortion_parameters,
-        COLOR_BLUE, overfillFactor_, *interpolators);
-    vr::DistortionCoordinates_t coords;
-    // flip v-coordinates again
-    coords.rfRed[0] = coords_red[0];
-    coords.rfRed[1] = 1.0f - coords_red[1];
-    coords.rfGreen[0] = coords_green[0];
-    coords.rfGreen[1] = 1.0f - coords_green[1];
-    coords.rfBlue[0] = coords_blue[0];
-    coords.rfBlue[1] = 1.0f - coords_blue[1];
-    // Unrotate the coordinates
-    const auto reverse_orientation = static_cast<osvr::display::DesktopOrientation>((4 - static_cast<int>(orientation)) % 4);
-    std::tie(coords.rfRed[0], coords.rfRed[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfRed[0], coords.rfRed[1]);
-    std::tie(coords.rfGreen[0], coords.rfGreen[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfGreen[0], coords.rfGreen[1]);
-    std::tie(coords.rfBlue[0], coords.rfBlue[1]) = rotateTextureCoordinates(reverse_orientation, coords.rfBlue[0], coords.rfBlue[1]);
-    return coords;
-#endif
     // Rotate the texture coordinates to match the display orientation
     const auto orientation = scanoutOrigin_ + display_.rotation;
     const auto desired_orientation = osvr::display::DesktopOrientation::Landscape;
@@ -903,19 +765,19 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
     case vr::Prop_ModelNumber_String:
         if (error)
             *error = vr::TrackedProp_Success;
-        return "OSVR HMD";
+        return settings_->getSetting<std::string>("modelNumber", displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion());
     case vr::Prop_SerialNumber_String:
         if (error)
             *error = vr::TrackedProp_Success;
-        return this->GetId();
+        return settings_->getSetting<std::string>("serialNumber", this->GetId());
     case vr::Prop_RenderModelName_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
     case vr::Prop_ManufacturerName_String:
         if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
+            *error = vr::TrackedProp_Success;
+        return settings_->getSetting<std::string>("manufacturer", displayConfiguration_.getVendor());
     case vr::Prop_TrackingFirmwareVersion_String:
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
@@ -1044,6 +906,10 @@ float OSVRTrackedDevice::GetIPD()
 
 const char* OSVRTrackedDevice::GetId()
 {
+    if (display_.name.empty()) {
+        display_.name = "OSVR HMD";
+    }
+
     return display_.name.c_str();
 }
 
@@ -1074,6 +940,19 @@ void OSVRTrackedDevice::configure()
         OSVR_LOG(trace) << "Found a match! Display [" << display.name << "] matches [" << display_name << "].";
         display_ = display;
         display_found = true;
+
+        // The scan-out origin of the display
+        const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
+        if (scan_out_origin_str.empty()) {
+            // Calculate the scan-out origin based on the display parameters
+            //scanoutOrigin_ = osvr::display::to_ScanOutOrigin(osvr::display::ScanOutOrigin::UpperLeft + display_.rotation);
+            const auto rot = renderManagerConfig_.getDisplayRotation();
+            scanoutOrigin_ = osvr::display::to_ScanOutOrigin(osvr::display::ScanOutOrigin::UpperLeft + osvr::display::to_Rotation(static_cast<int>(rot)));
+            OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
+        } else {
+            scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+        }
+
         break;
     }
 
@@ -1086,48 +965,44 @@ void OSVRTrackedDevice::configure()
         displayDescription_ = context_.getStringParameter("/display");
         displayConfiguration_ = OSVRDisplayConfiguration(displayDescription_);
         const auto d = OSVRDisplayConfiguration(displayDescription_);
-        const auto active_resolution = d.activeResolution();
+        auto active_resolution = d.activeResolution();
 
         const auto position_x = renderManagerConfig_.getWindowXPosition();
         const auto position_y = renderManagerConfig_.getWindowYPosition();
 
         // Rotation
+        //   Adjust the scan-out orientation based rotation value.  Also, when
+        //   the rotation is 90 or 270, we need to swap the resolution values
+        //   and zero out the rotation.. Otherwise, just ignore the rotation (as
+        //   we compensate for it using the scan-out origin).
         using osvr::display::Rotation;
         auto rotation = Rotation::Zero;
         const auto rot = renderManagerConfig_.getDisplayRotation();
-        if (0 == rot) {
-            rotation = Rotation::Zero;
-        } else if (90 == rot) {
-            rotation = Rotation::Ninety;
-        } else if (180 == rot) {
-            rotation = Rotation::OneEighty;
-        } else if (270 == rot) {
-            rotation = Rotation::TwoSeventy;
-        } else {
-            OSVR_LOG(err) << "Invalid rotation from RenderManager configuration: " << rot << ".";
+        if (90 == rot || 270 == rot) {
+            std::swap(active_resolution.width, active_resolution.height);
         }
 
         display_.adapter.description = "Unknown";
         display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion();
-        display_.size.width = active_resolution.width;
-        display_.size.height = active_resolution.height;
+        display_.size.width = static_cast<uint32_t>(active_resolution.width);
+        display_.size.height = static_cast<uint32_t>(active_resolution.height);
         display_.position.x = position_x;
         display_.position.y = position_y;
         display_.rotation = rotation;
-        display_.verticalRefreshRate = getVerticalRefreshRate();
+        display_.verticalRefreshRate = settings_->getSetting<double>("verticalRefreshRate", getVerticalRefreshRate());
         display_.attachedToDesktop = false; // assuming direct mode
-        display_.edidVendorId = 0xd24e; // SVR // TODO not provided by config files
-        display_.edidProductId = 0x1019; // TODO not provided by config files
-    }
+        display_.edidVendorId = settings_->getSetting<uint32_t>("edidVendorId", 0xd24e); // SVR
+        display_.edidProductId = settings_->getSetting<uint32_t>("edidProductId", 0x1019);
 
-    // The scan-out origin of the display
-    const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
-    if (scan_out_origin_str.empty()) {
-        // Calculate the scan-out origin based on the display parameters
-        scanoutOrigin_ = getScanOutOrigin();
-        OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
-    } else {
-        scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+        // The scan-out origin of the display
+        const auto scan_out_origin_str = settings_->getSetting<std::string>("scanoutOrigin", "");
+        if (scan_out_origin_str.empty()) {
+            // Calculate the scan-out origin based on the display parameters
+            scanoutOrigin_ = osvr::display::to_ScanOutOrigin(osvr::display::ScanOutOrigin::UpperLeft + osvr::display::to_Rotation(static_cast<int>(rot)));
+            OSVR_LOG(warn) << "Warning: scan-out origin unspecified. Defaulting to " << scanoutOrigin_ << ".";
+        } else {
+            scanoutOrigin_ = parseScanOutOrigin(scan_out_origin_str);
+        }
     }
 
     // Print the display settings we're running with
@@ -1217,32 +1092,6 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string s
         OSVR_LOG(err) << "The string [" + str + "] could not be parsed as a scan-out origin. Use one of: lower-left, upper-left, lower-right, upper-right.";
         return osvr::display::ScanOutOrigin::UpperLeft;
     }
-}
-
-osvr::display::ScanOutOrigin OSVRTrackedDevice::getScanOutOrigin() const
-{
-    // TODO Use RenderManager and OSVR config files to determine scan-out
-    // origin. But since some of those are currently broken, we'll base the
-    // defaults on our knowledge of the HDK 1.x and 2.0.
-    using SO = osvr::display::ScanOutOrigin;
-    const auto is_hdk = (std::string::npos != display_.name.find("OSVR HDK"));
-    if (!is_hdk) {
-        // Unknown HMD. Punt!
-        return SO::UpperLeft;
-    }
-
-    const auto is_hdk_1x = (std::string::npos != display_.name.find("OSVR HDK 1"));
-    const auto is_hdk_20 = (std::string::npos != display_.name.find("OSVR HDK 2.0"));
-    if (is_hdk_1x) {
-        const auto is_landscape = (display_.size.height < display_.size.width);
-        return (is_landscape ? SO::UpperLeft : SO::UpperRight);
-    } else if (is_hdk_20) {
-        // change this if the HDK 2.0 display descriptor gets fixed
-        return SO::UpperLeft;
-    }
-
-    // Some unknown HDK!
-    return SO::LowerRight;
 }
 
 double OSVRTrackedDevice::getVerticalRefreshRate() const

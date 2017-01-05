@@ -73,9 +73,10 @@ public:
     virtual void Deactivate() OSVR_OVERRIDE;
 
     /**
-     * Handles a request from the system to power off this device.
+     * Handles a request from the system to put this device into standby mode.
+     * What that means is defined per-device.
      */
-    virtual void PowerOff() OSVR_OVERRIDE;
+    virtual void EnterStandby() OSVR_OVERRIDE;
 
     /**
      * Requests a component interface of the driver for device-specific
@@ -180,8 +181,7 @@ public:
      * will return 0 and @p error will be set to an error. Otherwise it returns
      * the length of the number of bytes necessary to hold this string including
      * the trailing null. If the buffer is too small the error will be
-     * @c TrackedProp_BufferTooSmall. Strings will generally fit in buffers of
-     * @c k_unTrackingStringSize characters. Drivers may not return strings longer
+     * @c TrackedProp_BufferTooSmall. Drivers may not return strings longer
      * than @c k_unMaxPropertyStringSize.
      */
     virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
@@ -227,12 +227,6 @@ private:
      * Parses a string into a scan-out origin option.
      */
     osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str) const;
-
-    /**
-     * Gets the default scan-out origin based the detected HMD and/or OSVR
-     * configuration.
-     */
-    osvr::display::ScanOutOrigin getScanOutOrigin() const;
 
     /**
      * Gets the vertical refresh rate of the display.

@@ -44,23 +44,44 @@ public:
     Settings(vr::IVRSettings* settings, const std::string& section = "driver_osvr");
 
     /**
-     * Returns the setting value or returns @c value if the setting
-     * doesn't exist.
+     * @brief Returns true if file sync occurred (force or settings dirty).
      */
-    template <typename T> T getSetting(const std::string& setting, const T& value);
+    bool sync(bool force = false, vr::EVRSettingsError* error = nullptr);
 
-private:
-    /** \name Accessors for general values. */
+    /**
+     * Returns the setting value or returns @c value if the setting
+     * doesn't exist or an error occurred (e.g., read error, failure to parse
+     * JSON settings file).
+     */
     //@{
-    template <typename T> T getSetting(identity<T>, const std::string& setting, const T& value);
+    template <typename T> T getSetting(const std::string& setting);
+    template <typename T> T getSetting(const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    template <typename T> T getSetting(const std::string& setting, const T& value);
     //@}
 
-    /** \name Accessors and helper functions for boolean values. */
-    //@{
-    bool getSetting(identity<bool>, const std::string& setting, const bool& value);
-    int32_t getSetting(identity<int32_t>, const std::string& setting, const int32_t& value);
-    float getSetting(identity<float>, const std::string& setting, const float& value);
-    std::string getSetting(identity<std::string>, const std::string& setting, const std::string& value);
+    /**
+     * @brief Removes the entire  section of the configuration settings.
+     */
+    void removeSection(vr::EVRSettingsError* error = nullptr);
+
+    /**
+     * @brief Removes a setting from the current section.
+     */
+    void removeSetting(const std::string& setting, vr::EVRSettingsError* error = nullptr);
+
+    /**
+     * @brief Returns true if the settings key exists, false otherwise.
+     */
+    bool hasSetting(const std::string& settings_key);
+
+private:
+    /** \name Accessors for settings values. */
+    bool getSetting(identity<bool>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    int32_t getSetting(identity<int32_t>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    uint32_t getSetting(identity<uint32_t>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    float getSetting(identity<float>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    double getSetting(identity<double>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
+    std::string getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     //@}
 
     vr::IVRSettings* settings_ = nullptr;
@@ -74,36 +95,87 @@ inline Settings::Settings(vr::IVRSettings* settings, const std::string& section)
     }
 }
 
+inline bool Settings::sync(bool force, vr::EVRSettingsError* error)
+{
+    return settings_->Sync(force, error);
+}
+
+template<typename T> inline T Settings::getSetting(const std::string& setting)
+{
+    // Redirect to the private method
+    return getSetting(identity<T>(), setting);
+}
+
+template <typename T> inline T getSetting(const std::string& setting, vr::EVRSettingsError* error)
+{
+    return getSetting(identity<T>(), setting, &error);
+}
+
 template<typename T> inline T Settings::getSetting(const std::string& setting, const T& value)
 {
     // Redirect to the private method
-    return getSetting(identity<T>(), setting, value);
+    vr::EVRSettingsError error = vr::VRSettingsError_None;
+    auto result = getSetting(identity<T>(), setting, &error);
+    if (vr::VRSettingsError_None != error) {
+        result = value;
+    }
+    return result;
 }
 
-template<typename T> inline T Settings::getSetting(identity<T>, const std::string& setting, const T& value)
+inline void Settings::removeSection(vr::EVRSettingsError* error)
 {
-    return getSetting<T>(identity<T>(), setting, value);
+    settings_->RemoveSection(section_.c_str(), error);
 }
 
-inline bool Settings::getSetting(identity<bool>, const std::string& setting, const bool& value)
+inline void Settings::removeSetting(const std::string& setting, vr::EVRSettingsError *error)
 {
-    return settings_->GetBool(section_.c_str(), setting.c_str(), value);
+    settings_->RemoveKeyInSection(section_.c_str(), setting.c_str(), error);
 }
 
-inline float Settings::getSetting(identity<float>, const std::string& setting, const float& value)
+inline bool Settings::hasSetting(const std::string& setting)
 {
-    return settings_->GetFloat(section_.c_str(), setting.c_str(), value);
+    vr::EVRSettingsError error = vr::VRSettingsError_None;
+    settings_->GetBool(section_.c_str(), setting.c_str(), &error);
+    return (vr::VRSettingsError_UnsetSettingHasNoDefault != error);
 }
 
-inline int32_t Settings::getSetting(identity<int32_t>, const std::string& setting, const int32_t& value)
+/*
+template<typename T> inline T Settings::getSetting(identity<T>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return settings_->GetInt32(section_.c_str(), setting.c_str(), value);
+    static_assert(false, "Can only retrieve settings of type bool, float, int32_t, and std::string.");
+    return 0;
+}
+*/
+
+inline bool Settings::getSetting(identity<bool>, const std::string& setting, vr::EVRSettingsError* error)
+{
+    return settings_->GetBool(section_.c_str(), setting.c_str(), error);
 }
 
-inline std::string Settings::getSetting(identity<std::string>, const std::string& setting, const std::string& value)
+inline float Settings::getSetting(identity<float>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    char buf[1024];
-    settings_->GetString(section_.c_str(), setting.c_str(), buf, sizeof(buf), value.c_str());
+    return settings_->GetFloat(section_.c_str(), setting.c_str(), error);
+}
+
+inline double Settings::getSetting(identity<double>, const std::string& setting, vr::EVRSettingsError* error)
+{
+    return static_cast<double>(getSetting(identity<float>(), setting, error));
+}
+
+inline int32_t Settings::getSetting(identity<int32_t>, const std::string& setting, vr::EVRSettingsError* error)
+{
+    return settings_->GetInt32(section_.c_str(), setting.c_str(), error);
+}
+
+inline uint32_t Settings::getSetting(identity<uint32_t>, const std::string& setting, vr::EVRSettingsError* error)
+{
+    return static_cast<uint32_t>(getSetting(identity<int32_t>(), setting, error));
+}
+
+inline std::string Settings::getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error)
+{
+    char buf[1024] = { 0 };
+    settings_->GetString(section_.c_str(), setting.c_str(), buf, sizeof(buf), error);
     std::string ret = buf;
     return ret;
 }

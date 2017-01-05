@@ -54,10 +54,14 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_IsOnDesktop_Bool:
     case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     case vr::Prop_DisplaySuppressed_Bool:
+    case vr::Prop_ViveSystemButtonFixRequired_Bool:
+    case vr::Prop_DisplayAllowNightMode_Bool:
     // could be any type
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -130,6 +134,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const bool&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -169,6 +182,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -185,6 +200,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_IsOnDesktop_Bool:
     case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     case vr::Prop_DisplaySuppressed_Bool:
+    case vr::Prop_ViveSystemButtonFixRequired_Bool:
+    case vr::Prop_DisplayAllowNightMode_Bool:
     // Int32
     case vr::Prop_DeviceClass_Int32:
     case vr::Prop_DisplayMCType_Int32:
@@ -233,6 +250,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const float&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -261,6 +287,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -277,6 +305,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_IsOnDesktop_Bool:
     case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     case vr::Prop_DisplaySuppressed_Bool:
+    case vr::Prop_ViveSystemButtonFixRequired_Bool:
+    case vr::Prop_DisplayAllowNightMode_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -336,6 +366,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const int32_t&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -367,6 +406,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -383,6 +424,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_IsOnDesktop_Bool:
     case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     case vr::Prop_DisplaySuppressed_Bool:
+    case vr::Prop_ViveSystemButtonFixRequired_Bool:
+    case vr::Prop_DisplayAllowNightMode_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -439,6 +482,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const uint64_t&)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // Matrix34
     case vr::Prop_StatusDisplayTransform_Matrix34:
     case vr::Prop_CameraToHeadTransform_Matrix34:
@@ -469,10 +521,21 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
     // could be any type
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -489,6 +552,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, const char*)
     case vr::Prop_IsOnDesktop_Bool:
     case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     case vr::Prop_DisplaySuppressed_Bool:
+    case vr::Prop_ViveSystemButtonFixRequired_Bool:
+    case vr::Prop_DisplayAllowNightMode_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -560,6 +625,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_VendorSpecific_Reserved_Start:
     case vr::Prop_VendorSpecific_Reserved_End:
         return false;
+    // Invalid
+    case vr::Prop_Invalid:
     // Bool
     case vr::Prop_WillDriftInYaw_Bool:
     case vr::Prop_DeviceIsWireless_Bool:
@@ -576,6 +643,8 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_IsOnDesktop_Bool:
     case vr::Prop_Firmware_ForceUpdateRequired_Bool:
     case vr::Prop_DisplaySuppressed_Bool:
+    case vr::Prop_ViveSystemButtonFixRequired_Bool:
+    case vr::Prop_DisplayAllowNightMode_Bool:
     // Float
     case vr::Prop_DeviceBatteryPercentage_Float:
     case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -648,6 +717,15 @@ inline bool isWrongDataType(vr::ETrackedDeviceProperty prop, vr::HmdMatrix34_t)
     case vr::Prop_AttachedDeviceId_String:
     case vr::Prop_ModeLabel_String:
     case vr::Prop_DriverVersion_String:
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
         return true;
     }
 
@@ -690,6 +768,7 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_DeviceClass_Int32:
     case vr::Prop_HasCamera_Bool:
     case vr::Prop_Firmware_ForceUpdateRequired_Bool:
+    case vr::Prop_ViveSystemButtonFixRequired_Bool:
     case vr::Prop_DriverVersion_String:
         return false;
 
@@ -731,6 +810,7 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_ScreenshotHorizontalFieldOfViewDegrees_Float:
     case vr::Prop_ScreenshotVerticalFieldOfViewDegrees_Float:
     case vr::Prop_DisplaySuppressed_Bool:
+    case vr::Prop_DisplayAllowNightMode_Bool:
         return (vr::TrackedDeviceClass_HMD != device_class);
 
     // Properties that are unique to TrackedDeviceClass_Controller
@@ -753,6 +833,22 @@ inline bool isWrongDeviceClass(vr::ETrackedDeviceProperty prop, vr::ETrackedDevi
     case vr::Prop_TrackingRangeMaximumMeters_Float:
     case vr::Prop_ModeLabel_String:
         return (vr::TrackedDeviceClass_TrackingReference != device_class);
+
+    // Properties that are used for user interface like icons names
+    case vr::Prop_IconPathName_String:
+    case vr::Prop_NamedIconPathDeviceOff_String:
+    case vr::Prop_NamedIconPathDeviceSearching_String:
+    case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+    case vr::Prop_NamedIconPathDeviceReady_String:
+    case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+    case vr::Prop_NamedIconPathDeviceNotReady_String:
+    case vr::Prop_NamedIconPathDeviceStandby_String:
+    case vr::Prop_NamedIconPathDeviceAlertLow_String:
+        return true;
+
+    // Invalid
+    case vr::Prop_Invalid:
+        return true;
 
     // Vendors are free to expose private debug data in this reserved region
     case vr::Prop_VendorSpecific_Reserved_Start:

@@ -91,7 +91,7 @@ void OSVRTrackingReference::Deactivate()
     }
 }
 
-void OSVRTrackingReference::PowerOff()
+void OSVRTrackingReference::EnterStandby()
 {
     // do nothing
 }

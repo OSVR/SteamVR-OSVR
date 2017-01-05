@@ -41,7 +41,8 @@ vr::EVRInitError ClientDriver_OSVR::Init(vr::EClientDriverMode driver_mode, vr::
     driverHost_ = driver_host;
     userDriverConfigDir_ = user_driver_config_dir;
     driverInstallDir_ = driver_install_dir;
-    settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
+    //settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
+    settings_ = std::make_unique<Settings>(static_cast<vr::IVRSettings*>(driver_host->GetGenericInterface(vr::IVRSettings_Version)));
 
     // We don't support watchdog mode
     if (vr::ClientDriverMode_Watchdog == driver_mode) {
@@ -72,7 +73,7 @@ vr::EVRInitError ClientDriver_OSVR::SetDisplayId(const char* display_id)
     return vr::VRInitError_None;
 }
 
-vr::HiddenAreaMesh_t ClientDriver_OSVR::GetHiddenAreaMesh(vr::EVREye eye)
+vr::HiddenAreaMesh_t ClientDriver_OSVR::GetHiddenAreaMesh(vr::EVREye eye, vr::EHiddenAreaMeshType type)
 {
     vr::HiddenAreaMesh_t hidden_area_mesh;
     hidden_area_mesh.pVertexData = nullptr;

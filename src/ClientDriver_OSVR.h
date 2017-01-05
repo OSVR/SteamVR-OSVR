@@ -106,7 +106,7 @@ public:
      * this mesh with backface culling disabled since the winding order of the
      * vertices can be different per-HMD or per-eye.
      */
-    virtual vr::HiddenAreaMesh_t GetHiddenAreaMesh(vr::EVREye eye) OSVR_OVERRIDE;
+    virtual vr::HiddenAreaMesh_t GetHiddenAreaMesh(vr::EVREye eye, vr::EHiddenAreaMeshType type) OSVR_OVERRIDE;
 
     /**
      * Get the MC image for the current HMD.

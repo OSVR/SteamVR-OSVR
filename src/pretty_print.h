@@ -56,6 +56,8 @@ inline std::string to_string(void* value)
 inline std::string to_string(const vr::ETrackedDeviceProperty& value)
 {
     switch (value) {
+        case vr::Prop_Invalid:
+            return "Prop_Invalid";
         case vr::Prop_TrackingSystemName_String:
             return "Prop_TrackingSystemName_String";
         case vr::Prop_ModelNumber_String:
@@ -122,6 +124,8 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_DriverVersion_String";
         case vr::Prop_Firmware_ForceUpdateRequired_Bool:
             return "Prop_Firmware_ForceUpdateRequired_Bool";
+        case vr::Prop_ViveSystemButtonFixRequired_Bool:
+            return "Prop_ViveSystemButtonFixRequired_Bool";
         case vr::Prop_ReportsTimeSinceVSync_Bool:
             return "Prop_ReportsTimeSinceVSync_Bool";
         case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -196,6 +200,8 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_ScreenshotVerticalFieldOfViewDegrees_Float";
         case vr::Prop_DisplaySuppressed_Bool:
             return "Prop_DisplaySuppressed_Bool";
+        case vr::Prop_DisplayAllowNightMode_Bool:
+            return "Prop_DisplayAllowNightMode_Bool";
         case vr::Prop_AttachedDeviceId_String:
             return "Prop_AttachedDeviceId_String";
         case vr::Prop_SupportedButtons_Uint64:
@@ -226,6 +232,24 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_TrackingRangeMaximumMeters_Float";
         case vr::Prop_ModeLabel_String:
             return "Prop_ModeLabel_String";
+        case vr::Prop_IconPathName_String:
+            return "Prop_IconPathName_String";
+        case vr::Prop_NamedIconPathDeviceOff_String:
+            return "Prop_NamedIconPathDeviceOff_String";
+        case vr::Prop_NamedIconPathDeviceSearching_String:
+            return "Prop_NamedIconPathDeviceSearching_String";
+        case vr::Prop_NamedIconPathDeviceSearchingAlert_String:
+            return "Prop_NamedIconPathDeviceSearchingAlert_String";
+        case vr::Prop_NamedIconPathDeviceReady_String:
+            return "Prop_NamedIconPathDeviceReady_String";
+        case vr::Prop_NamedIconPathDeviceReadyAlert_String:
+            return "Prop_NamedIconPathDeviceReadyAlert_String";
+        case vr::Prop_NamedIconPathDeviceNotReady_String:
+            return "Prop_NamedIconPathDeviceNotReady_String";
+        case vr::Prop_NamedIconPathDeviceStandby_String:
+            return "Prop_NamedIconPathDeviceStandby_String";
+        case vr::Prop_NamedIconPathDeviceAlertLow_String:
+            return "Prop_NamedIconPathDeviceAlertLow_String";
         case vr::Prop_VendorSpecific_Reserved_Start:
             return "Prop_VendorSpecific_Reserved_Start";
         case vr::Prop_VendorSpecific_Reserved_End:
