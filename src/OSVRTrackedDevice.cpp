@@ -26,31 +26,30 @@
 #include "OSVRTrackedDevice.h"
 #include "Logging.h"
 
-#include "osvr_compiler_detection.h"
+#include "AngVelTools.h"
+#include "OSVRDisplay.h"
+#include "ValveStrCpy.h"
 #include "make_unique.h"
 #include "matrix_cast.h"
+#include "osvr_compiler_detection.h"
 #include "osvr_device_properties.h"
-#include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
-#include "make_unique.h"
-#include "OSVRDisplay.h"
-#include "AngVelTools.h"
-
 
 // OpenVR includes
 #include <openvr_driver.h>
 
 // Library/third-party includes
+#include <osvr/Client/RenderManagerConfig.h>
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Display/DisplayEnumerator.h>
+#include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Util/PlatformConfig.h>
-#include <osvr/Client/RenderManagerConfig.h>
+#include <osvr/ClientKit/InterfaceStateC.h>
 #include <util/FixedLengthStringFunctions.h>
-#include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
 
 // Standard includes
-#include <algorithm>        // for std::find
+#include <algorithm> // for std::find
 #include <cstring>
 #include <ctime>
 #include <exception>
@@ -145,7 +144,7 @@ vr::EVRInitError OSVRTrackedDevice::Activate(uint32_t object_id)
 
     try {
         renderManagerConfig_.parse(configString);
-    } catch(const std::exception& e) {
+    } catch (const std::exception& e) {
         OSVR_LOG(err) << "OSVRTrackedDevice::Activate(): Exception parsing Render Manager config: " << e.what() << "\n";
     }
 
@@ -276,7 +275,7 @@ vr::DistortionCoordinates_t OSVRTrackedDevice::ComputeDistortion(vr::EVREye eye,
 
     const auto osvr_eye = static_cast<size_t>(eye);
     const auto distortion_parameters = distortionParameters_[osvr_eye];
-    const auto in_coords = osvr::renderkit::Float2 {{u, 1.0f - v}}; // flip v-coordinate
+    const auto in_coords = osvr::renderkit::Float2{{u, 1.0f - v}}; // flip v-coordinate
 
     const auto interpolators = (vr::Eye_Left == eye) ? &leftEyeInterpolators_ : &rightEyeInterpolators_;
 
@@ -722,7 +721,7 @@ vr::HmdMatrix34_t OSVRTrackedDevice::GetMatrix34TrackedDeviceProperty(vr::ETrack
     return default_value;
 }
 
-uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError *error)
+uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error)
 {
     uint32_t default_value = 0;
 
@@ -748,11 +747,11 @@ uint32_t OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevicePro
     return 0;
 }
 
-    // ------------------------------------
-    // Private Methods
-    // ------------------------------------
+// ------------------------------------
+// Private Methods
+// ------------------------------------
 
-std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error)
+std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
 {
     std::string default_value = "";
 
@@ -839,7 +838,6 @@ std::string OSVRTrackedDevice::GetStringTrackedDeviceProperty(vr::ETrackedDevice
         if (error)
             *error = vr::TrackedProp_ValueNotProvidedByDevice;
         return default_value;
-
     }
 
 #include "ignore-warning/pop"
@@ -857,18 +855,17 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
 
     auto* self = static_cast<OSVRTrackedDevice*>(userdata);
 
-	// Get angular velocity in correct format for SteamVR
-	OSVR_TimeValue timeval2;
-	OSVR_AngularVelocityState state;
-	osvrGetAngularVelocityState(self->trackerInterface_.get(), &timeval2, &state);
-	double dt = state.dt;
-	Eigen::Quaterniond r = osvr::util::fromQuat(report->pose.rotation);
-	Eigen::Quaterniond q = osvr::util::fromQuat(state.incrementalRotation);
-	q = r.inverse()*q*r;
-	// Convert invcremental rotation to angular velocity
-	Eigen::Vector3d angularvelocity = osvr::vbtracker::incRotToAngVelVec(q, dt);
-	
-	
+    // Get angular velocity in correct format for SteamVR
+    OSVR_TimeValue timeval2;
+    OSVR_AngularVelocityState state;
+    osvrGetAngularVelocityState(self->trackerInterface_.get(), &timeval2, &state);
+    double dt = state.dt;
+    Eigen::Quaterniond r = osvr::util::fromQuat(report->pose.rotation);
+    Eigen::Quaterniond q = osvr::util::fromQuat(state.incrementalRotation);
+    q = r.inverse() * q * r;
+    // Convert invcremental rotation to angular velocity
+    Eigen::Vector3d angularvelocity = osvr::vbtracker::incRotToAngVelVec(q, dt);
+
     vr::DriverPose_t pose;
     pose.poseTimeOffset = 0; // close enough
 
@@ -1005,7 +1002,7 @@ void OSVRTrackedDevice::configure()
         display_.position.y = position_y;
         display_.rotation = rotation;
         display_.verticalRefreshRate = settings_->getSetting<double>("verticalRefreshRate", getVerticalRefreshRate());
-        display_.attachedToDesktop = false; // assuming direct mode
+        display_.attachedToDesktop = false;                                              // assuming direct mode
         display_.edidVendorId = settings_->getSetting<uint32_t>("edidVendorId", 0xd24e); // SVR
         display_.edidProductId = settings_->getSetting<uint32_t>("edidProductId", 0x1019);
 
@@ -1047,7 +1044,7 @@ void OSVRTrackedDevice::configureDistortionParameters()
     // Initialize the distortion parameters
     OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Number of eyes: " << displayConfiguration_.getEyes().size() << ".";
     for (size_t i = 0; i < displayConfiguration_.getEyes().size(); ++i) {
-        auto distortion = osvr::renderkit::DistortionParameters { displayConfiguration_, i };
+        auto distortion = osvr::renderkit::DistortionParameters{displayConfiguration_, i};
         distortion.m_desiredTriangles = 200 * 64;
         OSVR_LOG(debug) << "OSVRTrackedDevice::configureDistortionParameters(): Adding distortion for eye " << i << ".";
         distortionParameters_.push_back(distortion);
@@ -1091,17 +1088,13 @@ osvr::display::ScanOutOrigin OSVRTrackedDevice::parseScanOutOrigin(std::string s
     // Make the string lowercase
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 
-    if ("lower-left" == str || "ll" == str || "lowerleft" == str || "lower left" == str
-        || "bottom-left" == str || "bl" == str || "bottomleft" == str || "bottom left" == str) {
+    if ("lower-left" == str || "ll" == str || "lowerleft" == str || "lower left" == str || "bottom-left" == str || "bl" == str || "bottomleft" == str || "bottom left" == str) {
         return osvr::display::ScanOutOrigin::LowerLeft;
-    } else if ("lower-right" == str || "lr" == str || "lowerright" == str || "lower right" == str
-        || "bottom-right" == str || "br" == str || "bottomright" == str || "bottom right" == str) {
+    } else if ("lower-right" == str || "lr" == str || "lowerright" == str || "lower right" == str || "bottom-right" == str || "br" == str || "bottomright" == str || "bottom right" == str) {
         return osvr::display::ScanOutOrigin::LowerRight;
-    } else if ("upper-left" == str || "ul" == str || "upperleft" == str || "upper left" == str
-        || "top-left" == str || "tl" == str || "topleft" == str || "top left" == str) {
+    } else if ("upper-left" == str || "ul" == str || "upperleft" == str || "upper left" == str || "top-left" == str || "tl" == str || "topleft" == str || "top left" == str) {
         return osvr::display::ScanOutOrigin::UpperLeft;
-    } else if ("upper-right" == str || "ur" == str || "upperright" == str || "upper right" == str
-        || "top-right" == str || "tr" == str || "topright" == str || "top right" == str) {
+    } else if ("upper-right" == str || "ur" == str || "upperright" == str || "upper right" == str || "top-right" == str || "tr" == str || "topright" == str || "top right" == str) {
         return osvr::display::ScanOutOrigin::UpperRight;
     } else {
         OSVR_LOG(err) << "The string [" + str + "] could not be parsed as a scan-out origin. Use one of: lower-left, upper-left, lower-right, upper-right.";
@@ -1144,16 +1137,15 @@ std::pair<float, float> OSVRTrackedDevice::rotate(float u, float v, osvr::displa
     // Rotates normalized coordinates counter-clockwise
     using R = osvr::display::Rotation;
     if (R::Zero == rotation) {
-        return { u, v };
+        return {u, v};
     } else if (R::Ninety == rotation) {
-        return { 1.0f - v, u };
+        return {1.0f - v, u};
     } else if (R::OneEighty == rotation) {
-        return { 1.0f - u, 1.0f - v };
+        return {1.0f - u, 1.0f - v};
     } else if (R::TwoSeventy == rotation) {
-        return { v, 1.0f - u };
+        return {v, 1.0f - u};
     } else {
         OSVR_LOG(err) << "Unknown rotation [" << rotation << "] Assuming 0 degrees.";
-        return { u, v };
+        return {u, v};
     }
 }
-
