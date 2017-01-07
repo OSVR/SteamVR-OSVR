@@ -860,7 +860,6 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
 	// Get angular velocity in correct format for SteamVR
 	OSVR_TimeValue timeval2;
 	OSVR_AngularVelocityState state;
-    auto* self = static_cast<OSVRTrackedDevice*>(userdata);
 	osvrGetAngularVelocityState(self->trackerInterface_.get(), &timeval2, &state);
 	double dt = state.dt;
 	Eigen::Quaterniond r = osvr::util::fromQuat(report->pose.rotation);
