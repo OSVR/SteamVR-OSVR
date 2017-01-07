@@ -34,6 +34,8 @@
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
 #include "OSVRDisplay.h"
+#include "AngVelTools.h"
+
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -855,6 +857,19 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
 
     auto* self = static_cast<OSVRTrackedDevice*>(userdata);
 
+	// Get angular velocity in correct format for SteamVR
+	OSVR_TimeValue timeval2;
+	OSVR_AngularVelocityState state;
+    auto* self = static_cast<OSVRTrackedDevice*>(userdata);
+	osvrGetAngularVelocityState(self->trackerInterface_.get(), &timeval2, &state);
+	double dt = state.dt;
+	Eigen::Quaterniond r = osvr::util::fromQuat(report->pose.rotation);
+	Eigen::Quaterniond q = osvr::util::fromQuat(state.incrementalRotation);
+	q = r.inverse()*q*r;
+	// Convert invcremental rotation to angular velocity
+	Eigen::Vector3d angularvelocity = osvr::vbtracker::incRotToAngVelVec(q, dt);
+	
+	
     vr::DriverPose_t pose;
     pose.poseTimeOffset = 0; // close enough
 
@@ -876,7 +891,7 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     map(pose.qRotation) = osvr::util::fromQuat(report->pose.rotation);
 
     // Angular velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecAngularVelocity) = angularvelocity;
     Eigen::Vector3d::Map(pose.vecAngularAcceleration) = Eigen::Vector3d::Zero();
 
     pose.result = vr::TrackingResult_Running_OK;
