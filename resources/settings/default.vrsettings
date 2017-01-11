@@ -1,0 +1,18 @@
+{
+    "driver_osvr": {
+        "verbose": false,
+        "serverTimeout": 5,
+        "displayName": "OSVR",
+        "scanoutOrigin": "",
+        "edidVendorId": 53838,
+        "edidProductId": 4121,
+        "cameraPath": "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera",
+        "cameraFOVLeftDegrees": 35.235,
+        "cameraFOVRightDegrees": 35.235,
+        "cameraFOVTopDegrees": 27.95,
+        "cameraFOVBottomDegrees": 27.95,
+        "minTrackingRangeMeters": 0.15,
+        "maxTrackingRangeMeters": 1.5
+    }
+}
+

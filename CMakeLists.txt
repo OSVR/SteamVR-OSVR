@@ -66,11 +66,11 @@ include(GNUInstallDirs)
 include(SteamVRPaths)
 
 # Configuration file destination
-#install(FILES
-#	osvr.json
-#	DESTINATION
-#	${STEAMVR_CONFIG_DIR}/osvr
-#)
+install(DIRECTORY
+	resources
+	DESTINATION
+	"${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/"
+)
 
 file(TO_CMAKE_PATH
 	"${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/bin/${STEAMVR_PLATFORM}"
