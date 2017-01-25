@@ -78,9 +78,9 @@ protected:
     OSVRDisplayConfiguration::DisplayMode displayMode_;
 };
 
-class HDK13TestFixture : public DisplayTestFixture {
+class HDK13LandscapeTestFixture : public DisplayTestFixture {
 public:
-    HDK13TestFixture()
+    HDK13LandscapeTestFixture()
     {
         display_.adapter.description = "Unknown";
         display_.name = "OSVR HDK 1.3";
@@ -89,6 +89,28 @@ public:
         display_.position.x = 1920;
         display_.position.y = 0;
         display_.rotation = osvr::display::Rotation::Zero;
+        display_.verticalRefreshRate = 60.0;
+        display_.attachedToDesktop = false; // assuming direct mode
+        display_.edidVendorId = 0xd24e; // SVR
+        display_.edidProductId = 0x1019;
+
+        scanoutOrigin_ = osvr::display::ScanOutOrigin::UpperRight;
+
+        displayMode_ = OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE;
+    }
+};
+
+class HDK13PortraitTestFixture : public DisplayTestFixture {
+public:
+    HDK13PortraitTestFixture()
+    {
+        display_.adapter.description = "Unknown";
+        display_.name = "OSVR HDK 1.3";
+        display_.size.width = 1080;
+        display_.size.height = 1920;
+        display_.position.x = 1920;
+        display_.position.y = 0;
+        display_.rotation = osvr::display::Rotation::Ninety;
         display_.verticalRefreshRate = 60.0;
         display_.attachedToDesktop = false; // assuming direct mode
         display_.edidVendorId = 0xd24e; // SVR
@@ -123,7 +145,7 @@ public:
 };
 
 
-TEST_CASE_METHOD(HDK13TestFixture, "getWindowBounds HDK13", "[getWindowBounds]")
+TEST_CASE_METHOD(HDK13LandscapeTestFixture, "getWindowBounds HDK13 landscape", "[getWindowBounds]")
 {
     const auto bounds_hdk13 = OSVRRectangle { 1920, 0, 1080, 1920 };
     CHECK(getWindowBounds(getDisplay(), getScanOutOrigin()) == bounds_hdk13);
@@ -135,7 +157,7 @@ TEST_CASE_METHOD(HDK20TestFixture, "getWindowBounds_HDK20", "[getWindowBounds]")
     CHECK(getWindowBounds(getDisplay(), getScanOutOrigin()) == bounds_hdk20);
 }
 
-TEST_CASE_METHOD(HDK13TestFixture, "getEyeOutputViewPort HDK13", "[getEyeOutputViewport")
+TEST_CASE_METHOD(HDK13LandscapeTestFixture, "getEyeOutputViewPort HDK13 landscape", "[getEyeOutputViewport")
 {
     const auto left_eye = OSVRRectangle { 0, 0, 1080, 1920 / 2 };
     const auto right_eye = OSVRRectangle { 0, 1920 / 2, 1080, 1920 / 2 };
