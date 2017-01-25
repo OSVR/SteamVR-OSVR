@@ -39,6 +39,7 @@
 #include <openvr_driver.h>
 
 // Library/third-party includes
+#include <osvr/ClientKit/InterfaceStateC.h>
 #include <osvr/ClientKit/Display.h>
 #include <osvr/Display/DisplayEnumerator.h>
 #include <osvr/Util/EigenInterop.h>
@@ -882,7 +883,15 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     pose.result = vr::TrackingResult_Running_OK;
     pose.poseIsValid = true;
     pose.willDriftInYaw = true;
-    pose.shouldApplyHeadModel = true;
+
+    // SteamVR should apply a head model only if OSVR doesn't already apply its
+    // own. When OSVR applies a head model to /me/head, it will have a position
+    // state. If there's no position state, a head model hasn't been applied.
+    OSVR_PositionState position_state;
+    OSVR_TimeValue ts;
+    const OSVR_ReturnCode ret = osvrGetPositionState(self->trackerInterface_.get(), &ts, &position_state);
+    pose.shouldApplyHeadModel = (OSVR_RETURN_SUCCESS != ret);
+
     pose.deviceIsConnected = true;
 
     self->pose_ = pose;
