@@ -4,3 +4,6 @@
 [submodule "vendor/OSVR-Display"]
 	path = vendor/OSVR-Display
 	url = https://github.com/OSVR/OSVR-Display.git
+[submodule "vendor/OSVR-System-Information"]
+	path = vendor/OSVR-System-Information
+	url = https://github.com/OSVR/OSVR-System-Information.git

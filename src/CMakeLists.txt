@@ -58,6 +58,7 @@ target_link_libraries(driver_osvr
 	JsonCpp::JsonCpp
 	osvrDisplay_static
 	osvrRenderManager::osvrRenderManager
+	osvrSysInfo_static
 )
 
 if(WIN32)
@@ -68,7 +69,9 @@ target_include_directories(driver_osvr
 	SYSTEM PRIVATE
 	${OPENVR_INCLUDE_DIRS}
 	${CMAKE_SOURCE_DIR}/vendor/OSVR-Display
-	${CMAKE_BINARY_DIR}/vendor/OSVR-Display)
+	${CMAKE_BINARY_DIR}/vendor/OSVR-Display
+	${CMAKE_SOURCE_DIR}/vendor/OSVR-System-Information
+	${CMAKE_BINARY_DIR}/vendor/OSVR-System-Information)
 set_property(TARGET driver_osvr PROPERTY CXX_STANDARD 11)
 target_compile_features(driver_osvr PRIVATE cxx_override)
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
@@ -106,7 +109,8 @@ target_link_libraries(test_hmd_driver
 	eigen-headers
 	JsonCpp::JsonCpp
 	util-headers
-	osvrRenderManager::osvrRenderManager)
+	osvrRenderManager::osvrRenderManager
+	osvrSysInfo_static)
 
 if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
 	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
@@ -115,7 +119,9 @@ target_include_directories(test_hmd_driver
 	SYSTEM PRIVATE
 	${OPENVR_INCLUDE_DIRS}
 	${CMAKE_SOURCE_DIR}/vendor/OSVR-Display
-	${CMAKE_BINARY_DIR}/vendor/OSVR-Display)
+	${CMAKE_BINARY_DIR}/vendor/OSVR-Display
+	${CMAKE_SOURCE_DIR}/vendor/OSVR-System-Information
+	${CMAKE_BINARY_DIR}/vendor/OSVR-System-Information)
 set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
 target_compile_features(test_hmd_driver PRIVATE cxx_override)
 

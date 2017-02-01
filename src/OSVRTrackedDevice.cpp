@@ -45,6 +45,7 @@
 #include <osvr/ClientKit/InterfaceStateC.h>
 #include <osvr/Display/DisplayEnumerator.h>
 #include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
+#include <osvr/SysInfo/OSVRHDKInformation.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Util/PlatformConfig.h>
 #include <osvr/Util/TimeValueC.h>
@@ -909,10 +910,12 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
     // SteamVR should apply a head model only if OSVR doesn't already apply its
     // own. When OSVR applies a head model to /me/head, it will have a position
     // state. If there's no position state, a head model hasn't been applied.
-    OSVR_PositionState position_state;
-    OSVR_TimeValue ts;
-    const OSVR_ReturnCode ret = osvrGetPositionState(self->trackerInterface_.get(), &ts, &position_state);
-    pose.shouldApplyHeadModel = (OSVR_RETURN_SUCCESS != ret);
+    {
+        OSVR_PositionState position_state;
+        OSVR_TimeValue ts;
+        const OSVR_ReturnCode ret = osvrGetPositionState(self->trackerInterface_.get(), &ts, &position_state);
+        pose.shouldApplyHeadModel = (OSVR_RETURN_SUCCESS != ret);
+    }
 
     pose.deviceIsConnected = true;
 
@@ -1014,6 +1017,16 @@ void OSVRTrackedDevice::configure()
             std::swap(active_resolution.width, active_resolution.height);
         }
 
+        // If we're using an OSVR HDK, then get the firmware version. If it's
+        // version 1.01, then use 'AUO', otherwise use 'SVR'.
+        int edid_vendor_id = settings_->getSetting<uint32_t>("edidVendorId", 0xd24e); // default: SVR
+        if ("OSVR" == displayConfiguration_.getVendor() && "HDK" == displayConfiguration_.getModel()) {
+            const auto firmware_info = osvr::sysinfo::getHDKFirmwareInfo();
+            if (firmware_info && ("1.01" == firmware_info->firmwareVersion)) {
+                edid_vendor_id = 0xaf06; // AUO
+            }
+        }
+
         display_.adapter.description = "Unknown";
         display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion();
         display_.size.width = static_cast<uint32_t>(active_resolution.width);
@@ -1023,7 +1036,7 @@ void OSVRTrackedDevice::configure()
         display_.rotation = rotation;
         display_.verticalRefreshRate = settings_->getSetting<double>("verticalRefreshRate", getVerticalRefreshRate());
         display_.attachedToDesktop = false;                                              // assuming direct mode
-        display_.edidVendorId = settings_->getSetting<uint32_t>("edidVendorId", 0xd24e); // SVR
+        display_.edidVendorId = edid_vendor_id; // SVR
         display_.edidProductId = settings_->getSetting<uint32_t>("edidProductId", 0x1019);
 
         // The scan-out origin of the display
