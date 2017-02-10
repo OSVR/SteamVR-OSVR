@@ -40,6 +40,9 @@
 #include <string>                       // for std::string, std::to_string
 #include <memory>                       // for std::unique_ptr
 
+/**
+ * This interface is loaded in vrserver.exe.
+ */
 class ServerDriver_OSVR : public vr::IServerTrackedDeviceProvider {
 public:
     ServerDriver_OSVR() = default;
@@ -50,17 +53,18 @@ public:
      *
      * This is called when the driver is first loaded.
      *
-     * @param user_driver_config_dir the absoluate path of the directory where
-     *     the driver should store any user configuration files.
-     * @param driver_install_dir the absolute path of the driver's root
-     *     directory.
+     * @param driver_context This interface is provided by vrserver to allow the
+     *     driver to notify the system when something changes about a device.
+     *     These changes must not change the serial number or class of the
+     *     device because those values are permanently associated with the
+     *     device's index.
      *
      * If Init() returns anything other than \c VRInitError_None the driver will be
      * unloaded.
      *
      * @returns VRInitError_None on success.
      */
-    virtual vr::EVRInitError Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
+    virtual vr::EVRInitError Init(vr::IVRDriverContext* driver_context) OSVR_OVERRIDE;
 
     /**
      * Performs any cleanup prior to the driver being unloaded.
@@ -74,29 +78,12 @@ public:
     virtual const char* const* GetInterfaceVersions() OSVR_OVERRIDE;
 
     /**
-     * Returns the number of tracked devices.
-     */
-    virtual uint32_t GetTrackedDeviceCount() OSVR_OVERRIDE;
-
-    /**
-     * Returns a single tracked device by its index.
-     *
-     * @param index the index of the tracked device to return.
-     */
-    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index) OSVR_OVERRIDE;
-
-    /**
-     * Returns a single HMD by its name.
-     *
-     * @param id the C string name of the HMD.
-     */
-    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id) OSVR_OVERRIDE;
-
-    /**
      * Allows the driver do to some work in the main loop of the server.
      */
     virtual void RunFrame() OSVR_OVERRIDE;
 
+    /** \name Power state functions */
+    //@{
     /**
      * Returns @c true if the driver wants to block Standby mode.
      */
@@ -104,7 +91,7 @@ public:
 
     /**
      * Called when the system is entering Standby mode.
-     * 
+     *
      * The driver should switch itself into whatever sort of low-power state it
      * has.
      */
@@ -116,15 +103,13 @@ public:
      * The driver should switch itself back to full operation.
      */
     virtual void LeaveStandby() OSVR_OVERRIDE;
+    //@}
 
 private:
-    /**
-     * Returns the serial number of the tracked device.
-     */
-    std::string getDeviceId(vr::ITrackedDeviceServerDriver* device);
-
-    std::vector<std::unique_ptr<vr::ITrackedDeviceServerDriver>> trackedDevices_;
+    //std::vector<std::unique_ptr<vr::ITrackedDeviceServerDriver>> trackedDevices_;
+    std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
+    bool enabled_ = true;
 };
 
 #endif // INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84

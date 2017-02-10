@@ -26,13 +26,13 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 add_library(driver_osvr
 	SHARED
-	ClientDriver_OSVR.cpp
-	ClientDriver_OSVR.h
 	Logging.h
 	OSVRDisplay.h
 	OSVRDisplay.cpp
 	OSVRTrackedDevice.cpp
 	OSVRTrackedDevice.h
+	OSVRTrackedHMD.cpp
+	OSVRTrackedHMD.h
 	OSVRTrackingReference.cpp
 	OSVRTrackingReference.h
 	ServerDriver_OSVR.cpp
@@ -49,6 +49,8 @@ add_library(driver_osvr
 	platform_fixes.h
 	pretty_print.h
 )
+#	WatchdogDriver_OSVR.cpp
+#	WatchdogDriver_OSVR.h
 
 target_link_libraries(driver_osvr
 	PRIVATE
@@ -98,24 +100,24 @@ endif()
 #
 # Test program
 #
-add_executable(test_hmd_driver test_hmd_driver.cpp)
-target_link_libraries(test_hmd_driver
-	PRIVATE
-	driver_osvr
-	osvr::osvrClientKitCpp
-	eigen-headers
-	JsonCpp::JsonCpp
-	util-headers
-	osvrRenderManager::osvrRenderManager)
-
-if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
-	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
-endif()
-target_include_directories(test_hmd_driver
-	SYSTEM PRIVATE
-	${OPENVR_INCLUDE_DIRS}
-	${CMAKE_SOURCE_DIR}/vendor/OSVR-Display
-	${CMAKE_BINARY_DIR}/vendor/OSVR-Display)
-set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
-target_compile_features(test_hmd_driver PRIVATE cxx_override)
+#add_executable(test_hmd_driver test_hmd_driver.cpp)
+#target_link_libraries(test_hmd_driver
+#	PRIVATE
+#	driver_osvr
+#	osvr::osvrClientKitCpp
+#	eigen-headers
+#	JsonCpp::JsonCpp
+#	util-headers
+#	osvrRenderManager::osvrRenderManager)
+#
+#if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
+#	target_link_libraries(test_hmd_driver PRIVATE make-unique-impl-header)
+#endif()
+#target_include_directories(test_hmd_driver
+#	SYSTEM PRIVATE
+#	${OPENVR_INCLUDE_DIRS}
+#	${CMAKE_SOURCE_DIR}/vendor/OSVR-Display
+#	${CMAKE_BINARY_DIR}/vendor/OSVR-Display)
+#set_property(TARGET test_hmd_driver PROPERTY CXX_STANDARD 11)
+#target_compile_features(test_hmd_driver PRIVATE cxx_override)
 

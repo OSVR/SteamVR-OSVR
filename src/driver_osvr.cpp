@@ -26,7 +26,7 @@
 #include "driver_osvr.h"
 
 #include "ServerDriver_OSVR.h"  // for ServerDriver_OSVR
-#include "ClientDriver_OSVR.h"  // for ClientDriver_OSVR
+//#include "WatchdogDriver_OSVR.h"  // for WatchdogDriver_OSVR
 
 #include "osvr_dll_export.h"    // for OSVR_DLL_EXPORT
 
@@ -37,7 +37,7 @@
 #include <cstring>              // for std::strcmp
 
 static ServerDriver_OSVR g_ServerDriverOSVR;
-static ClientDriver_OSVR g_ClientDriverOSVR;
+//static WatchdogDriver_OSVR g_WatchdogDriverOSVR;
 
 OSVR_DLL_EXPORT void* TrackedDeviceDriverFactory(const char* interface_name, int* return_code)
 {
@@ -45,15 +45,23 @@ OSVR_DLL_EXPORT void* TrackedDeviceDriverFactory(const char* interface_name, int
         return &g_ServerDriverOSVR;
     }
 
+#if 0 // deprecated in v1.0.6
     if (0 == std::strcmp(vr::IClientTrackedDeviceProvider_Version, interface_name)) {
         return &g_ClientDriverOSVR;
     }
+#endif
+
+#if 0 // not yet implemented
+    if (0 == std::strcmp(vr::IVRWatchdogProvider_Version, interface_name)) {
+        return &g_WatchdogDriverOSVR;
+    }
+#endif
 
     if (return_code) {
         *return_code = vr::VRInitError_Init_InterfaceNotFound;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 OSVR_DLL_EXPORT void* HmdDriverFactory(const char* interface_name, int* return_code)
