@@ -90,6 +90,7 @@ if(WIN32)
 	include(CopyImportedTarget)
 	list(APPEND targets osvr::osvrClientKit osvr::osvrClient osvr::osvrCommon osvr::osvrUtil)
 	list(APPEND targets osvrRenderManager::osvrRenderManager)
+	list(APPEND targets osvr::osvrUSBSerial) # required by osvrSysInfo
 	foreach(target IN LISTS targets)
 		copy_imported_targets(${target}) # for use in build tree
 		install_imported_target(${target} DESTINATION "${DRIVER_INSTALL_DIR}") # in installed directory
