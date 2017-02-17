@@ -34,6 +34,7 @@
 #include "osvr_compiler_detection.h"
 #include "osvr_device_properties.h"
 #include "platform_fixes.h" // strcasecmp
+#include "PoseUtil.h"
 
 // OpenVR includes
 #include <openvr_driver.h>
@@ -858,58 +859,39 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
 
     auto* self = static_cast<OSVRTrackedDevice*>(userdata);
 
-    {
-        OSVR_TimeValue tv;
-        OSVR_VelocityState velocity_state;
-        osvrGetVelocityState(trackerInterface_.get(), &tv, &velocity_state);
-        Eigen::Vector3d::Map(pose.vecVelocity) = getPoseLinearVelocity(velocity_state);
-        Eigen::Vector3d::Map(pose.vecAngularVelocity) = getPoseAngularVelocity(velocity_state);
-    }
-
-    // Get angular velocity in correct format for SteamVR
-    OSVR_TimeValue timeval2;
-    OSVR_AngularVelocityState state;
-    OSVR_VelocityState velocitystate;
-
-    osvrGetVelocityState(self->trackerInterface_.get(), &timeval2, &velocitystate);
-
-    const auto pose_rotation = osvr::util::fromQuat(report->pose.rotation);
-    const auto angvel_incremental_rotation = pose_rotation.inverse() * osvr::util::fromQuat(velocitystate.angularVelocity.incrementalRotation) * pose_rotation;
-    // Convert invcremental rotation to angular velocity
-    const auto angular_velocity = osvr::vbtracker::incRotToAngVelVec(angvel_incremental_rotation, state.dt);
-
     vr::DriverPose_t pose;
 
     // Calculate the time offset
-    OSVR_TimeValue timeval_now;
-    osvrTimeValueGetNow(&timeval_now);
-    pose.poseTimeOffset = osvrTimeValueDurationSeconds(&timeval_now, timeval);
+    {
+        OSVR_TimeValue timeval_now;
+        osvrTimeValueGetNow(&timeval_now);
+        pose.poseTimeOffset = osvrTimeValueDurationSeconds(&timeval_now, timeval);
+    }
 
     Eigen::Vector3d::Map(pose.vecWorldFromDriverTranslation) = Eigen::Vector3d::Zero();
     Eigen::Vector3d::Map(pose.vecDriverFromHeadTranslation) = Eigen::Vector3d::Zero();
 
     map(pose.qWorldFromDriverRotation) = Eigen::Quaterniond::Identity();
-    map(pose.qDriverFromHeadRotation) = Eigen::Quaterniond::Identity();
 
     // Position
     Eigen::Vector3d::Map(pose.vecPosition) = osvr::util::vecMap(report->pose.translation);
 
     // Position velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
     Eigen::Vector3d::Map(pose.vecAcceleration) = Eigen::Vector3d::Zero();
+    {
+        OSVR_TimeValue tv;
+        OSVR_VelocityState velocity_state;
+        osvrGetVelocityState(self->trackerInterface_.get(), &tv, &velocity_state);
+        Eigen::Vector3d::Map(pose.vecVelocity) = getPoseLinearVelocity(velocity_state).data();
+        Eigen::Vector3d::Map(pose.vecAngularVelocity) = getPoseAngularVelocity(velocity_state).data();
+    }
+
 
     // Orientation
     map(pose.qRotation) = osvr::util::fromQuat(report->pose.rotation);
 
-    // Acceleration is not currently consistently provided
+    // TODO Acceleration is not currently consistently provided
     Eigen::Vector3d::Map(pose.vecAngularAcceleration) = Eigen::Vector3d::Zero();
-
-    // If angular velocity is valid, pass that data to SteamVR
-    if (velocitystate.angularVelocityValid) {
-        Eigen::Vector3d::Map(pose.vecAngularVelocity) = angular_velocity;
-    } else {
-        Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
-    }
 
     pose.result = vr::TrackingResult_Running_OK;
     pose.poseIsValid = true;
