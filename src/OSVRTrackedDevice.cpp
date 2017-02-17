@@ -882,8 +882,11 @@ void OSVRTrackedDevice::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*
         OSVR_TimeValue tv;
         OSVR_VelocityState velocity_state;
         osvrGetVelocityState(self->trackerInterface_.get(), &tv, &velocity_state);
-        Eigen::Vector3d::Map(pose.vecVelocity) = getPoseLinearVelocity(velocity_state).data();
-        Eigen::Vector3d::Map(pose.vecAngularVelocity) = getPoseAngularVelocity(velocity_state).data();
+        const auto linear_velocity = getPoseLinearVelocity(velocity_state);
+        std::copy(begin(linear_velocity), end(linear_velocity), pose.vecVelocity);
+
+        const auto angular_velocity = getPoseAngularVelocity(velocity_state);
+        std::copy(begin(angular_velocity), end(angular_velocity), pose.vecAngularVelocity);
     }
 
 
