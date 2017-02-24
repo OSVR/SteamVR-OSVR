@@ -26,8 +26,6 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 add_library(driver_osvr
 	SHARED
-	ClientDriver_OSVR.cpp
-	ClientDriver_OSVR.h
 	Logging.h
 	OSVRDisplay.h
 	OSVRDisplay.cpp
@@ -44,7 +42,6 @@ add_library(driver_osvr
 	identity.h
 	make_unique.h
 	matrix_cast.h
-	osvr_device_properties.h
 	osvr_dll_export.h
 	platform_fixes.h
 	pretty_print.h

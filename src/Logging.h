@@ -42,7 +42,7 @@
 /**
  * @brief The NullLogger just swallows any log messages it's sent.
  */
-class NullLogger : public vr::IDriverLog {
+class NullLogger : public vr::IVRDriverLog {
 public:
     virtual void Log(const char* /*log_message*/) override
     {
@@ -76,7 +76,7 @@ enum LogLevel {
  */
 class LineLogger {
 public:
-    LineLogger(bool should_log, vr::IDriverLog* driver_log) : shouldLog_(should_log), driverLog_(driver_log), message_()
+    LineLogger(bool should_log, vr::IVRDriverLog* driver_log) : shouldLog_(should_log), driverLog_(driver_log), message_()
     {
         // do nothing
     }
@@ -112,7 +112,7 @@ public:
 
 protected:
     const bool shouldLog_;
-    vr::IDriverLog* driverLog_;
+    vr::IVRDriverLog* driverLog_;
     std::string message_;
 };
 
@@ -134,7 +134,7 @@ public:
     Logging& operator=(Logging const&) = delete;  // Copy assign
     Logging& operator=(Logging &&) = delete;      // Move assign
 
-    void setDriverLog(vr::IDriverLog* driver_log)
+    void setDriverLog(vr::IVRDriverLog* driver_log)
     {
         driverLog_ = driver_log;
     }
@@ -169,7 +169,7 @@ protected:
     }
 
     std::unique_ptr<NullLogger> nullLogger_;
-    vr::IDriverLog* driverLog_;
+    vr::IVRDriverLog* driverLog_;
     LogLevel severity_ = LogLevel::info;
 };
 
