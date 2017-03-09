@@ -52,7 +52,6 @@
 OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context) : OSVRTrackedDevice(context, vr::TrackedDeviceClass_TrackingReference, "OSVRTrackedHMD")
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::OSVRTrackingReference() called.";
-    configure();
 }
 
 OSVRTrackingReference::~OSVRTrackingReference()
@@ -65,6 +64,8 @@ vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
     OSVR_LOG(trace) << "OSVRTrackingReference::Activate() called.";
 
     OSVRTrackedDevice::Activate(object_id);
+
+    configure();
 
     // Clean up tracker callback if exists
     if (m_TrackerInterface.notEmpty()) {
