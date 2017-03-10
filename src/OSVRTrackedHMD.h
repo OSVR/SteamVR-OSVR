@@ -144,56 +144,10 @@ public:
     // ------------------------------------
     virtual vr::DriverPose_t GetPose() OSVR_OVERRIDE;
 
-    // ------------------------------------
-    // Property Methods
-    // ------------------------------------
-
-    /**
-     * Returns a bool property. If the property is not available this function
-     * will return false.
-     */
-    virtual bool GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a float property. If the property is not available this function
-     * will return 0.
-     */
-    virtual float GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns an int property. If the property is not available this function
-     * will return 0.
-     */
-    virtual int32_t GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a uint64 property. If the property is not available this function
-     * will return 0.
-     */
-    virtual uint64_t GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a matrix property. If the device index is not valid or the
-     * property is not a matrix type, this function will return identity.
-     */
-    virtual vr::HmdMatrix34_t GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a string property. If the property is not available this function
-     * will return 0 and @p error will be set to an error. Otherwise it returns
-     * the length of the number of bytes necessary to hold this string including
-     * the trailing null. If the buffer is too small the error will be
-     * @c TrackedProp_BufferTooSmall. Drivers may not return strings longer
-     * than @c k_unMaxPropertyStringSize.
-     */
-    virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
     const char* getId();
     vr::ETrackedDeviceClass getDeviceClass() const;
 
 private:
-    std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
-
     /**
      * Callback function which is called whenever new data has been received
      * from the tracker.
@@ -206,6 +160,8 @@ private:
      * Read configuration settings from configuration file.
      */
     void configure();
+
+    void setProperties();
 
     /**
      * Configure RenderManager and distortion parameters.
