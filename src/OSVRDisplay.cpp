@@ -93,25 +93,6 @@ std::ostream& operator<<(std::ostream& os, const OSVRRectangle& r)
 OSVRRectangle getWindowBounds(const osvr::display::Display& display, osvr::display::ScanOutOrigin scanout_origin)
 {
     OSVRRectangle bounds;
-#if 0
-    /* Would be used only in Linux at the moment. Linux needs OSVR-Display
-     * support.
-     */
-
-    int nDisplays = displayConfig_.getNumDisplayInputs();
-    if (nDisplays != 1) {
-        OSVR_LOG(err) << "OSVRTrackedHMD::OSVRTrackedHMD(): Unexpected display number of displays!\n";
-    }
-    osvr::clientkit::DisplayDimensions displayDims = displayConfig_.getDisplayDimensions(0);
-    bounds.x = renderManagerConfig_.getWindowXPosition(); // todo: assumes desktop display of 1920. get this from display config when it's exposed.
-    bounds.y = renderManagerConfig_.getWindowYPosition();
-    bounds.width = static_cast<uint32_t>(displayDims.width);
-    bounds.height = static_cast<uint32_t>(displayDims.height);
-
-    OSVR_LOG(trace) << "GetWindowBounds(): Config file settings: x = " << *x << ", y = " << *y << ", width = " << *width << ", height = " << *height << ".";
-#endif
-
-#if defined(OSVR_WINDOWS) || defined(OSVR_MACOSX)
     bounds.x = display.position.x;
     bounds.y = display.position.y;
 
@@ -133,8 +114,6 @@ OSVRRectangle getWindowBounds(const osvr::display::Display& display, osvr::displ
         bounds.width = std::max(display.size.width, display.size.height);
     }
     OSVR_LOG(trace) << "GetWindowBounds(): Scan-out origin: " << scanout_origin << ", rotation: " << display.rotation << ", orientation: " << orientation;
-#endif // OSVR_WINDOWS or OSVR_MACOSX
-
     OSVR_LOG(trace) << "GetWindowBounds(): Calculated settings: x = " << bounds.x << ", y = " << bounds.y << ", width = " << bounds.width << ", height = " << bounds.height << ".";
     return bounds;
 }
