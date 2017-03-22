@@ -239,6 +239,22 @@ private:
      */
     std::pair<float, float> rotate(float u, float v, osvr::display::Rotation rotation) const;
 
+    /**
+     * Returns the EDID vendor ID of the HMD.
+     *
+     * If the EDID vendor ID value has been set in the driver_osvr section of
+     * the SetamVR settings, that value will be returned.
+     *
+     * If the HMD is an OSVR HDK, it will attempt to communicate with the HDK
+     * and determine the EDID vendor ID based on the firmware version.
+     */
+    std::uint32_t getEdidVendorId();
+
+    /**
+     * Retrieves the firmware version of an OSVR HDK.
+     */
+    std::uint64_t getFirmwareVersion();
+
     osvr::clientkit::ClientContext& context_;
     std::string displayDescription_;
     osvr::clientkit::DisplayConfig displayConfig_;

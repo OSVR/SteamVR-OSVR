@@ -1010,16 +1010,6 @@ void OSVRTrackedDevice::configure()
             std::swap(active_resolution.width, active_resolution.height);
         }
 
-        // If we're using an OSVR HDK, then get the firmware version. If it's
-        // version 1.01, then use 'AUO', otherwise use 'SVR'.
-        int edid_vendor_id = settings_->getSetting<uint32_t>("edidVendorId", 0xd24e); // default: SVR
-        if ("OSVR" == displayConfiguration_.getVendor() && "HDK" == displayConfiguration_.getModel()) {
-            const auto firmware_info = osvr::sysinfo::getHDKFirmwareInfo();
-            if (firmware_info && ("1.01" == firmware_info->firmwareVersion)) {
-                edid_vendor_id = 0xaf06; // AUO
-            }
-        }
-
         display_.adapter.description = "Unknown";
         display_.name = displayConfiguration_.getVendor() + " " + displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion();
         display_.size.width = static_cast<uint32_t>(active_resolution.width);
@@ -1029,7 +1019,7 @@ void OSVRTrackedDevice::configure()
         display_.rotation = rotation;
         display_.verticalRefreshRate = settings_->getSetting<double>("verticalRefreshRate", getVerticalRefreshRate());
         display_.attachedToDesktop = false;                                              // assuming direct mode
-        display_.edidVendorId = edid_vendor_id; // SVR
+        display_.edidVendorId = getEdidVendorId();
         display_.edidProductId = settings_->getSetting<uint32_t>("edidProductId", 0x1019);
 
         // The scan-out origin of the display
@@ -1174,5 +1164,47 @@ std::pair<float, float> OSVRTrackedDevice::rotate(float u, float v, osvr::displa
         OSVR_LOG(err) << "Unknown rotation [" << rotation << "] Assuming 0 degrees.";
         return {u, v};
     }
+}
+
+std::uint32_t OSVRTrackedDevice::getEdidVendorId()
+{
+    // If an EDID Vendor ID has been set in the steamvr.vrsettings file, that
+    // takes precedence.
+    auto edid_vendor_id = static_cast<std::uint32_t>(settings_->getSetting<int32_t>("edidVendorId", 0));
+    if (0 != edid_vendor_id)
+        return edid_vendor_id;
+
+    // The default EDID vendor ID for OSVR HDKs is 'SVR'.
+    edid_vendor_id = osvr::display::encodeEdidVendorId("SVR");
+
+    // If we're using an OSVR HDK, then get the firmware version. If it's
+    // version 1.01, then use 'AUO', otherwise use 'SVR'.
+    if ("OSVR" == displayConfiguration_.getVendor() && "HDK" == displayConfiguration_.getModel()) {
+        const auto firmware_version = getFirmwareVersion();
+        if (101 == firmware_version) {
+            edid_vendor_id = osvr::display::encodeEdidVendorId("AUO");
+        }
+    }
+
+    return edid_vendor_id;
+}
+
+std::uint64_t OSVRTrackedDevice::getFirmwareVersion()
+{
+    std::uint64_t firmware_version = 0;
+
+    const auto firmware_info = osvr::sysinfo::getHDKFirmwareInfo();
+    if (!firmware_info)
+       return firmware_version;
+
+    std::stringstream ss;
+    ss << firmware_info->firmwareVersion;
+    unsigned int major = 0;
+    unsigned int minor = 0;
+    char decimal = '\0';
+    ss >> major >> decimal >> minor;
+    firmware_version = major * 100 + minor;
+
+    return firmware_version;
 }
 
