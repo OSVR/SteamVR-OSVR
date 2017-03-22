@@ -248,12 +248,7 @@ private:
      * If the HMD is an OSVR HDK, it will attempt to communicate with the HDK
      * and determine the EDID vendor ID based on the firmware version.
      */
-    std::uint32_t getEdidVendorId();
-
-    /**
-     * Retrieves the firmware version of an OSVR HDK.
-     */
-    std::uint64_t getFirmwareVersion();
+    std::uint32_t getEdidVendorId() const;
 
     osvr::clientkit::ClientContext& context_;
     std::string displayDescription_;

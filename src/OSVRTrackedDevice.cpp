@@ -46,7 +46,6 @@
 #include <osvr/ClientKit/InterfaceStateC.h>
 #include <osvr/Display/DisplayEnumerator.h>
 #include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
-#include <osvr/SysInfo/OSVRHDKInformation.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Util/PlatformConfig.h>
 #include <osvr/Util/TimeValueC.h>
@@ -1166,45 +1165,12 @@ std::pair<float, float> OSVRTrackedDevice::rotate(float u, float v, osvr::displa
     }
 }
 
-std::uint32_t OSVRTrackedDevice::getEdidVendorId()
+std::uint32_t OSVRTrackedDevice::getEdidVendorId() const
 {
-    // If an EDID Vendor ID has been set in the steamvr.vrsettings file, that
-    // takes precedence.
-    auto edid_vendor_id = static_cast<std::uint32_t>(settings_->getSetting<int32_t>("edidVendorId", 0));
-    if (0 != edid_vendor_id)
-        return edid_vendor_id;
+    const auto edid_vendor_id = settings_->getSetting<int32_t>("edidVendorId", 0);
+    const auto vendor = displayConfiguration_.getVendor();
+    const auto model = displayConfiguration_.getModel();
 
-    // The default EDID vendor ID for OSVR HDKs is 'SVR'.
-    edid_vendor_id = osvr::display::encodeEdidVendorId("SVR");
-
-    // If we're using an OSVR HDK, then get the firmware version. If it's
-    // version 1.01, then use 'AUO', otherwise use 'SVR'.
-    if ("OSVR" == displayConfiguration_.getVendor() && "HDK" == displayConfiguration_.getModel()) {
-        const auto firmware_version = getFirmwareVersion();
-        if (101 == firmware_version) {
-            edid_vendor_id = osvr::display::encodeEdidVendorId("AUO");
-        }
-    }
-
-    return edid_vendor_id;
-}
-
-std::uint64_t OSVRTrackedDevice::getFirmwareVersion()
-{
-    std::uint64_t firmware_version = 0;
-
-    const auto firmware_info = osvr::sysinfo::getHDKFirmwareInfo();
-    if (!firmware_info)
-       return firmware_version;
-
-    std::stringstream ss;
-    ss << firmware_info->firmwareVersion;
-    unsigned int major = 0;
-    unsigned int minor = 0;
-    char decimal = '\0';
-    ss >> major >> decimal >> minor;
-    firmware_version = major * 100 + minor;
-
-    return firmware_version;
+    return ::getEdidVendorId(edid_vendor_id, vendor, model);
 }
 

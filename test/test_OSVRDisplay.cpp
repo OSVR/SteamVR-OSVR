@@ -175,3 +175,23 @@ TEST_CASE_METHOD(HDK20TestFixture, "getEyeOutputViewPort HDK20", "[getEyeOutputV
     CHECK(getEyeOutputViewport(vr::Eye_Right, getDisplay(), getScanOutOrigin(), getDisplayMode()) == right_eye);
 }
 
+TEST_CASE("getEdidVendorId_user", "Use user-specfied EDID vendor ID")
+{
+    // Use user-specified EDID vendor ID when available
+    CHECK(0x0001 == getEdidVendorId(0x0001, "Vendor", "Model"));
+    CHECK(0x0001 == getEdidVendorId(0x0001, "OSVR", "HDK"));
+}
+
+TEST_CASE("getEdidVendorId_hdk", "Poll OSVR HDK for firmware version")
+{
+    const auto SVR = osvr::display::encodeEdidVendorId("SVR");
+    const auto AUO = osvr::display::encodeEdidVendorId("AUO");
+
+    const auto firmware_version = getFirmwareVersion();
+    if (101 == firmware_version) {
+        CHECK(AUO == getEdidVendorId(0, "OSVR", "HDK"));
+    } else {
+        CHECK(SVR == getEdidVendorId(0, "OSVR", "HDK"));
+    }
+}
+

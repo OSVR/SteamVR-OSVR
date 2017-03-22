@@ -33,6 +33,7 @@
 #include <osvr/Display/Display.h>
 #include <osvr/Display/DisplayIO.h>
 #include <osvr/RenderKit/osvr_display_configuration.h>
+#include <osvr/SysInfo/OSVRHDKInformation.h>
 #include <osvr/Util/PlatformConfig.h>
 
 // Standard includes
@@ -207,5 +208,47 @@ OSVRRectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Di
     OSVR_LOG(trace) << "GetEyeOutputViewport(" << eye_str << " eye): Calculated settings: x = " << viewport.x << ", y = " << viewport.y << ", width = " << viewport.width << ", height = " << viewport.height << ".";
 
     return viewport;
+}
+
+std::uint32_t getEdidVendorId(int edid_vid_setting, const std::string& vendor, const std::string& model)
+{
+    // If an EDID Vendor ID has been set in the steamvr.vrsettings file, that
+    // takes precedence.
+    auto edid_vendor_id = static_cast<std::uint32_t>(edid_vid_setting);
+    if (0 != edid_vendor_id)
+        return edid_vendor_id;
+
+    // The default EDID vendor ID for OSVR HDKs is 'SVR'.
+    edid_vendor_id = osvr::display::encodeEdidVendorId("SVR");
+
+    // If we're using an OSVR HDK, then get the firmware version. If it's
+    // version 1.01, then use 'AUO', otherwise use 'SVR'.
+    if ("OSVR" == vendor && "HDK" == model) {
+        const auto firmware_version = getFirmwareVersion();
+        if (101 == firmware_version) {
+            edid_vendor_id = osvr::display::encodeEdidVendorId("AUO");
+        }
+    }
+
+    return edid_vendor_id;
+}
+
+std::uint64_t getFirmwareVersion()
+{
+    std::uint64_t firmware_version = 0;
+
+    const auto firmware_info = osvr::sysinfo::getHDKFirmwareInfo();
+    if (!firmware_info)
+       return firmware_version;
+
+    std::stringstream ss;
+    ss << firmware_info->firmwareVersion;
+    unsigned int major = 0;
+    unsigned int minor = 0;
+    char decimal = '\0';
+    ss >> major >> decimal >> minor;
+    firmware_version = major * 100 + minor;
+
+    return firmware_version;
 }
 

@@ -29,9 +29,11 @@ add_osvr_test(test_OSVRDisplay
     "${OPENVR_INCLUDE_DIRS}"
     "${CMAKE_SOURCE_DIR}/vendor/OSVR-Display"
     "${CMAKE_BINARY_DIR}/vendor/OSVR-Display"
+    "${CMAKE_SOURCE_DIR}/vendor/OSVR-System-Information"
     LIBS
     make-unique-impl-header
     osvrDisplay_static
+    osvrSysInfo_static
     osvrRenderManager::osvrRenderManager
 )
 

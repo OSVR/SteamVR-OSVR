@@ -71,5 +71,26 @@ OSVRRectangle getWindowBounds(const osvr::display::Display& display, osvr::displ
  */
 OSVRRectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode);
 
+/**
+ * Returns the EDID vendor ID of the HMD.
+ *
+ * If the EDID vendor ID value has been set in the driver_osvr section of
+ * the SetamVR settings, that value will be returned.
+ *
+ * If the HMD is an OSVR HDK, it will attempt to communicate with the HDK
+ * and determine the EDID vendor ID based on the firmware version.
+ *
+ * @param edid_vid_setting The EDID vendor ID specified in the SteamVR settings
+ * (or 0 if not set).
+ * @param vendor The name of the vendor of the display.
+ * @param model The model name of the display.
+ */
+std::uint32_t getEdidVendorId(int edid_vid_setting, const std::string& vendor, const std::string& model);
+
+/**
+ * Retrieves the firmware version of an OSVR HDK.
+ */
+std::uint64_t getFirmwareVersion();
+
 #endif // INCLUDED_OSVRDisplay_h_GUID_FAE2B8A6_1225_4344_9FA0_919856E66E8E
 
