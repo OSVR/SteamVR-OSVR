@@ -27,6 +27,7 @@
 
 // Internal Includes
 #include "OSVRTrackedDevice.h"          // for OSVRTrackedDevice
+#include "OSVRTrackingReference.h"  // for OSVRTrackingReference
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
 
 // Library/third-party includes
@@ -60,7 +61,7 @@ public:
      *
      * @returns VRInitError_None on success.
      */
-    virtual vr::EVRInitError Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir) OSVR_OVERRIDE;
+    virtual vr::EVRInitError Init(vr::IVRDriverContext *pDriverContext) OSVR_OVERRIDE;
 
     /**
      * Performs any cleanup prior to the driver being unloaded.
@@ -72,25 +73,6 @@ public:
      * this driver.
      */
     virtual const char* const* GetInterfaceVersions() OSVR_OVERRIDE;
-
-    /**
-     * Returns the number of tracked devices.
-     */
-    virtual uint32_t GetTrackedDeviceCount() OSVR_OVERRIDE;
-
-    /**
-     * Returns a single tracked device by its index.
-     *
-     * @param index the index of the tracked device to return.
-     */
-    virtual vr::ITrackedDeviceServerDriver* GetTrackedDeviceDriver(uint32_t index) OSVR_OVERRIDE;
-
-    /**
-     * Returns a single HMD by its name.
-     *
-     * @param id the C string name of the HMD.
-     */
-    virtual vr::ITrackedDeviceServerDriver* FindTrackedDeviceDriver(const char* id) OSVR_OVERRIDE;
 
     /**
      * Allows the driver do to some work in the main loop of the server.
@@ -118,12 +100,8 @@ public:
     virtual void LeaveStandby() OSVR_OVERRIDE;
 
 private:
-    /**
-     * Returns the serial number of the tracked device.
-     */
-    std::string getDeviceId(vr::ITrackedDeviceServerDriver* device);
-
-    std::vector<std::unique_ptr<vr::ITrackedDeviceServerDriver>> trackedDevices_;
+    std::unique_ptr<OSVRTrackedDevice> trackedDevice_;
+    std::unique_ptr<OSVRTrackingReference> trackingReference_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
 };
 

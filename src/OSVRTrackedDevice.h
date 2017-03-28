@@ -49,7 +49,7 @@
 class OSVRTrackedDevice : public vr::ITrackedDeviceServerDriver, public vr::IVRDisplayComponent {
 friend class ServerDriver_OSVR;
 public:
-    OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log = nullptr);
+    OSVRTrackedDevice(osvr::clientkit::ClientContext& context);
 
     virtual ~OSVRTrackedDevice();
     // ------------------------------------
@@ -142,56 +142,9 @@ public:
     // ------------------------------------
     virtual vr::DriverPose_t GetPose() OSVR_OVERRIDE;
 
-    // ------------------------------------
-    // Property Methods
-    // ------------------------------------
-
-    /**
-     * Returns a bool property. If the property is not available this function
-     * will return false.
-     */
-    virtual bool GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a float property. If the property is not available this function
-     * will return 0.
-     */
-    virtual float GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns an int property. If the property is not available this function
-     * will return 0.
-     */
-    virtual int32_t GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a uint64 property. If the property is not available this function
-     * will return 0.
-     */
-    virtual uint64_t GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a matrix property. If the device index is not valid or the
-     * property is not a matrix type, this function will return identity.
-     */
-    virtual vr::HmdMatrix34_t GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-    /**
-     * Returns a string property. If the property is not available this function
-     * will return 0 and @p error will be set to an error. Otherwise it returns
-     * the length of the number of bytes necessary to hold this string including
-     * the trailing null. If the buffer is too small the error will be
-     * @c TrackedProp_BufferTooSmall. Drivers may not return strings longer
-     * than @c k_unMaxPropertyStringSize.
-     */
-    virtual uint32_t GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char* value, uint32_t buffer_size, vr::ETrackedPropertyError* error) OSVR_OVERRIDE;
-
-protected:
     const char* GetId();
 
 private:
-    std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
-
     /**
      * Callback function which is called whenever new data has been received
      * from the tracker.
@@ -209,19 +162,6 @@ private:
      * Configure RenderManager and distortion parameters.
      */
     void configureDistortionParameters();
-
-    /**
-     * Cecks to see if the requested property is valid for the device class and
-     * type requested.
-     *
-     * @tparam T type of value requested
-     * @param prop property requested
-     *
-     * @return vr::TrackedProp_Success if the checks pass, other
-     * vr::ETrackedPropertyError values on failure
-     */
-    template <typename T>
-    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&) const;
 
     /**
      * Parses a string into a scan-out origin option.
@@ -243,12 +183,13 @@ private:
     std::string displayDescription_;
     osvr::clientkit::DisplayConfig displayConfig_;
     osvr::client::RenderManagerConfig renderManagerConfig_;
-    vr::IServerDriverHost* driverHost_ = nullptr;
+    vr::IVRServerDriverHost* driverHost_ = nullptr;
     osvr::clientkit::Interface trackerInterface_;
     vr::DriverPose_t pose_;
     vr::ETrackedDeviceClass deviceClass_;
     std::unique_ptr<Settings> settings_;
-    uint32_t objectId_ = 0;
+    vr::TrackedDeviceIndex_t objectId_ = 0;
+    vr::PropertyContainerHandle_t propertyContainer_;
     std::vector<osvr::renderkit::DistortionParameters> distortionParameters_;
     OSVRDisplayConfiguration displayConfiguration_;
 

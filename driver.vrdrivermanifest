@@ -1,0 +1,10 @@
+{
+    "alwaysActivate": false,
+    "name" : "osvr",
+    "directory" : "",
+    "resourceOnly" : false,
+    "hmd_presence" :
+    [
+        "*.*"
+    ]
+}

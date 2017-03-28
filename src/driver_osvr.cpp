@@ -26,7 +26,6 @@
 #include "driver_osvr.h"
 
 #include "ServerDriver_OSVR.h"  // for ServerDriver_OSVR
-#include "ClientDriver_OSVR.h"  // for ClientDriver_OSVR
 
 #include "osvr_dll_export.h"    // for OSVR_DLL_EXPORT
 
@@ -37,16 +36,11 @@
 #include <cstring>              // for std::strcmp
 
 static ServerDriver_OSVR g_ServerDriverOSVR;
-static ClientDriver_OSVR g_ClientDriverOSVR;
 
 OSVR_DLL_EXPORT void* TrackedDeviceDriverFactory(const char* interface_name, int* return_code)
 {
     if (0 == std::strcmp(vr::IServerTrackedDeviceProvider_Version, interface_name)) {
         return &g_ServerDriverOSVR;
-    }
-
-    if (0 == std::strcmp(vr::IClientTrackedDeviceProvider_Version, interface_name)) {
-        return &g_ClientDriverOSVR;
     }
 
     if (return_code) {

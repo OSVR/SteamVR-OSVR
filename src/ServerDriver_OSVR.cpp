@@ -42,61 +42,32 @@
 #include <cstring>                  // for std::strcmp
 #include <string>                   // for std::string
 
-vr::EVRInitError ServerDriver_OSVR::Init(vr::IDriverLog* driver_log, vr::IServerDriverHost* driver_host, const char* user_driver_config_dir, const char* driver_install_dir)
+vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext *pDriverContext)
 {
-    if (driver_log)
-        Logging::instance().setDriverLog(driver_log);
+    VR_INIT_SERVER_DRIVER_CONTEXT(pDriverContext);
+    if (vr::VRDriverLog())
+        Logging::instance().setDriverLog(vr::VRDriverLog());
 
     context_ = std::make_unique<osvr::clientkit::ClientContext>("org.osvr.SteamVR");
 
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedDevice>(*(context_.get()), driver_host));
-    trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get()), driver_host));
+    trackedDevice_ = std::make_unique<OSVRTrackedDevice>(*(context_.get()));
+    vr::VRServerDriverHost()->TrackedDeviceAdded(trackedDevice_->GetId(), vr::TrackedDeviceClass_HMD, trackedDevice_.get());
 
+    trackingReference_ = std::make_unique<OSVRTrackingReference>(*(context_.get()));
+    vr::VRServerDriverHost()->TrackedDeviceAdded(trackingReference_->GetId(), vr::TrackedDeviceClass_TrackingReference, trackingReference_.get());
     return vr::VRInitError_None;
 }
 
 void ServerDriver_OSVR::Cleanup()
 {
-    trackedDevices_.clear();
+    trackedDevice_.reset();
+    trackingReference_.reset();
     context_.reset();
 }
 
 const char* const* ServerDriver_OSVR::GetInterfaceVersions()
 {
     return vr::k_InterfaceVersions;
-}
-
-uint32_t ServerDriver_OSVR::GetTrackedDeviceCount()
-{
-    OSVR_LOG(info) << "ServerDriver_OSVR::GetTrackedDeviceCount(): Detected " << trackedDevices_.size() << " tracked devices.\n";
-    return static_cast<uint32_t>(trackedDevices_.size());
-}
-
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::GetTrackedDeviceDriver(uint32_t index)
-{
-    if (index >= trackedDevices_.size()) {
-        OSVR_LOG(err) << "ServerDriver_OSVR::GetTrackedDeviceDriver(): ERROR: Index " << index << " is out of range [0.." << trackedDevices_.size() << "].\n";
-        return nullptr;
-    }
-
-    OSVR_LOG(info) << "ServerDriver_OSVR::GetTrackedDeviceDriver(): Returning tracked device #" << index << ".\n";
-
-    return trackedDevices_[index].get();
-}
-
-vr::ITrackedDeviceServerDriver* ServerDriver_OSVR::FindTrackedDeviceDriver(const char* id)
-{
-    for (auto& tracked_device : trackedDevices_) {
-        const auto device_id = getDeviceId(tracked_device.get());
-        if (0 == std::strcmp(id, device_id.c_str())) {
-            OSVR_LOG(info) << "ServerDriver_OSVR::FindTrackedDeviceDriver(): Returning tracked device " << id << ".\n";
-            return tracked_device.get();
-        }
-    }
-
-    OSVR_LOG(err) << "ServerDriver_OSVR::FindTrackedDeviceDriver(): ERROR: Failed to locate device named '" << id << "'.\n";
-
-    return nullptr;
 }
 
 void ServerDriver_OSVR::RunFrame()
@@ -117,17 +88,5 @@ void ServerDriver_OSVR::EnterStandby()
 void ServerDriver_OSVR::LeaveStandby()
 {
     // TODO
-}
-
-std::string ServerDriver_OSVR::getDeviceId(vr::ITrackedDeviceServerDriver* device)
-{
-    char device_id[vr::k_unMaxPropertyStringSize];
-    vr::ETrackedPropertyError property_error;
-    device->GetStringTrackedDeviceProperty(vr::Prop_SerialNumber_String, device_id, vr::k_unMaxPropertyStringSize, &property_error);
-    if (vr::TrackedProp_Success == property_error) {
-        return device_id;
-    } else {
-        return "";
-    }
 }
 
