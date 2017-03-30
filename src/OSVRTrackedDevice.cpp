@@ -222,12 +222,11 @@ bool OSVRTrackedDevice::IsDisplayRealDisplay()
 
 void OSVRTrackedDevice::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
-    //const double overfill_factor = renderManagerConfig_.getRenderOverfillFactor();
-    const double overfill_factor = 1.0;
+    const double oversample_factor = renderManagerConfig_.getRenderOversampleFactor();
     const auto bounds = getWindowBounds(display_, scanoutOrigin_);
 
-    *width = static_cast<uint32_t>(bounds.width * overfill_factor);
-    *height = static_cast<uint32_t>(bounds.height * overfill_factor);
+    *width = static_cast<uint32_t>(bounds.width * oversample_factor);
+    *height = static_cast<uint32_t>(bounds.height * oversample_factor);
     OSVR_LOG(trace) << "GetRecommendedRenderTargetSize(): width = " << *width << ", height = " << *height << ".";
 }
 
