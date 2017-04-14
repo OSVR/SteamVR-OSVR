@@ -29,7 +29,6 @@
 #include "osvr_compiler_detection.h"
 #include "make_unique.h"
 #include "matrix_cast.h"
-#include "osvr_device_properties.h"
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"

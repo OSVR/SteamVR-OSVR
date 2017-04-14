@@ -44,7 +44,6 @@ add_library(driver_osvr
 	identity.h
 	make_unique.h
 	matrix_cast.h
-	osvr_device_properties.h
 	osvr_dll_export.h
 	platform_fixes.h
 	pretty_print.h

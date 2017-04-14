@@ -29,7 +29,6 @@
 #include "osvr_compiler_detection.h"
 #include "make_unique.h"
 #include "matrix_cast.h"
-#include "osvr_device_properties.h"
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
@@ -518,24 +517,6 @@ void OSVRTrackedHMD::configureDistortionParameters()
         OSVR_LOG(err) << "OSVRTrackedHMD::configureDistortionParameters(): Could not create mesh interpolators for right eye.";
     }
     OSVR_LOG(debug) << "OSVRTrackedHMD::configureDistortionParameters(): Number of right eye interpolators: " << leftEyeInterpolators_.size() << ".";
-}
-
-template <typename T>
-vr::ETrackedPropertyError OSVRTrackedHMD::checkProperty(vr::ETrackedDeviceProperty prop, const T&) const
-{
-    if (isWrongDataType(prop, T())) {
-        return vr::TrackedProp_WrongDataType;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        return vr::TrackedProp_WrongDeviceClass;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        return vr::TrackedProp_InvalidDevice;
-    }
-
-    return vr::TrackedProp_Success;
 }
 
 osvr::display::ScanOutOrigin OSVRTrackedHMD::parseScanOutOrigin(std::string str) const

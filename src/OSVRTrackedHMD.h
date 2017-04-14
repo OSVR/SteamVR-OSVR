@@ -169,19 +169,6 @@ private:
     void configureDistortionParameters();
 
     /**
-     * Cecks to see if the requested property is valid for the device class and
-     * type requested.
-     *
-     * @tparam T type of value requested
-     * @param prop property requested
-     *
-     * @return vr::TrackedProp_Success if the checks pass, other
-     * vr::ETrackedPropertyError values on failure
-     */
-    template <typename T>
-    vr::ETrackedPropertyError checkProperty(vr::ETrackedDeviceProperty prop, const T&) const;
-
-    /**
      * Parses a string into a scan-out origin option.
      */
     osvr::display::ScanOutOrigin parseScanOutOrigin(std::string str) const;
