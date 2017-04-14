@@ -128,6 +128,8 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_Firmware_ForceUpdateRequired_Bool";
         case vr::Prop_ViveSystemButtonFixRequired_Bool:
             return "Prop_ViveSystemButtonFixRequired_Bool";
+        case vr::Prop_ParentDriver_Uint64:
+            return "Prop_ParentDriver_Uint64";
         case vr::Prop_ReportsTimeSinceVSync_Bool:
             return "Prop_ReportsTimeSinceVSync_Bool";
         case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -204,6 +206,16 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_DisplaySuppressed_Bool";
         case vr::Prop_DisplayAllowNightMode_Bool:
             return "Prop_DisplayAllowNightMode_Bool";
+        case vr::Prop_DisplayMCImageWidth_Int32:
+            return "Prop_DisplayMCImageWidth_Int32";
+        case vr::Prop_DisplayMCImageHeight_Int32:
+            return "Prop_DisplayMCImageHeight_Int32";
+        case vr::Prop_DisplayMCImageNumChannels_Int32:
+            return "Prop_DisplayMCImageNumChannels_Int32";
+        case vr::Prop_DisplayMCImageData_Binary:
+            return "Prop_DisplayMCImageData_Binary";
+        case vr::Prop_UsesDriverDirectMode_Bool:
+            return "Prop_UsesDriverDirectMode_Bool";
         case vr::Prop_AttachedDeviceId_String:
             return "Prop_AttachedDeviceId_String";
         case vr::Prop_SupportedButtons_Uint64:
@@ -252,6 +264,14 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_NamedIconPathDeviceStandby_String";
         case vr::Prop_NamedIconPathDeviceAlertLow_String:
             return "Prop_NamedIconPathDeviceAlertLow_String";
+        case vr::Prop_DisplayHiddenArea_Binary_Start:
+            return "Prop_DisplayHiddenArea_Binary_Start";
+        case vr::Prop_DisplayHiddenArea_Binary_End:
+            return "Prop_DisplayHiddenArea_Binary_End";
+        case vr::Prop_UserConfigPath_String:
+            return "Prop_UserConfigPath_String";
+        case vr::Prop_InstallPath_String:
+            return "Prop_InstallPath_String";
         case vr::Prop_VendorSpecific_Reserved_Start:
             return "Prop_VendorSpecific_Reserved_Start";
         case vr::Prop_VendorSpecific_Reserved_End:
