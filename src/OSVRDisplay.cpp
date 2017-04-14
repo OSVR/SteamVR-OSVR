@@ -30,8 +30,8 @@
 // Library/third-party includes
 #include <openvr_driver.h>
 
-#include <osvr/display/Display.h>
-#include <osvr/display/DisplayIO.h>
+#include <osvr/Display/Display.h>
+#include <osvr/Display/DisplayIO.h>
 #include <osvr/RenderKit/osvr_display_configuration.h>
 #include <osvr/Util/PlatformConfig.h>
 
