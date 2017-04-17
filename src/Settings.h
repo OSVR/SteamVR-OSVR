@@ -39,7 +39,7 @@
 class Settings {
 public:
     /**
-     * Constructor.  Requires non-null IVRSettings.
+     * Constructor.
      */
     Settings(const std::string& section = "driver_osvr");
 

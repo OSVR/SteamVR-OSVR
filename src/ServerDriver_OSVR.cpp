@@ -41,12 +41,37 @@
 #include <vector>                   // for std::vector
 #include <cstring>                  // for std::strcmp
 #include <string>                   // for std::string
+#include <chrono>
+#include <thread>
+#include <atomic>
+
+namespace {
+
+static std::thread client_update_thread;
+static std::atomic<bool> client_update_thread_quit;
+static std::atomic<int> client_update_thread_ms_wait;
+static void client_update_thread_work(osvr::clientkit::ClientContext ctx)
+{
+    while (!client_update_thread_quit.load()) {
+        ctx.update();
+        std::this_thread::sleep_for(std::chrono::milliseconds(client_update_thread_ms_wait.load()));
+    }
+    client_update_thread_quit = false;
+}
+
+} // anonymous namespace
 
 vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
 {
     VR_INIT_SERVER_DRIVER_CONTEXT(driver_context);
 
     Logging::instance().setDriverLog(vr::VRDriverLog());
+
+    settings_ = std::make_unique<Settings>();
+    standbyWaitPeriod_ = settings_->getSetting<int>("standbyWaitPeriod", 100);
+    activeWaitPeriod_ = settings_->getSetting<int>("activeWaitPeriod", 1);
+    OSVR_LOG(debug) << "Standby wait period is " << standbyWaitPeriod_ << " ms.";
+    OSVR_LOG(debug) << "Active wait period is " << activeWaitPeriod_ << " ms.";
 
     context_ = std::make_unique<osvr::clientkit::ClientContext>("org.osvr.SteamVR");
 
@@ -57,11 +82,20 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
         vr::VRServerDriverHost()->TrackedDeviceAdded(tracked_device->getId(), tracked_device->getDeviceClass(), tracked_device.get());
     }
 
+    client_update_thread_quit.store(false);
+    client_update_thread_ms_wait.store(activeWaitPeriod_);
+    client_update_thread = std::thread(client_update_thread_work, context_->get());
+
     return vr::VRInitError_None;
 }
 
 void ServerDriver_OSVR::Cleanup()
 {
+    client_update_thread_quit.store(true);
+    if (client_update_thread.joinable()) {
+        client_update_thread.join();
+    }
+
     trackedDevices_.clear();
     context_.reset();
     VR_CLEANUP_SERVER_DRIVER_CONTEXT();
@@ -74,7 +108,7 @@ const char* const* ServerDriver_OSVR::GetInterfaceVersions()
 
 void ServerDriver_OSVR::RunFrame()
 {
-    context_->update();
+    // do nothing
 }
 
 bool ServerDriver_OSVR::ShouldBlockStandbyMode()
@@ -84,11 +118,13 @@ bool ServerDriver_OSVR::ShouldBlockStandbyMode()
 
 void ServerDriver_OSVR::EnterStandby()
 {
-    // TODO
+    OSVR_LOG(debug) << "Entering standby mode...";
+    client_update_thread_ms_wait.store(standbyWaitPeriod_);
 }
 
 void ServerDriver_OSVR::LeaveStandby()
 {
-    // TODO
+    OSVR_LOG(debug) << "Leaving standby mode...";
+    client_update_thread_ms_wait.store(activeWaitPeriod_);
 }
 

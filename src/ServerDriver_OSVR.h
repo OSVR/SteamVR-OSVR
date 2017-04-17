@@ -28,6 +28,7 @@
 // Internal Includes
 #include "OSVRTrackedDevice.h"          // for OSVRTrackedDevice
 #include "osvr_compiler_detection.h"    // for OSVR_OVERRIDE
+#include "Settings.h"                   // for Settings
 
 // Library/third-party includes
 #include <openvr_driver.h>              // for everything in vr namespace
@@ -109,7 +110,9 @@ private:
     //std::vector<std::unique_ptr<vr::ITrackedDeviceServerDriver>> trackedDevices_;
     std::vector<std::unique_ptr<OSVRTrackedDevice>> trackedDevices_;
     std::unique_ptr<osvr::clientkit::ClientContext> context_;
-    bool enabled_ = true;
+    std::unique_ptr<Settings> settings_;
+    int standbyWaitPeriod_ = 100; // ms
+    int activeWaitPeriod_ = 1; // ms
 };
 
 #endif // INCLUDED_ServerDriver_OSVR_h_GUID_136B1359_C29D_4198_9CA0_1C223CC83B84
