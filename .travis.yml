@@ -53,7 +53,7 @@ addons:
     - gcc-5
     - g++-5
     - clang-3.7
-    - libudev1
+    - libudev
     - libudev-dev
     - libeigen3-dev
     - libglew-dev
