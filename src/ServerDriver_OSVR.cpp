@@ -50,7 +50,7 @@ namespace {
 static std::thread client_update_thread;
 static std::atomic<bool> client_update_thread_quit;
 static std::atomic<int> client_update_thread_ms_wait;
-static void client_update_thread_work(osvr::clientkit::ClientContext ctx)
+static void client_update_thread_work(osvr::clientkit::ClientContext& ctx)
 {
     while (!client_update_thread_quit.load()) {
         ctx.update();
@@ -84,7 +84,7 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
 
     client_update_thread_quit.store(false);
     client_update_thread_ms_wait.store(activeWaitPeriod_);
-    client_update_thread = std::thread(client_update_thread_work, context_->get());
+    client_update_thread = std::thread(client_update_thread_work, std::ref(*context_));
 
     return vr::VRInitError_None;
 }
