@@ -339,7 +339,7 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* ti
         const auto has_velocity_state = osvrGetVelocityState(self->trackerInterface_.get(), &tv, &velocity_state);
         if (OSVR_RETURN_SUCCESS == has_velocity_state) {
             if (velocity_state.linearVelocityValid) {
-                Eigen::Vector3d::Map(pose.vecVelocity) = velocity_state.linearVelocity.data;
+                std::copy(std::begin(velocity_state.linearVelocity.data), std::end(velocity_state.linearVelocity.data), std::begin(pose.vecVelocity));
             }
 
             if (velocity_state.angularVelocityValid) {
