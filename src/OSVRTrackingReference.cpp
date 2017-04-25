@@ -48,7 +48,7 @@
 #include <iostream>
 #include <exception>
 
-OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context) : OSVRTrackedDevice(context, vr::TrackedDeviceClass_TrackingReference, "OSVRTrackedHMD")
+OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context) : OSVRTrackedDevice(context, vr::TrackedDeviceClass_TrackingReference, "OSVRTrackingReference")
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::OSVRTrackingReference() called.";
 }
