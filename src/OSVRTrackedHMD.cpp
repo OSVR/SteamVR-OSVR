@@ -45,6 +45,9 @@
 #include <osvr/Client/RenderManagerConfig.h>
 #include <util/FixedLengthStringFunctions.h>
 #include <osvr/RenderKit/DistortionCorrectTextureCoordinate.h>
+#include <osvr/ClientKit/InterfaceStateC.h>
+#include <osvr/Util/EigenQuatExponentialMap.h>
+#include <osvr/Util/TimeValue.h>
 
 // Standard includes
 #include <algorithm>        // for std::find
@@ -68,7 +71,7 @@ OSVRTrackedHMD::~OSVRTrackedHMD()
 
 vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate() called.";
+    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate() called with ID " << object_id << ".";
     OSVRTrackedDevice::Activate(object_id);
 
     // TODO use C++11 <chrono>
@@ -145,7 +148,7 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 
     //vr::VRServerDriverHost()->ProximitySensorState(objectId_, true);
 
-    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation complete.\n";
+    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation for object ID " << object_id << " complete.\n";
     return vr::VRInitError_None;
 }
 
@@ -308,7 +311,7 @@ vr::DriverPose_t OSVRTrackedHMD::GetPose()
 // ------------------------------------
 
 
-void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, const OSVR_PoseReport* report)
+void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* timeval, const OSVR_PoseReport* report)
 {
     if (!userdata)
         return;
@@ -316,27 +319,50 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, c
     auto* self = static_cast<OSVRTrackedHMD*>(userdata);
 
     vr::DriverPose_t pose;
-    pose.poseTimeOffset = 0; // close enough
-
-    Eigen::Vector3d::Map(pose.vecWorldFromDriverTranslation) = Eigen::Vector3d::Zero();
-    Eigen::Vector3d::Map(pose.vecDriverFromHeadTranslation) = Eigen::Vector3d::Zero();
 
     map(pose.qWorldFromDriverRotation) = Eigen::Quaterniond::Identity();
+    Eigen::Vector3d::Map(pose.vecWorldFromDriverTranslation) = Eigen::Vector3d::Zero();
 
     map(pose.qDriverFromHeadRotation) = Eigen::Quaterniond::Identity();
+    Eigen::Vector3d::Map(pose.vecDriverFromHeadTranslation) = Eigen::Vector3d::Zero();
 
     // Position
     Eigen::Vector3d::Map(pose.vecPosition) = osvr::util::vecMap(report->pose.translation);
 
-    // Position velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
+    // Velocity (m/s) and angular velocity (rad/s)
+    {
+        Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
+        Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
+
+        OSVR_TimeValue tv;
+        OSVR_VelocityState velocity_state;
+        const auto has_velocity_state = osvrGetVelocityState(self->trackerInterface_.get(), &tv, &velocity_state);
+        if (OSVR_RETURN_SUCCESS == has_velocity_state) {
+            if (velocity_state.linearVelocityValid) {
+                std::copy(std::begin(velocity_state.linearVelocity.data), std::end(velocity_state.linearVelocity.data), std::begin(pose.vecVelocity));
+            }
+
+            if (velocity_state.angularVelocityValid) {
+                // Change the reference frame
+                const auto pose_rotation = osvr::util::fromQuat(report->pose.rotation);
+                const auto inc_rotation = pose_rotation.inverse() * osvr::util::fromQuat(velocity_state.angularVelocity.incrementalRotation) * pose_rotation;
+
+                // Convert incremental rotation to angular velocity
+                const auto dt = velocity_state.angularVelocity.dt;
+                const auto angular_velocity = osvr::util::quat_ln(inc_rotation) * 2.0 / dt;
+
+                Eigen::Vector3d::Map(pose.vecAngularVelocity) = angular_velocity;
+            }
+        }
+    }
+
+    // Acceleration of the pose in meters/second
     Eigen::Vector3d::Map(pose.vecAcceleration) = Eigen::Vector3d::Zero();
 
     // Orientation
     map(pose.qRotation) = osvr::util::fromQuat(report->pose.rotation);
 
-    // Angular velocity and acceleration are not currently consistently provided
-    Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
+    // Angular acceleration is not currently provided
     Eigen::Vector3d::Map(pose.vecAngularAcceleration) = Eigen::Vector3d::Zero();
 
     pose.result = vr::TrackingResult_Running_OK;
@@ -344,6 +370,14 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue*, c
     pose.willDriftInYaw = true;
     pose.shouldApplyHeadModel = true;
     pose.deviceIsConnected = true;
+
+    // Time offset of this pose, in seconds from the actual time of the pose,
+    // relative to the time of the PoseUpdated() call made by the driver.
+    const auto now = osvr::util::time::getNow();
+    const auto elapsed = osvr::util::time::duration(now, *timeval);
+    pose.poseTimeOffset = elapsed;
+
+    //OSVR_LOG(debug) << "Pose:\n" << pose;
 
     self->pose_ = pose;
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(self->objectId_, self->pose_, sizeof(vr::DriverPose_t));
@@ -382,14 +416,6 @@ vr::ETrackedDeviceClass OSVRTrackedHMD::getDeviceClass() const
 void OSVRTrackedHMD::configure()
 {
     // Get settings from config file
-    const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
-    if (verbose_logging) {
-        OSVR_LOG(info) << "Verbose logging enabled.";
-        Logging::instance().setLogLevel(trace);
-    } else {
-        OSVR_LOG(info) << "Verbose logging disabled.";
-        Logging::instance().setLogLevel(info);
-    }
 
     // The name of the display we want to use
     const auto display_name = settings_->getSetting<std::string>("displayName", "OSVR");
