@@ -85,7 +85,7 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
     while (!context_.checkStatus()) {
         context_.update();
         if (std::time(nullptr) > startTime + waitTime) {
-            OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Context startup timed out!\n";
+            OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Context startup timed out after " << waitTime << " ms!\n";
             return vr::VRInitError_Driver_Failed;
         }
     }
@@ -98,7 +98,7 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
     while (!displayConfig_.checkStartup()) {
         context_.update();
         if (std::time(nullptr) > startTime + waitTime) {
-            OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Display startup timed out!\n";
+            OSVR_LOG(err) << "OSVRTrackedHMD::Activate(): Display startup timed out after " << waitTime << " ms!\n";
             return vr::VRInitError_Driver_Failed;
         }
     }
@@ -612,10 +612,35 @@ void OSVRTrackedHMD::setProperties()
     vr::VRProperties()->SetInt32Property(propertyContainer_, vr::Prop_EdidProductID_Int32, static_cast<int32_t>(display_.edidProductId));
     vr::VRProperties()->SetUint64Property(propertyContainer_, vr::Prop_CurrentUniverseId_Uint64, 1);
     vr::VRProperties()->SetUint64Property(propertyContainer_, vr::Prop_PreviousUniverseId_Uint64, 1);
+
     /// @todo This really should be read from the server
     vr::VRProperties()->SetUint64Property(propertyContainer_, vr::Prop_DisplayFirmwareVersion_Uint64, 192);
-    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ModelNumber_String, settings_->getSetting<std::string>("modelNumber", displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion()).c_str());
+
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ModelNumber_String, getModelNumber().c_str());
     vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_SerialNumber_String, settings_->getSetting<std::string>("serialNumber", getId()).c_str());
-    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ManufacturerName_String, settings_->getSetting<std::string>("manufacturer", displayConfiguration_.getVendor()).c_str());
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ManufacturerName_String, getManufacturerName().c_str());
 }
+
+std::string OSVRTrackedHMD::getModelNumber() const
+{
+    const auto model_number_default = displayConfiguration_.getModel() + " " + displayConfiguration_.getVersion();
+    const auto model_number_override = settings_->getSetting<std::string>("modelNumber", model_number_default);
+    if (model_number_override.empty()) {
+        return model_number_default;
+    }
+
+    return model_number_override;
+}
+
+std::string OSVRTrackedHMD::getManufacturerName() const
+{
+    const auto manufacturer_default = displayConfiguration_.getVendor();
+    const auto manufacturer_override = settings_->getSetting<std::string>("manufacturer", manufacturer_default);
+    if (manufacturer_override.empty()) {
+        return manufacturer_default;
+    }
+
+    return manufacturer_override;
+}
+
 

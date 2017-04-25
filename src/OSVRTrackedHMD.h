@@ -184,6 +184,16 @@ private:
      */
     std::pair<float, float> rotate(float u, float v, osvr::display::Rotation rotation) const;
 
+    /**
+     * Returns the model number of the HMD.
+     */
+    std::string getModelNumber() const;
+
+    /**
+     * Returns the manufacturer name of the HMD.
+     */
+    std::string getManufacturerName() const;
+
     std::string displayDescription_;
     osvr::clientkit::DisplayConfig displayConfig_;
     osvr::client::RenderManagerConfig renderManagerConfig_;
