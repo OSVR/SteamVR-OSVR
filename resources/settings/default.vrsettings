@@ -17,7 +17,8 @@
         "standbyWaitPeriod": 100,
         "manufacturer": "",
         "modelNumber": "",
-        "serialNumber": ""
+        "serialNumber": "",
+        "cameraRenderModel": "osvr_camera"
     }
 }
 
