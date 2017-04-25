@@ -343,12 +343,78 @@ inline AsHex<T> as_hex_0x(T val) {
 }
 
 template <typename T>
-std::string to_string(const T& val)
+inline std::string to_string(const T& val)
 {
     std::ostringstream oss;
     oss << val;
     return oss.str();
 }
 
-#endif // INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
 
+inline std::ostream& operator<<(std::ostream& ostr, const vr::HmdQuaternion_t& quat)
+{
+    ostr << "<" << quat.w << ", " << quat.x << ", " << quat.y << ", " << quat.z << ">";
+    return ostr;
+}
+
+inline std::ostream& operator<<(std::ostream& ostr, const vr::ETrackingResult& result)
+{
+    switch (result) {
+    case vr::TrackingResult_Uninitialized:
+        ostr << "Unintiialized";
+        break;
+    case vr::TrackingResult_Calibrating_InProgress:
+        ostr << "Calibration in progress";
+        break;
+    case vr::TrackingResult_Calibrating_OutOfRange:
+        ostr << "Calibrating - out of range";
+        break;
+    case vr::TrackingResult_Running_OK:
+        ostr << "Running okay";
+        break;
+    case vr::TrackingResult_Running_OutOfRange:
+        ostr << "Running - out of range";
+        break;
+    default:
+        ostr << "Unknown tracking result";
+        break;
+    }
+    return ostr;
+}
+
+inline std::ostream& operator<<(std::ostream& ostr, const double vec[3])
+{
+    ostr << "[" << vec[0] << ", " << vec[1] << ", " << vec[2] << "]";
+    return ostr;
+}
+
+/**
+ * @brief Return a string representation of vr::DriverPose_t struct.
+ */
+inline std::ostream& operator<<(std::ostream& ostr, const vr::DriverPose_t& pose)
+{
+    ostr << "Time offset (seconds): " << pose.poseTimeOffset << "\n";
+    ostr << "World-from-driver transform:\n";
+    ostr << " -- translation: " << pose.vecWorldFromDriverTranslation << "\n";
+    ostr << " -- rotation: " << pose.qWorldFromDriverRotation << "\n";
+    ostr << "Driver-from-head transform:\n";
+    ostr << " -- translation: " << pose.vecDriverFromHeadTranslation << "\n";
+    ostr << " -- rotation: " << pose.qDriverFromHeadRotation << "\n";
+    ostr << "Pose:\n";
+    ostr << " -- position: " << pose.vecPosition << "\n";
+    ostr << " -- rotation: " << pose.qRotation << "\n";
+    ostr << "Velocity:\n";
+    ostr << " -- linear (m/s): " << pose.vecVelocity << "\n";
+    ostr << " -- angular (rad/s): " << pose.vecAngularVelocity << "\n";
+    ostr << "Acceleration:\n";
+    ostr << " -- linear (m/s^2): " << pose.vecAcceleration << "\n";
+    ostr << " -- angular (rad/s^2): " << pose.vecAngularAcceleration << "\n";
+    ostr << "Tracking result: " << pose.result << "\n";
+    ostr << "Pose is valid: " << (pose.poseIsValid ? "true" : "false") << "\n";
+    ostr << "Will drift in yaw: " << (pose.willDriftInYaw ? "yes" : "no") << "\n";
+    ostr << "Should apply head model: " << (pose.shouldApplyHeadModel ? "yes" : "no") << "\n";
+    ostr << "Device is connected: " << (pose.deviceIsConnected ? "yes" : "no");
+    return ostr;
+}
+
+#endif // INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591

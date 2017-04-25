@@ -68,6 +68,13 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
     Logging::instance().setDriverLog(vr::VRDriverLog());
 
     settings_ = std::make_unique<Settings>();
+
+    // Verbose logging
+    const auto verbose = settings_->getSetting<bool>("verbose", false);
+    Logging::instance().setLogLevel(verbose ? trace : info);
+    OSVR_LOG(info) << "Verbose logging " << (verbose ? "enabled" : "disabled") << ".";
+
+    // Client loop update rate
     standbyWaitPeriod_ = settings_->getSetting<int>("standbyWaitPeriod", 100);
     activeWaitPeriod_ = settings_->getSetting<int>("activeWaitPeriod", 1);
     OSVR_LOG(debug) << "Standby wait period is " << standbyWaitPeriod_ << " ms.";

@@ -71,7 +71,7 @@ OSVRTrackedHMD::~OSVRTrackedHMD()
 
 vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 {
-    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate() called.";
+    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate() called with ID " << object_id << ".";
     OSVRTrackedDevice::Activate(object_id);
 
     // TODO use C++11 <chrono>
@@ -148,7 +148,7 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
 
     //vr::VRServerDriverHost()->ProximitySensorState(objectId_, true);
 
-    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation complete.\n";
+    OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation for object ID " << object_id << " complete.\n";
     return vr::VRInitError_None;
 }
 
@@ -377,6 +377,8 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* ti
     const auto elapsed = osvr::util::time::duration(now, *timeval);
     pose.poseTimeOffset = elapsed;
 
+    //OSVR_LOG(debug) << "Pose:\n" << pose;
+
     self->pose_ = pose;
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(self->objectId_, self->pose_, sizeof(vr::DriverPose_t));
 }
@@ -414,14 +416,6 @@ vr::ETrackedDeviceClass OSVRTrackedHMD::getDeviceClass() const
 void OSVRTrackedHMD::configure()
 {
     // Get settings from config file
-    const bool verbose_logging = settings_->getSetting<bool>("verbose", false);
-    if (verbose_logging) {
-        OSVR_LOG(info) << "Verbose logging enabled.";
-        Logging::instance().setLogLevel(trace);
-    } else {
-        OSVR_LOG(info) << "Verbose logging disabled.";
-        Logging::instance().setLogLevel(info);
-    }
 
     // The name of the display we want to use
     const auto display_name = settings_->getSetting<std::string>("displayName", "OSVR");
