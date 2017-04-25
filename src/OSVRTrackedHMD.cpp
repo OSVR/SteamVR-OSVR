@@ -481,7 +481,7 @@ void OSVRTrackedHMD::configure()
         display_.position.x = position_x;
         display_.position.y = position_y;
         display_.rotation = rotation;
-        display_.verticalRefreshRate = settings_->getSetting<double>("verticalRefreshRate", getVerticalRefreshRate());
+        display_.verticalRefreshRate = getVerticalRefreshRate();
         display_.attachedToDesktop = false; // assuming direct mode
         display_.edidVendorId = settings_->getSetting<uint32_t>("edidVendorId", 0xd24e); // SVR
         display_.edidProductId = settings_->getSetting<uint32_t>("edidProductId", 0x1019);
@@ -576,7 +576,7 @@ double OSVRTrackedHMD::getVerticalRefreshRate() const
     // We'll read an override value from steamvr.vrsettings if it exists.
     // Otherwise, we'll fall back on OSVR HDK defaults or use a heuristic for
     // other HMDs.
-    const auto refresh_rate = settings_->getSetting<float>("refreshRate", 0.0);
+    const auto refresh_rate = settings_->getSetting<float>("verticalRefreshRate", 0.0);
     if (refresh_rate > 0.0) {
         return refresh_rate;
     }

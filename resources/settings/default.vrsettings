@@ -6,7 +6,7 @@
         "scanoutOrigin": "",
         "edidVendorId": 53838,
         "edidProductId": 4121,
-        "cameraPath": "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera",
+        "cameraPath": "",
         "cameraFOVLeftDegrees": 35.235,
         "cameraFOVRightDegrees": 35.235,
         "cameraFOVTopDegrees": 27.95,
@@ -18,7 +18,8 @@
         "manufacturer": "",
         "modelNumber": "",
         "serialNumber": "",
-        "cameraRenderModel": "osvr_camera"
+        "cameraRenderModel": "osvr_camera",
+        "verticalRefreshRate": 0.0
     }
 }
 

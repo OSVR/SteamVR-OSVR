@@ -37,6 +37,7 @@
 #include <openvr_driver.h>
 
 // Library/third-party includes
+#include <osvr/ClientKit/InterfaceStateC.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Util/PlatformConfig.h>
 #include <util/FixedLengthStringFunctions.h>
@@ -200,22 +201,56 @@ void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue
 void OSVRTrackingReference::configure()
 {
     // Get settings from config file
-    const bool verbose_logging = settings_->getSetting<bool>("verbose", verboseLogging_);
-    if (verbose_logging) {
-        OSVR_LOG(info) << "Verbose logging enabled.";
-        Logging::instance().setLogLevel(trace);
-    } else {
-        OSVR_LOG(info) << "Verbose logging disabled.";
-        Logging::instance().setLogLevel(info);
-    }
 
     // Read tracking reference values from config file
-    trackerPath_ = settings_->getSetting<std::string>("cameraPath", trackerPath_);
+    trackerPath_ = getTrackerPath();
     fovLeft_ = settings_->getSetting<float>("cameraFOVLeftDegrees", fovLeft_);
     fovRight_ = settings_->getSetting<float>("cameraFOVRightDegrees", fovRight_);
     fovTop_ = settings_->getSetting<float>("cameraFOVTopDegrees", fovTop_);
     fovBottom_ = settings_->getSetting<float>("cameraFOVBottomDegrees", fovBottom_);
     minTrackingRange_ = settings_->getSetting<float>("minTrackingRangeMeters", minTrackingRange_);
     maxTrackingRange_ = settings_->getSetting<float>("maxTrackingRangeMeters", maxTrackingRange_);
+}
+
+std::string OSVRTrackingReference::getTrackerPath() const
+{
+    // If the camera path is set explicitly in the configuration file, then use
+    // that path regardless of whether or not it works (in the hopes that the
+    // camera will eventually turn up).
+    const auto settings_camera_path = settings_->getSetting<std::string>("cameraPath", "");
+    if (!settings_camera_path.empty()) {
+        return settings_camera_path;
+    }
+
+    // The camera path wasn't explicitly specified, so we'll test a couple
+    // common values.
+    //
+    // Different OSVR tracking plugins use different paths for the tracking
+    // camera pose.  The original video-based IMU fusion plugin used
+    // `/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera` while the
+    // newer unified video inertial tracker plugin usees `/trackingCamera`.
+
+    const auto old_camera_path = std::string{"/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera"};
+    const auto new_camera_path = std::string{"/trackingCamera"};
+
+    const auto camera_paths = std::vector<std::string> { new_camera_path, old_camera_path };
+
+    for (const auto& camera_path : camera_paths) {
+        auto iface = context_.getInterface(camera_path.c_str());
+
+        OSVR_PoseState state;
+        OSVR_TimeValue timestamp;
+
+        const auto ret = osvrGetPoseState(iface.get(), &timestamp, &state);
+        if (OSVR_RETURN_SUCCESS != ret) {
+            continue;
+        }
+
+        return camera_path;
+    }
+
+    // None of the default camera paths appear to be valid, so we'll use the
+    // default camera path and hope it eventually shows up.
+    return new_camera_path;
 }
 

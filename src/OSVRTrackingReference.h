@@ -106,11 +106,16 @@ private:
     void configure();
     void setProperties();
 
+    /**
+     * Returns the camera path.
+     */
+    std::string getTrackerPath() const;
+
     osvr::clientkit::Interface m_TrackerInterface;
 
     // Settings
     bool verboseLogging_ = false;
-    std::string trackerPath_ = "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera";
+    std::string trackerPath_ = "/trackingCamera";
 
     // Default values are those for the OSVR HDK IR camera
     float fovLeft_ = 35.235f; // degrees
