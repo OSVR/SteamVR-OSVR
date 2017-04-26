@@ -25,7 +25,7 @@ configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compil
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 add_library(driver_osvr
-	SHARED
+	MODULE
 	Logging.h
 	OSVRDisplay.h
 	OSVRDisplay.cpp
