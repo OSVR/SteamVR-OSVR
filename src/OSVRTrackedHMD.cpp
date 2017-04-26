@@ -146,8 +146,6 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
     configureDistortionParameters();
     setProperties();
 
-    //vr::VRServerDriverHost()->ProximitySensorState(objectId_, true);
-
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation for object ID " << object_id << " complete.\n";
     return vr::VRInitError_None;
 }
@@ -626,7 +624,7 @@ void OSVRTrackedHMD::setProperties()
     vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_Firmware_UpdateAvailable_Bool, false);
     vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_Firmware_ManualUpdate_Bool, false);
     vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_BlockServerShutdown_Bool, false);
-    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_ContainsProximitySensor_Bool, true);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_ContainsProximitySensor_Bool, false);
     vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceProvidesBatteryStatus_Bool, false);
     vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceCanPowerOff_Bool, true);
     vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_HasCamera_Bool, false);
