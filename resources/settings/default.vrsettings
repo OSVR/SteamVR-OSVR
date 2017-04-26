@@ -18,7 +18,7 @@
         "manufacturer": "",
         "modelNumber": "",
         "serialNumber": "",
-        "cameraRenderModel": "osvr_camera",
+        "cameraRenderModel": "{osvr}osvr_camera",
         "verticalRefreshRate": 0.0
     }
 }
