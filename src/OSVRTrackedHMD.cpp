@@ -122,10 +122,6 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
         }
     }
 
-    // Register tracker callback
-    trackerInterface_ = context_.getInterface("/me/head");
-    trackerInterface_.registerCallback(&OSVRTrackedHMD::HmdTrackerCallback, this);
-
     auto configString = context_.getStringParameter("/renderManagerConfig");
 
     // If the /renderManagerConfig parameter is missing from the configuration
@@ -145,6 +141,10 @@ vr::EVRInitError OSVRTrackedHMD::Activate(uint32_t object_id)
     configure();
     configureDistortionParameters();
     setProperties();
+
+    // Register tracker callback
+    trackerInterface_ = context_.getInterface("/me/head");
+    trackerInterface_.registerCallback(&OSVRTrackedHMD::HmdTrackerCallback, this);
 
     OSVR_LOG(trace) << "OSVRTrackedHMD::Activate(): Activation for object ID " << object_id << " complete.\n";
     return vr::VRInitError_None;
