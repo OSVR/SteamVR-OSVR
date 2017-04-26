@@ -194,6 +194,7 @@ void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue
     pose.shouldApplyHeadModel = false;
     pose.deviceIsConnected = true;
 
+    OSVR_LOG(trace) << "OSVRTrackingReference::TrackerCallback(): Got a new camera pose: " << pose.vecPosition << " at angle " << pose.qRotation << ".";
     self->pose_ = pose;
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(self->objectId_, self->pose_, sizeof(vr::DriverPose_t));
 }
@@ -219,6 +220,7 @@ std::string OSVRTrackingReference::getTrackerPath() const
     // camera will eventually turn up).
     const auto settings_camera_path = settings_->getSetting<std::string>("cameraPath", "");
     if (!settings_camera_path.empty()) {
+        OSVR_LOG(info) << "Using configured camera path [" << settings_camera_path << "].";
         return settings_camera_path;
     }
 
@@ -243,14 +245,17 @@ std::string OSVRTrackingReference::getTrackerPath() const
 
         const auto ret = osvrGetPoseState(iface.get(), &timestamp, &state);
         if (OSVR_RETURN_SUCCESS != ret) {
+            OSVR_LOG(debug) << "Failed to get pose state from path " << camera_path << ".";
             continue;
         }
 
+        OSVR_LOG(info) << "Using detected camera path [" << camera_path << "].";
         return camera_path;
     }
 
     // None of the default camera paths appear to be valid, so we'll use the
     // default camera path and hope it eventually shows up.
+    OSVR_LOG(info) << "Using fallback camera path [" << new_camera_path << "].";
     return new_camera_path;
 }
 
