@@ -633,6 +633,8 @@ void OSVRTrackedHMD::setProperties()
     vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_UserIpdMeters_Float, GetIPD());
     vr::VRProperties()->SetInt32Property(propertyContainer_, vr::Prop_EdidVendorID_Int32, static_cast<int32_t>(display_.edidVendorId));
     vr::VRProperties()->SetInt32Property(propertyContainer_, vr::Prop_EdidProductID_Int32, static_cast<int32_t>(display_.edidProductId));
+
+    // return a constant that's not 0 (invalid) or 1 (reserved for Oculus)
     vr::VRProperties()->SetUint64Property(propertyContainer_, vr::Prop_CurrentUniverseId_Uint64, 1);
     vr::VRProperties()->SetUint64Property(propertyContainer_, vr::Prop_PreviousUniverseId_Uint64, 1);
 
