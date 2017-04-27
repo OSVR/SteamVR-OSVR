@@ -21,6 +21,21 @@ set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX11_STANDARD_COMPILE_OPTION})
 check_cxx_source_compiles("#include <memory>\nint main(int, char**) { std::unique_ptr<int> i = std::make_unique<int>(0); }" OSVR_HAS_STD_MAKE_UNIQUE)
 configure_file(osvr_compiler_tests.h.in "${CMAKE_CURRENT_BINARY_DIR}/osvr_compiler_tests.h")
 
+# Generate Version.h
+include(GetGitRevisionDescription)
+git_describe(GIT_REVISION_DESCRIPTION --tags --match v*)
+if(GIT_REVISION_DESCRIPTION)
+    string(REPLACE "v" ""
+        GIT_REVISION_DESCRIPTION
+        "${GIT_REVISION_DESCRIPTION}")
+    set(STEAMVR_OSVR_VERSION "${GIT_REVISION_DESCRIPTION}")
+    message(STATUS "Git reports version ${STEAMVR_OSVR_VERSION}")
+else()
+    message(STATUS "Could not get revision information from Git! Calling this just version ${STEAMVR_OSVR_VERSION}!")
+endif()
+configure_file(Version.h.in "${CMAKE_CURRENT_BINARY_DIR}/Version.h")
+
+
 # Disable 'lib' prefix on POSIX systems
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
@@ -35,10 +50,13 @@ add_library(driver_osvr
 	OSVRTrackedHMD.h
 	OSVRTrackingReference.cpp
 	OSVRTrackingReference.h
+	PrettyPrint.cpp
+	PrettyPrint.h
 	ServerDriver_OSVR.cpp
 	ServerDriver_OSVR.h
 	Settings.h
 	ValveStrCpy.h
+	Version.h
 	driver_osvr.cpp
 	driver_osvr.h
 	identity.h
@@ -46,7 +64,6 @@ add_library(driver_osvr
 	matrix_cast.h
 	osvr_dll_export.h
 	platform_fixes.h
-	pretty_print.h
 )
 #	WatchdogDriver_OSVR.cpp
 #	WatchdogDriver_OSVR.h

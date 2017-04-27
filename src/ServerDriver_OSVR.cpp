@@ -30,6 +30,7 @@
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
 #include "Logging.h"                // for OSVR_LOG, Logging
+#include "Version.h"                // for STEAMVR_OSVR_VERSION
 
 // Library/third-party includes
 #include <openvr_driver.h>          // for everything in vr namespace
@@ -66,6 +67,7 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
     VR_INIT_SERVER_DRIVER_CONTEXT(driver_context);
 
     Logging::instance().setDriverLog(vr::VRDriverLog());
+    OSVR_LOG(notice) << "SteamVR-OSVR version " << STEAMVR_OSVR_VERSION;
 
     settings_ = std::make_unique<Settings>();
 

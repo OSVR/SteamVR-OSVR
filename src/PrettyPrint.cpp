@@ -1,5 +1,5 @@
 /** @file
-    @brief Pretty-prints OpenVR enums.
+    @brief Pretty-prints OpenVR objects.
 
     @date 2016
 
@@ -23,11 +23,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
-#define INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
-
 // Internal Includes
-// - none
+#include "PrettyPrint.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
@@ -43,19 +40,19 @@ using std::to_string;
 /**
  * Simple loopback to make to_string more generic.
  */
-inline std::string to_string(const std::string& str)
+std::string to_string(const std::string& str)
 {
     return str;
 }
 
-inline std::string to_string(void* value)
+std::string to_string(void* value)
 {
     std::stringstream ss;
     ss << value;
     return ss.str();
 }
 
-inline std::string to_string(const vr::ETrackedDeviceProperty& value)
+std::string to_string(const vr::ETrackedDeviceProperty& value)
 {
     switch (value) {
         case vr::Prop_Invalid:
@@ -286,78 +283,19 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
     }
 }
 
-inline std::ostream& operator<<(std::ostream& out, const vr::ETrackedDeviceProperty value)
+std::ostream& operator<<(std::ostream& out, const vr::ETrackedDeviceProperty value)
 {
     out << to_string(value);
     return out;
 }
 
-/// Helper class to wrap a value that should be output as hex to a
-/// stream.
-template <typename T>
-class AsHex {
-public:
-    explicit AsHex(T val, bool leading0x = false) : val_(val), leading0x_(leading0x)
-    {
-        // do nothing
-    }
-
-    T get() const
-    {
-        return val_;
-    }
-
-    bool leading0x() const
-    {
-        return leading0x_;
-    }
-
-private:
-    T val_;
-    bool leading0x_;
-};
-
-/// Output streaming operator for AsHex, found by ADL.
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const AsHex<T>& val)
-{
-    if (val.leading0x()) {
-        os << "0x";
-    }
-    os << std::hex << val.get() << std::dec;
-    return os;
-}
-
-/// Function template to wrap a value to indicate it should be output as a
-/// hex value (no leading 0x)
-template <typename T>
-inline AsHex<T> as_hex(T val) {
-    return AsHex<T>(val);
-}
-
-/// Function template to wrap a value to indicate it should be output as a
-/// hex value (with leading 0x)
-template <typename T>
-inline AsHex<T> as_hex_0x(T val) {
-    return AsHex<T>(val, true);
-}
-
-template <typename T>
-inline std::string to_string(const T& val)
-{
-    std::ostringstream oss;
-    oss << val;
-    return oss.str();
-}
-
-
-inline std::ostream& operator<<(std::ostream& ostr, const vr::HmdQuaternion_t& quat)
+std::ostream& operator<<(std::ostream& ostr, const vr::HmdQuaternion_t& quat)
 {
     ostr << "<" << quat.w << ", " << quat.x << ", " << quat.y << ", " << quat.z << ">";
     return ostr;
 }
 
-inline std::ostream& operator<<(std::ostream& ostr, const vr::ETrackingResult& result)
+std::ostream& operator<<(std::ostream& ostr, const vr::ETrackingResult& result)
 {
     switch (result) {
     case vr::TrackingResult_Uninitialized:
@@ -382,7 +320,7 @@ inline std::ostream& operator<<(std::ostream& ostr, const vr::ETrackingResult& r
     return ostr;
 }
 
-inline std::ostream& operator<<(std::ostream& ostr, const double vec[3])
+std::ostream& operator<<(std::ostream& ostr, const double vec[3])
 {
     ostr << "[" << vec[0] << ", " << vec[1] << ", " << vec[2] << "]";
     return ostr;
@@ -391,7 +329,7 @@ inline std::ostream& operator<<(std::ostream& ostr, const double vec[3])
 /**
  * @brief Return a string representation of vr::DriverPose_t struct.
  */
-inline std::ostream& operator<<(std::ostream& ostr, const vr::DriverPose_t& pose)
+std::ostream& operator<<(std::ostream& ostr, const vr::DriverPose_t& pose)
 {
     ostr << "Time offset (seconds): " << pose.poseTimeOffset << "\n";
     ostr << "World-from-driver transform:\n";
@@ -417,4 +355,3 @@ inline std::ostream& operator<<(std::ostream& ostr, const vr::DriverPose_t& pose
     return ostr;
 }
 
-#endif // INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
