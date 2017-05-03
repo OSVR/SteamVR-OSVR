@@ -194,7 +194,7 @@ void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue
     pose.shouldApplyHeadModel = false;
     pose.deviceIsConnected = true;
 
-    OSVR_LOG(trace) << "OSVRTrackingReference::TrackerCallback(): Got a new camera pose: " << pose.vecPosition << " at angle " << pose.qRotation << ".";
+    //OSVR_LOG(trace) << "OSVRTrackingReference::TrackerCallback(): Got a new camera pose: " << pose.vecPosition << " at angle " << pose.qRotation << ".";
     self->pose_ = pose;
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(self->objectId_, self->pose_, sizeof(vr::DriverPose_t));
 }

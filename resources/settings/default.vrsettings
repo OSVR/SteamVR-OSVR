@@ -6,7 +6,7 @@
         "scanoutOrigin": "",
         "edidVendorId": 53838,
         "edidProductId": 4121,
-        "cameraPath": "",
+        "cameraPath": "/trackingCamera",
         "cameraFOVLeftDegrees": 35.235,
         "cameraFOVRightDegrees": 35.235,
         "cameraFOVTopDegrees": 27.95,
@@ -18,7 +18,7 @@
         "manufacturer": "",
         "modelNumber": "",
         "serialNumber": "",
-        "cameraRenderModel": "",
+        "cameraRenderModel": "{osvr}osvr_camera",
         "verticalRefreshRate": 0.0
     }
 }

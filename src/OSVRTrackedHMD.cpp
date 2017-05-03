@@ -375,7 +375,7 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* ti
     const auto elapsed = osvr::util::time::duration(now, *timeval);
     pose.poseTimeOffset = elapsed;
 
-    OSVR_LOG(trace) << "OSVRTrackedHMD::HmdTrackerCallback(): Got a new head pose: " << pose.vecPosition << " at angle " << pose.qRotation << ".";
+    //OSVR_LOG(trace) << "OSVRTrackedHMD::HmdTrackerCallback(): Got a new head pose: " << pose.vecPosition << " at angle " << pose.qRotation << ".";
     self->pose_ = pose;
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(self->objectId_, self->pose_, sizeof(vr::DriverPose_t));
 }
