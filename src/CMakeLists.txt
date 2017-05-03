@@ -38,6 +38,7 @@ configure_file(Version.h.in "${CMAKE_CURRENT_BINARY_DIR}/Version.h")
 
 # Disable 'lib' prefix on POSIX systems
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(CMAKE_SHARED_MODULE_PREFIX "")
 
 add_library(driver_osvr
 	MODULE
