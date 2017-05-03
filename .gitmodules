@@ -1,9 +1,6 @@
 [submodule "openvr"]
 	path = openvr
 	url = https://github.com/ValveSoftware/openvr.git
-[submodule "vendor/googletest"]
-	path = vendor/googletest
-	url = https://github.com/google/googletest.git
 [submodule "vendor/OSVR-Display"]
 	path = vendor/OSVR-Display
 	url = https://github.com/OSVR/OSVR-Display.git

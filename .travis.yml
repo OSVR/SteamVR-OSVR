@@ -1,3 +1,6 @@
+#dist: trusty
+sudo: false
+
 language: cpp
 
 compiler:
@@ -31,8 +34,6 @@ script:
   - git submodule update --init --recursive
   - ./devtools/travis-build.sh "${HOME}/osvr"
 
-sudo: false
-
 addons:
   apt:
     sources:
@@ -53,7 +54,7 @@ addons:
     - gcc-5
     - g++-5
     - clang-3.7
-    - libudev1
+    - libudev0
     - libudev-dev
     - libeigen3-dev
     - libglew-dev

@@ -1,5 +1,5 @@
 /** @file
-    @brief Pretty-prints OpenVR enums.
+    @brief Pretty-prints OpenVR objects.
 
     @date 2016
 
@@ -23,11 +23,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
-#define INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
-
 // Internal Includes
-// - none
+#include "PrettyPrint.h"
 
 // Library/third-party includes
 #include <openvr_driver.h>
@@ -43,19 +40,19 @@ using std::to_string;
 /**
  * Simple loopback to make to_string more generic.
  */
-inline std::string to_string(const std::string& str)
+std::string to_string(const std::string& str)
 {
     return str;
 }
 
-inline std::string to_string(void* value)
+std::string to_string(void* value)
 {
     std::stringstream ss;
     ss << value;
     return ss.str();
 }
 
-inline std::string to_string(const vr::ETrackedDeviceProperty& value)
+std::string to_string(const vr::ETrackedDeviceProperty& value)
 {
     switch (value) {
         case vr::Prop_Invalid:
@@ -128,6 +125,10 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_Firmware_ForceUpdateRequired_Bool";
         case vr::Prop_ViveSystemButtonFixRequired_Bool:
             return "Prop_ViveSystemButtonFixRequired_Bool";
+        case vr::Prop_ParentDriver_Uint64:
+            return "Prop_ParentDriver_Uint64";
+        case vr::Prop_ResourceRoot_String:
+            return "Prop_ResourceRoot_String";
         case vr::Prop_ReportsTimeSinceVSync_Bool:
             return "Prop_ReportsTimeSinceVSync_Bool";
         case vr::Prop_SecondsFromVsyncToPhotons_Float:
@@ -204,6 +205,16 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_DisplaySuppressed_Bool";
         case vr::Prop_DisplayAllowNightMode_Bool:
             return "Prop_DisplayAllowNightMode_Bool";
+        case vr::Prop_DisplayMCImageWidth_Int32:
+            return "Prop_DisplayMCImageWidth_Int32";
+        case vr::Prop_DisplayMCImageHeight_Int32:
+            return "Prop_DisplayMCImageHeight_Int32";
+        case vr::Prop_DisplayMCImageNumChannels_Int32:
+            return "Prop_DisplayMCImageNumChannels_Int32";
+        case vr::Prop_DisplayMCImageData_Binary:
+            return "Prop_DisplayMCImageData_Binary";
+        case vr::Prop_SecondsFromPhotonsToVblank_Float:
+            return "Prop_SecondsFromPhotonsToVblank_Float";
         case vr::Prop_AttachedDeviceId_String:
             return "Prop_AttachedDeviceId_String";
         case vr::Prop_SupportedButtons_Uint64:
@@ -252,6 +263,24 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_NamedIconPathDeviceStandby_String";
         case vr::Prop_NamedIconPathDeviceAlertLow_String:
             return "Prop_NamedIconPathDeviceAlertLow_String";
+        case vr::Prop_DisplayHiddenArea_Binary_Start:
+            return "Prop_DisplayHiddenArea_Binary_Start";
+        case vr::Prop_DisplayHiddenArea_Binary_End:
+            return "Prop_DisplayHiddenArea_Binary_End";
+        case vr::Prop_UserConfigPath_String:
+            return "Prop_UserConfigPath_String";
+        case vr::Prop_InstallPath_String:
+            return "Prop_InstallPath_String";
+        case vr::Prop_HasDisplayComponent_Bool:
+            return "Prop_HasDisplayComponent_Bool";
+        case vr::Prop_HasControllerComponent_Bool:
+            return "Prop_HasControllerComponent_Bool";
+        case vr::Prop_HasCameraComponent_Bool:
+            return "Prop_HasCameraComponent_Bool";
+        case vr::Prop_HasDriverDirectModeComponent_Bool:
+            return "Prop_HasDriverDirectModeComponent_Bool";
+        case vr::Prop_HasVirtualDisplayComponent_Bool:
+            return "Prop_HasVirtualDisplayComponent_Bool";
         case vr::Prop_VendorSpecific_Reserved_Start:
             return "Prop_VendorSpecific_Reserved_Start";
         case vr::Prop_VendorSpecific_Reserved_End:
@@ -266,69 +295,75 @@ inline std::string to_string(const vr::ETrackedDeviceProperty& value)
     }
 }
 
-inline std::ostream& operator<<(std::ostream& out, const vr::ETrackedDeviceProperty value)
+std::ostream& operator<<(std::ostream& out, const vr::ETrackedDeviceProperty value)
 {
     out << to_string(value);
     return out;
 }
 
-/// Helper class to wrap a value that should be output as hex to a
-/// stream.
-template <typename T>
-class AsHex {
-public:
-    explicit AsHex(T val, bool leading0x = false) : val_(val), leading0x_(leading0x)
-    {
-        // do nothing
-    }
-
-    T get() const
-    {
-        return val_;
-    }
-
-    bool leading0x() const
-    {
-        return leading0x_;
-    }
-
-private:
-    T val_;
-    bool leading0x_;
-};
-
-/// Output streaming operator for AsHex, found by ADL.
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const AsHex<T>& val)
+std::ostream& operator<<(std::ostream& ostr, const vr::HmdQuaternion_t& quat)
 {
-    if (val.leading0x()) {
-        os << "0x";
-    }
-    os << std::hex << val.get() << std::dec;
-    return os;
+    ostr << "<" << quat.w << ", " << quat.x << ", " << quat.y << ", " << quat.z << ">";
+    return ostr;
 }
 
-/// Function template to wrap a value to indicate it should be output as a
-/// hex value (no leading 0x)
-template <typename T>
-inline AsHex<T> as_hex(T val) {
-    return AsHex<T>(val);
-}
-
-/// Function template to wrap a value to indicate it should be output as a
-/// hex value (with leading 0x)
-template <typename T>
-inline AsHex<T> as_hex_0x(T val) {
-    return AsHex<T>(val, true);
-}
-
-template <typename T>
-std::string to_string(const T& val)
+std::ostream& operator<<(std::ostream& ostr, const vr::ETrackingResult& result)
 {
-    std::ostringstream oss;
-    oss << val;
-    return oss.str();
+    switch (result) {
+    case vr::TrackingResult_Uninitialized:
+        ostr << "Unintiialized";
+        break;
+    case vr::TrackingResult_Calibrating_InProgress:
+        ostr << "Calibration in progress";
+        break;
+    case vr::TrackingResult_Calibrating_OutOfRange:
+        ostr << "Calibrating - out of range";
+        break;
+    case vr::TrackingResult_Running_OK:
+        ostr << "Running okay";
+        break;
+    case vr::TrackingResult_Running_OutOfRange:
+        ostr << "Running - out of range";
+        break;
+    default:
+        ostr << "Unknown tracking result";
+        break;
+    }
+    return ostr;
 }
 
-#endif // INCLUDED_pretty_print_h_GUID_5CF0EE2E_1739_4CA8_BA5A_F72B8BEB3591
+std::ostream& operator<<(std::ostream& ostr, const double vec[3])
+{
+    ostr << "[" << vec[0] << ", " << vec[1] << ", " << vec[2] << "]";
+    return ostr;
+}
+
+/**
+ * @brief Return a string representation of vr::DriverPose_t struct.
+ */
+std::ostream& operator<<(std::ostream& ostr, const vr::DriverPose_t& pose)
+{
+    ostr << "Time offset (seconds): " << pose.poseTimeOffset << "\n";
+    ostr << "World-from-driver transform:\n";
+    ostr << " -- translation: " << pose.vecWorldFromDriverTranslation << "\n";
+    ostr << " -- rotation: " << pose.qWorldFromDriverRotation << "\n";
+    ostr << "Driver-from-head transform:\n";
+    ostr << " -- translation: " << pose.vecDriverFromHeadTranslation << "\n";
+    ostr << " -- rotation: " << pose.qDriverFromHeadRotation << "\n";
+    ostr << "Pose:\n";
+    ostr << " -- position: " << pose.vecPosition << "\n";
+    ostr << " -- rotation: " << pose.qRotation << "\n";
+    ostr << "Velocity:\n";
+    ostr << " -- linear (m/s): " << pose.vecVelocity << "\n";
+    ostr << " -- angular (rad/s): " << pose.vecAngularVelocity << "\n";
+    ostr << "Acceleration:\n";
+    ostr << " -- linear (m/s^2): " << pose.vecAcceleration << "\n";
+    ostr << " -- angular (rad/s^2): " << pose.vecAngularAcceleration << "\n";
+    ostr << "Tracking result: " << pose.result << "\n";
+    ostr << "Pose is valid: " << (pose.poseIsValid ? "true" : "false") << "\n";
+    ostr << "Will drift in yaw: " << (pose.willDriftInYaw ? "yes" : "no") << "\n";
+    ostr << "Should apply head model: " << (pose.shouldApplyHeadModel ? "yes" : "no") << "\n";
+    ostr << "Device is connected: " << (pose.deviceIsConnected ? "yes" : "no");
+    return ostr;
+}
 

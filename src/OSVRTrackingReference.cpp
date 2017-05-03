@@ -29,7 +29,6 @@
 #include "osvr_compiler_detection.h"
 #include "make_unique.h"
 #include "matrix_cast.h"
-#include "osvr_device_properties.h"
 #include "ValveStrCpy.h"
 #include "platform_fixes.h" // strcasecmp
 #include "make_unique.h"
@@ -38,6 +37,7 @@
 #include <openvr_driver.h>
 
 // Library/third-party includes
+#include <osvr/ClientKit/InterfaceStateC.h>
 #include <osvr/Util/EigenInterop.h>
 #include <osvr/Util/PlatformConfig.h>
 #include <util/FixedLengthStringFunctions.h>
@@ -49,25 +49,23 @@
 #include <iostream>
 #include <exception>
 
-OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, vr::IDriverLog* driver_log) : m_Context(context), driver_host_(driver_host), pose_(), deviceClass_(vr::TrackedDeviceClass_TrackingReference)
+OSVRTrackingReference::OSVRTrackingReference(osvr::clientkit::ClientContext& context) : OSVRTrackedDevice(context, vr::TrackedDeviceClass_TrackingReference, "OSVRTrackingReference")
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::OSVRTrackingReference() called.";
-    settings_ = std::make_unique<Settings>(driver_host->GetSettings(vr::IVRSettings_Version));
-    if (driver_log) {
-        Logging::instance().setDriverLog(driver_log);
-    }
-    configure();
 }
 
 OSVRTrackingReference::~OSVRTrackingReference()
 {
-    driver_host_ = nullptr;
+    // do nothing
 }
 
 vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::Activate() called.";
-    objectId_ = object_id;
+
+    OSVRTrackedDevice::Activate(object_id);
+
+    configure();
 
     // Clean up tracker callback if exists
     if (m_TrackerInterface.notEmpty()) {
@@ -75,8 +73,10 @@ vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
     }
 
     // Register tracker callback
-    m_TrackerInterface = m_Context.getInterface(trackerPath_);
+    m_TrackerInterface = context_.getInterface(trackerPath_);
     m_TrackerInterface.registerCallback(&OSVRTrackingReference::TrackerCallback, this);
+
+    setProperties();
 
     return vr::VRInitError_None;
 }
@@ -84,6 +84,8 @@ vr::EVRInitError OSVRTrackingReference::Activate(uint32_t object_id)
 void OSVRTrackingReference::Deactivate()
 {
     OSVR_LOG(trace) << "OSVRTrackingReference::Deactivate() called.";
+
+    objectId_ = vr::k_unTrackedDeviceIndexInvalid;
 
     // Clean up tracker callback if exists
     if (m_TrackerInterface.notEmpty()) {
@@ -120,434 +122,42 @@ vr::DriverPose_t OSVRTrackingReference::GetPose()
     return pose_;
 }
 
-bool OSVRTrackingReference::GetBoolTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
+void OSVRTrackingReference::setProperties()
 {
-    const bool default_value = false;
+    propertyContainer_ = vr::VRProperties()->TrackedDeviceToPropertyContainer(objectId_);
 
-    if (isWrongDataType(prop, bool())) {
-        if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/push"
-#include "ignore-warning/switch-enum"
-
-    OSVR_LOG(properties) << "OSVRTrackingReference::GetBoolTrackedDeviceProperty(): Requested property: " << prop << "\n";
-
-    switch (prop) {
-    // Properties that apply to all device classes
-    case vr::Prop_WillDriftInYaw_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_DeviceIsWireless_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_DeviceIsCharging_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_Firmware_UpdateAvailable_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_Firmware_ManualUpdate_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_BlockServerShutdown_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_CanUnifyCoordinateSystemWithHmd_Bool: // TODO
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-        break;
-    case vr::Prop_ContainsProximitySensor_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_DeviceProvidesBatteryStatus_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_DeviceCanPowerOff_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    case vr::Prop_HasCamera_Bool:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return false;
-        break;
-    }
-
-#include "ignore-warning/pop"
-
-    OSVR_LOG(warn) << "OSVRTrackingReference::GetBoolTrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
-    if (error)
-        *error = vr::TrackedProp_UnknownProperty;
-    return default_value;
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_WillDriftInYaw_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceIsWireless_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceIsCharging_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_Firmware_UpdateAvailable_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_Firmware_ManualUpdate_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_BlockServerShutdown_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_ContainsProximitySensor_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceProvidesBatteryStatus_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceCanPowerOff_Bool, false);
+    vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_HasCamera_Bool, false);
+    vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_DeviceBatteryPercentage_Float, 1.0f); // full battery
+    vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_FieldOfViewLeftDegrees_Float, fovLeft_);
+    vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_FieldOfViewRightDegrees_Float, fovRight_);
+    vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_FieldOfViewTopDegrees_Float, fovTop_);
+    vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_FieldOfViewBottomDegrees_Float, fovBottom_);
+    vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_TrackingRangeMinimumMeters_Float, minTrackingRange_);
+    vr::VRProperties()->SetFloatProperty(propertyContainer_, vr::Prop_TrackingRangeMaximumMeters_Float, maxTrackingRange_);
+    vr::VRProperties()->SetInt32Property(propertyContainer_, vr::Prop_DeviceClass_Int32, deviceClass_);
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ModelNumber_String, "OSVR camera");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_SerialNumber_String, this->getId());
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_RenderModelName_String, settings_->getSetting<std::string>("cameraRenderModel", "").c_str());
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ManufacturerName_String, "OSVR"); // FIXME read value from server
 }
 
-float OSVRTrackingReference::GetFloatTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
-{
-    const float default_value = 0.0f;
-
-    if (isWrongDataType(prop, float())) {
-        if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/push"
-#include "ignore-warning/switch-enum"
-
-    OSVR_LOG(properties) << "OSVRTrackingReference::GetFloatTrackedDeviceProperty(): Requested property: " << prop << "\n";
-
-    switch (prop) {
-    // General properties that apply to all device classes
-    case vr::Prop_DeviceBatteryPercentage_Float:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return 1.0f; // full battery
-    // Properties that are unique to TrackedDeviceClass_TrackingReference
-    case vr::Prop_FieldOfViewLeftDegrees_Float:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return fovLeft_;
-    case vr::Prop_FieldOfViewRightDegrees_Float:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return fovRight_;
-    case vr::Prop_FieldOfViewTopDegrees_Float:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return fovTop_;
-    case vr::Prop_FieldOfViewBottomDegrees_Float:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return fovBottom_;
-    case vr::Prop_TrackingRangeMinimumMeters_Float:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return minTrackingRange_;
-    case vr::Prop_TrackingRangeMaximumMeters_Float:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return maxTrackingRange_;
-    }
-
-#include "ignore-warning/pop"
-
-    OSVR_LOG(warn) << "OSVRTrackingReference::GetFloatTrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
-    if (error)
-        *error = vr::TrackedProp_UnknownProperty;
-    return default_value;
-}
-
-int32_t OSVRTrackingReference::GetInt32TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
-{
-    const int32_t default_value = 0;
-
-    if (isWrongDataType(prop, int32_t())) {
-        if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/push"
-#include "ignore-warning/switch-enum"
-
-    OSVR_LOG(properties) << "OSVRTrackingReference::GetInt32TrackedDeviceProperty(): Requested property: " << prop << "\n";
-
-    switch (prop) {
-    // General properties that apply to all device classes
-    case vr::Prop_DeviceClass_Int32:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return deviceClass_;
-    }
-
-#include "ignore-warning/pop"
-
-    OSVR_LOG(warn) << "OSVRTrackingReference::GetInt32TrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
-    if (error)
-        *error = vr::TrackedProp_UnknownProperty;
-    return default_value;
-}
-
-uint64_t OSVRTrackingReference::GetUint64TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
-{
-    const uint64_t default_value = 0;
-
-    if (isWrongDataType(prop, uint64_t())) {
-        if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/push"
-#include "ignore-warning/switch-enum"
-
-    OSVR_LOG(properties) << "OSVRTrackingReference::GetUint64TrackedDeviceProperty(): Requested property: " << prop << "\n";
-
-    switch (prop) {
-    // General properties that apply to all device classes
-    case vr::Prop_HardwareRevision_Uint64:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_FirmwareVersion_Uint64:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_FPGAVersion_Uint64:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_VRCVersion_Uint64:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_RadioVersion_Uint64:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_DongleVersion_Uint64:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/pop"
-
-    OSVR_LOG(warn) << "OSVRTrackingReference::GetUint64TrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
-    if (error)
-        *error = vr::TrackedProp_UnknownProperty;
-    return default_value;
-}
-
-vr::HmdMatrix34_t OSVRTrackingReference::GetMatrix34TrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError* error)
-{
-    // Default value is identity matrix
-    vr::HmdMatrix34_t default_value;
-    map(default_value) = Matrix34f::Identity();
-
-    if (isWrongDataType(prop, vr::HmdMatrix34_t())) {
-        if (error)
-            *error = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (error)
-            *error = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (error)
-            *error = vr::TrackedProp_InvalidDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/push"
-#include "ignore-warning/switch-enum"
-
-    OSVR_LOG(properties) << "OSVRTrackingReference::GetMatrix34TrackedDeviceProperty(): Requested property: " << prop << "\n";
-
-    switch (prop) {
-    // General properties that apply to all device classes
-    case vr::Prop_StatusDisplayTransform_Matrix34:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/pop"
-
-    OSVR_LOG(warn) << "OSVRTrackingReference::GetMatrix34TrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
-    if (error)
-        *error = vr::TrackedProp_UnknownProperty;
-    return default_value;
-}
-
-uint32_t OSVRTrackingReference::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, char *pchValue, uint32_t unBufferSize, vr::ETrackedPropertyError *pError)
-{
-    uint32_t default_value = 0;
-    if (isWrongDataType(prop, pchValue)) {
-        if (pError)
-            *pError = vr::TrackedProp_WrongDataType;
-        return default_value;
-    }
-
-    if (isWrongDeviceClass(prop, deviceClass_)) {
-        if (pError)
-            *pError = vr::TrackedProp_WrongDeviceClass;
-        return default_value;
-    }
-
-    if (vr::TrackedDeviceClass_Invalid == deviceClass_) {
-        if (pError)
-            *pError = vr::TrackedProp_InvalidDevice;
-        return default_value;
-    }
-
-    OSVR_LOG(properties) << "OSVRTrackingReference::GetStringTrackedDeviceProperty(): Requested property: " << prop << "\n";
-
-    std::string sValue = GetStringTrackedDeviceProperty(prop, pError);
-    if (*pError == vr::TrackedProp_Success) {
-        if (sValue.size() + 1 > unBufferSize) {
-            *pError = vr::TrackedProp_BufferTooSmall;
-        } else {
-            valveStrCpy(sValue, pchValue, unBufferSize);
-        }
-        return static_cast<uint32_t>(sValue.size()) + 1;
-    }
-
-    return 0;
-}
-
-    // ------------------------------------
-    // Private Methods
-    // ------------------------------------
-
-std::string OSVRTrackingReference::GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error)
-{
-    std::string default_value = "";
-
-#include "ignore-warning/push"
-#include "ignore-warning/switch-enum"
-
-    switch (prop) {
-    // General properties that apply to all device classes
-    case vr::Prop_TrackingSystemName_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_ModelNumber_String:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return "OSVR HMD";
-    case vr::Prop_SerialNumber_String:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return this->GetId();
-    case vr::Prop_RenderModelName_String:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return "dk2_camera"; // FIXME replace with HDK IR camera model
-    case vr::Prop_ManufacturerName_String:
-        if (error)
-            *error = vr::TrackedProp_Success;
-        return "OSVR"; // FIXME read value from server
-    case vr::Prop_TrackingFirmwareVersion_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_HardwareRevision_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_AllWirelessDongleDescriptions_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_ConnectedWirelessDongle_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_Firmware_ManualUpdateURL_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_Firmware_ProgrammingTarget_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    case vr::Prop_DriverVersion_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    // Properties that are unique to TrackedDeviceClass_TrackingReference
-    case vr::Prop_ModeLabel_String:
-        if (error)
-            *error = vr::TrackedProp_ValueNotProvidedByDevice;
-        return default_value;
-    }
-
-#include "ignore-warning/pop"
-
-    OSVR_LOG(warn) << "OSVRTrackingReference::GetStringTrackedDeviceProperty(): Unknown property " << prop << " requested.\n";
-    if (error)
-        *error = vr::TrackedProp_UnknownProperty;
-    return default_value;
-}
-
-const char* OSVRTrackingReference::GetId()
+const char* OSVRTrackingReference::getId()
 {
     return "OSVR IR camera";
+}
+
+vr::ETrackedDeviceClass OSVRTrackingReference::getDeviceClass() const
+{
+    return deviceClass_;
 }
 
 void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report)
@@ -584,29 +194,73 @@ void OSVRTrackingReference::TrackerCallback(void* userdata, const OSVR_TimeValue
     pose.shouldApplyHeadModel = false;
     pose.deviceIsConnected = true;
 
+    //OSVR_LOG(trace) << "OSVRTrackingReference::TrackerCallback(): Got a new camera pose: " << pose.vecPosition << " at angle " << pose.qRotation << ".";
     self->pose_ = pose;
-    self->driver_host_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
+    vr::VRServerDriverHost()->TrackedDevicePoseUpdated(self->objectId_, self->pose_, sizeof(vr::DriverPose_t));
 }
 
 void OSVRTrackingReference::configure()
 {
     // Get settings from config file
-    const bool verbose_logging = settings_->getSetting<bool>("verbose", verboseLogging_);
-    if (verbose_logging) {
-        OSVR_LOG(info) << "Verbose logging enabled.";
-        Logging::instance().setLogLevel(trace);
-    } else {
-        OSVR_LOG(info) << "Verbose logging disabled.";
-        Logging::instance().setLogLevel(info);
-    }
 
     // Read tracking reference values from config file
-    trackerPath_ = settings_->getSetting<std::string>("cameraPath", trackerPath_);
+    trackerPath_ = getTrackerPath();
     fovLeft_ = settings_->getSetting<float>("cameraFOVLeftDegrees", fovLeft_);
     fovRight_ = settings_->getSetting<float>("cameraFOVRightDegrees", fovRight_);
     fovTop_ = settings_->getSetting<float>("cameraFOVTopDegrees", fovTop_);
     fovBottom_ = settings_->getSetting<float>("cameraFOVBottomDegrees", fovBottom_);
     minTrackingRange_ = settings_->getSetting<float>("minTrackingRangeMeters", minTrackingRange_);
     maxTrackingRange_ = settings_->getSetting<float>("maxTrackingRangeMeters", maxTrackingRange_);
+}
+
+std::string OSVRTrackingReference::getTrackerPath() const
+{
+    // If the camera path is set explicitly in the configuration file, then use
+    // that path regardless of whether or not it works (in the hopes that the
+    // camera will eventually turn up).
+    const auto settings_camera_path = settings_->getSetting<std::string>("cameraPath", "");
+    if (!settings_camera_path.empty()) {
+        OSVR_LOG(info) << "Using configured camera path [" << settings_camera_path << "].";
+        return settings_camera_path;
+    }
+
+    // The camera path wasn't explicitly specified, so we'll test a couple
+    // common values.
+    //
+    // Different OSVR tracking plugins use different paths for the tracking
+    // camera pose.  The original video-based IMU fusion plugin used
+    // `/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera` while the
+    // newer unified video inertial tracker plugin usees `/trackingCamera`.
+    const auto new_camera_path = std::string{"/trackingCamera"};
+#if 0
+    // TODO spin this off into a separate thread so it can loop until it finds a
+    // valid camera path
+
+    const auto old_camera_path = std::string{"/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera"};
+    const auto new_camera_path = std::string{"/trackingCamera"};
+
+    const auto camera_paths = std::vector<std::string> { new_camera_path, old_camera_path };
+
+    for (const auto& camera_path : camera_paths) {
+        auto iface = context_.getInterface(camera_path.c_str());
+
+        OSVR_PoseState state;
+        OSVR_TimeValue timestamp;
+
+        const auto ret = osvrGetPoseState(iface.get(), &timestamp, &state);
+        if (OSVR_RETURN_SUCCESS != ret) {
+            OSVR_LOG(debug) << "Failed to get pose state from path " << camera_path << ".";
+            continue;
+        }
+
+        OSVR_LOG(info) << "Using detected camera path [" << camera_path << "].";
+        return camera_path;
+    }
+#endif
+
+    // None of the default camera paths appear to be valid, so we'll use the
+    // default camera path and hope it eventually shows up.
+    OSVR_LOG(info) << "Using fallback camera path [" << new_camera_path << "].";
+    return new_camera_path;
 }
 

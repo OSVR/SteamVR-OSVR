@@ -1,0 +1,25 @@
+{
+    "driver_osvr": {
+        "verbose": false,
+        "serverTimeout": 5,
+        "displayName": "OSVR",
+        "scanoutOrigin": "",
+        "edidVendorId": 53838,
+        "edidProductId": 4121,
+        "cameraPath": "/trackingCamera",
+        "cameraFOVLeftDegrees": 35.235,
+        "cameraFOVRightDegrees": 35.235,
+        "cameraFOVTopDegrees": 27.95,
+        "cameraFOVBottomDegrees": 27.95,
+        "minTrackingRangeMeters": 0.15,
+        "maxTrackingRangeMeters": 1.5,
+        "activeWaitPeriod": 1,
+        "standbyWaitPeriod": 100,
+        "manufacturer": "",
+        "modelNumber": "",
+        "serialNumber": "",
+        "cameraRenderModel": "{osvr}osvr_camera",
+        "verticalRefreshRate": 0.0
+    }
+}
+

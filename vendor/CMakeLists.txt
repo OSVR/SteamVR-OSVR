@@ -11,15 +11,9 @@ if(NOT OSVR_HAS_STD_MAKE_UNIQUE)
     # Interface target for make_unique implementation from libc++
     add_library(make-unique-impl-header INTERFACE)
     target_include_directories(make-unique-impl-header INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include")
-endif()
-
-# Google test
-if(BUILD_TESTS)
-	if(WIN32)
-		set(gtest_force_shared_crt ON)
-	endif()
-	set(BUILD_GTEST ON)
-	add_subdirectory(googletest)
+else()
+    # Empty interface to simplify client code
+    add_library(make-unique-impl-header INTERFACE)
 endif()
 
 # OSVR-Display

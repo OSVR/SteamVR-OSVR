@@ -39,9 +39,9 @@
 class Settings {
 public:
     /**
-     * Constructor.  Requires non-null IVRSettings.
+     * Constructor.
      */
-    Settings(vr::IVRSettings* settings, const std::string& section = "driver_osvr");
+    Settings(const std::string& section = "driver_osvr");
 
     /**
      * @brief Returns true if file sync occurred (force or settings dirty).
@@ -72,7 +72,7 @@ public:
     /**
      * @brief Returns true if the settings key exists, false otherwise.
      */
-    bool hasSetting(const std::string& settings_key);
+    bool hasSetting(const std::string& key);
 
 private:
     /** \name Accessors for settings values. */
@@ -84,20 +84,17 @@ private:
     std::string getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error = nullptr);
     //@}
 
-    vr::IVRSettings* settings_ = nullptr;
     std::string section_;
 };
 
-inline Settings::Settings(vr::IVRSettings* settings, const std::string& section) : settings_(settings), section_(section)
+inline Settings::Settings(const std::string& section) : section_(section)
 {
-    if (!settings) {
-        throw std::invalid_argument("Must use non-null IVRSettings.");
-    }
+    // do nothing
 }
 
 inline bool Settings::sync(bool force, vr::EVRSettingsError* error)
 {
-    return settings_->Sync(force, error);
+    return vr::VRSettings()->Sync(force, error);
 }
 
 template<typename T> inline T Settings::getSetting(const std::string& setting)
@@ -124,18 +121,18 @@ template<typename T> inline T Settings::getSetting(const std::string& setting, c
 
 inline void Settings::removeSection(vr::EVRSettingsError* error)
 {
-    settings_->RemoveSection(section_.c_str(), error);
+    vr::VRSettings()->RemoveSection(section_.c_str(), error);
 }
 
 inline void Settings::removeSetting(const std::string& setting, vr::EVRSettingsError *error)
 {
-    settings_->RemoveKeyInSection(section_.c_str(), setting.c_str(), error);
+    vr::VRSettings()->RemoveKeyInSection(section_.c_str(), setting.c_str(), error);
 }
 
 inline bool Settings::hasSetting(const std::string& setting)
 {
     vr::EVRSettingsError error = vr::VRSettingsError_None;
-    settings_->GetBool(section_.c_str(), setting.c_str(), &error);
+    vr::VRSettings()->GetBool(section_.c_str(), setting.c_str(), &error);
     return (vr::VRSettingsError_UnsetSettingHasNoDefault != error);
 }
 
@@ -149,12 +146,12 @@ template<typename T> inline T Settings::getSetting(identity<T>, const std::strin
 
 inline bool Settings::getSetting(identity<bool>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return settings_->GetBool(section_.c_str(), setting.c_str(), error);
+    return vr::VRSettings()->GetBool(section_.c_str(), setting.c_str(), error);
 }
 
 inline float Settings::getSetting(identity<float>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return settings_->GetFloat(section_.c_str(), setting.c_str(), error);
+    return vr::VRSettings()->GetFloat(section_.c_str(), setting.c_str(), error);
 }
 
 inline double Settings::getSetting(identity<double>, const std::string& setting, vr::EVRSettingsError* error)
@@ -164,7 +161,7 @@ inline double Settings::getSetting(identity<double>, const std::string& setting,
 
 inline int32_t Settings::getSetting(identity<int32_t>, const std::string& setting, vr::EVRSettingsError* error)
 {
-    return settings_->GetInt32(section_.c_str(), setting.c_str(), error);
+    return vr::VRSettings()->GetInt32(section_.c_str(), setting.c_str(), error);
 }
 
 inline uint32_t Settings::getSetting(identity<uint32_t>, const std::string& setting, vr::EVRSettingsError* error)
@@ -175,7 +172,7 @@ inline uint32_t Settings::getSetting(identity<uint32_t>, const std::string& sett
 inline std::string Settings::getSetting(identity<std::string>, const std::string& setting, vr::EVRSettingsError* error)
 {
     char buf[1024] = { 0 };
-    settings_->GetString(section_.c_str(), setting.c_str(), buf, sizeof(buf), error);
+    vr::VRSettings()->GetString(section_.c_str(), setting.c_str(), buf, sizeof(buf), error);
     std::string ret = buf;
     return ret;
 }

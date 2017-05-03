@@ -28,7 +28,7 @@
 #include "driver_osvr.h"                // for factories
 
 // Library/third-party includes
-#include <openvr_driver.h>              // for vr::IDriverLog
+#include <openvr_driver.h>              // for vr::IVRDriverLog
 
 // Standard includes
 #include <cstdlib> // for EXIT_SUCCESS
@@ -37,7 +37,7 @@
 /**
  * Log messages to the console by default.
  */
-class Logger : public vr::IDriverLog {
+class Logger : public vr::IVRDriverLog {
 public:
     void Log(const char* message) OSVR_OVERRIDE
     {

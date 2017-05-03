@@ -65,12 +65,19 @@ add_subdirectory(vendor)
 include(GNUInstallDirs)
 include(SteamVRPaths)
 
-# Configuration file destination
-#install(FILES
-#	osvr.json
-#	DESTINATION
-#	${STEAMVR_CONFIG_DIR}/osvr
-#)
+# Default settings file, 3D models, and other resources
+install(DIRECTORY
+	resources
+	DESTINATION
+	"${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/"
+)
+
+# Driver manifest file destination
+install(FILES
+	driver.vrdrivermanifest
+	DESTINATION
+	"${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/"
+)
 
 file(TO_CMAKE_PATH
 	"${CMAKE_INSTALL_FULL_LIBDIR}/openvr/osvr/bin/${STEAMVR_PLATFORM}"
