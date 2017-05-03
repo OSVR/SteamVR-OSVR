@@ -146,7 +146,7 @@ void OSVRTrackingReference::setProperties()
     vr::VRProperties()->SetInt32Property(propertyContainer_, vr::Prop_DeviceClass_Int32, deviceClass_);
     vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ModelNumber_String, "OSVR camera");
     vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_SerialNumber_String, this->getId());
-    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_RenderModelName_String, settings_->getSetting<std::string>("cameraRenderModel", "osvr_camera").c_str());
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_RenderModelName_String, settings_->getSetting<std::string>("cameraRenderModel", "").c_str());
     vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ManufacturerName_String, "OSVR"); // FIXME read value from server
 }
 
