@@ -231,6 +231,10 @@ std::string OSVRTrackingReference::getTrackerPath() const
     // camera pose.  The original video-based IMU fusion plugin used
     // `/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera` while the
     // newer unified video inertial tracker plugin usees `/trackingCamera`.
+    const auto new_camera_path = std::string{"/trackingCamera"};
+#if 0
+    // TODO spin this off into a separate thread so it can loop until it finds a
+    // valid camera path
 
     const auto old_camera_path = std::string{"/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera"};
     const auto new_camera_path = std::string{"/trackingCamera"};
@@ -252,6 +256,7 @@ std::string OSVRTrackingReference::getTrackerPath() const
         OSVR_LOG(info) << "Using detected camera path [" << camera_path << "].";
         return camera_path;
     }
+#endif
 
     // None of the default camera paths appear to be valid, so we'll use the
     // default camera path and hope it eventually shows up.
