@@ -170,7 +170,7 @@ OSVRRectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Di
         } else {
             OSVR_LOG(err) << "Unknown display orientation [" << static_cast<int>(orientation) << "]!";
         }
-    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+    } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
         OSVR_LOG(trace) << "Display mode: vertical side-by-side.";
         OSVR_LOG(err) << "This display mode hasn't been implemented yet!";
         // TODO
