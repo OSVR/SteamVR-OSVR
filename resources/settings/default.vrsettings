@@ -19,7 +19,8 @@
         "modelNumber": "",
         "serialNumber": "",
         "cameraRenderModel": "{osvr}osvr_camera",
-        "verticalRefreshRate": 0.0
+        "verticalRefreshRate": 0.0,
+        "ignoreVelocityReports": false
     }
 }
 

@@ -213,6 +213,7 @@ private:
     bool verboseLogging_ = false;
     osvr::display::Display display_ = {};
     osvr::display::ScanOutOrigin scanoutOrigin_ = osvr::display::ScanOutOrigin::UpperLeft;
+    bool ignoreVelocityReports_ = false;
 };
 
 #endif // INCLUDED_OSVRTrackedHMD_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

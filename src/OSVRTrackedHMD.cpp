@@ -328,10 +328,10 @@ void OSVRTrackedHMD::HmdTrackerCallback(void* userdata, const OSVR_TimeValue* ti
     Eigen::Vector3d::Map(pose.vecPosition) = osvr::util::vecMap(report->pose.translation);
 
     // Velocity (m/s) and angular velocity (rad/s)
-    {
-        Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
-        Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecVelocity) = Eigen::Vector3d::Zero();
+    Eigen::Vector3d::Map(pose.vecAngularVelocity) = Eigen::Vector3d::Zero();
 
+    if (!self->ignoreVelocityReports_) {
         OSVR_TimeValue tv;
         OSVR_VelocityState velocity_state;
         const auto has_velocity_state = osvrGetVelocityState(self->trackerInterface_.get(), &tv, &velocity_state);
@@ -413,6 +413,8 @@ vr::ETrackedDeviceClass OSVRTrackedHMD::getDeviceClass() const
 void OSVRTrackedHMD::configure()
 {
     // Get settings from config file
+    ignoreVelocityReports_ = settings_->getSetting<bool>("ignoreVelocityReports", false);
+    OSVR_LOG(info) << (ignoreVelocityReports_ ? "Ignoring velocity reports." : "Utilizing velocity reports.");
 
     // The name of the display we want to use
     const auto display_name = settings_->getSetting<std::string>("displayName", "OSVR");
