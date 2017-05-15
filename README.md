@@ -42,11 +42,39 @@ In all cases, hook up your hardware and launch OSVR Server first.
 
 **Simple:** Paste `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR\demo\bin\win32\hellovr_sdl.exe"` into the Windows Run dialog and click run to start the SteamVR simple demo app - you should get a command-prompt window with some text, the screen might flicker, then you should get a split-screen display that reacts to the movement of the HMD by changing your view of a world with infinite cubes of test patterns. (You might need to click to bring the demo window to the foreground.)
 
-**Real game:** You may wish to open the "VRMonitor" - the SteamVR status window, that should be accessible through the Start Menu. At this time, it appears to also launch Steam in VR or "Big Picture" mode, which may or may not be what you want, but you can close that interface and keep the VR Monitor open. It might say "Not Ready", but if you hover over the HMD icon it should say "HMD Connected, but not ready" - that's normal.
+**Real game:** After osvr server is running you can launch steamvr from steam large mode (normal desktop client) by clicking the vr button.  Pressing the "Guide" button or equivalent depending on controller will open up steamvr dashboard which gives access to settings and vroverlays which you use to launch vr applications, once steamvr is running.   The kb shortcut for this (shift + tab) should also work in steamvr to bring up vr dashboard.   Using the customisation options from dashboard settings allows you to use backgrounds, environments etc for steamvr compositor which makes for a much more interesting steamvr experience.   You need to subscribe to each individual item you want from the steamvr workshop.  There is a shortcut to workshop in steamvr dashboard and steamvr monitor (the tools that run in system tray after steamvr is launched).
 
-Different games have different ways of turning on VR mode - some you right-click on them in Steam and specify in the options to pass `/vr` to launch in VR mode. You might find info about this on the Internet - many of these sources are outdated: for example, no command line switch is required for TF2 to run in VR.
+Use the steamvr related discussions groups on steam to keep up to date with all the updates and latest bugs in steamvr.  Few issues in steamvr are osvr or osvr hdk specific.
 
-In this example, we'll use TF2, which has it accessible in its menu: go to "Options", then "Video" and change "Virtual Reality Mode" to "Enabled". You'll have to save that setting and restart the game before you'll see a new entry on the game's main menu called "Activate Virtual Reality". Selecting "Activate Virtual Reality" should flip the game into VR mode and you're ready to play. (Might be best to use a gamepad, as WASD and mouselook don't go well with VR, the mouselook portion in particular.)
+https://steamcommunity.com/app/250820/discussions/
+
+https://steamcommunity.com/app/358720/discussions/
+
+  
+Different games have different ways of initialising VR mode - some start in oculus mode, some start in vive mode, some ask you if you want to launch in osvr, oculus or vive mode, some you right-click on them in Steam and specify in the options to pass `/vr` to launch in VR mode. You might find info about this on the Internet - many of these sources are outdated: for example, no command line switch is required for TF2 to run in VR.
+
+Depending on what vr hardware you are using a combination of some of these (possibly even all) third party apps will help to allow using your vr hardware to enjoy all openvr apps, that is any app launched from steam using steamvr runtime.
+
+Revive allows non Oculus headsets be used for games which only support Oculus headsets when run through steamvr runtime https://github.com/LibreVR/Revive
+
+FakeVive allows non HTC headsets be used for games which only support HTC headsets when run through steamvr runtime. https://github.com/Shockfire/FakeVive
+
+OpenVR-AdvancedSettings gives users access to many useful openvr and openvr apps settings. Users that do not have Vive controllers will need to access these settings from desktop or rely on using the hydra drivers and six sense SDK from steam tools to emulate Vive controllers to access the settings in an overlay running as a steamvr dashboard app https://github.com/matzman666/OpenVR-AdvancedSettings
+
+For Vive Controller Emulation:
+
+Sixense SDK for Razer Hydra https://steamdb.info/app/42300/
+
+SteamVR Driver for Razer Hydra http://store.steampowered.com/app/491380/SteamVR_Driver_for_Razer_Hydra/
+
+FreePIE https://github.com/AndersMalmgren/FreePIE
+
+Opentrack https://github.com/opentrack/opentrack
+
+FreePIE-VR-Controls https://github.com/fmaurer/FreePIE-VR-Controls
+
+
+For example sake, we'll use TF2, which has it accessible in its menu: go to "Options", then "Video" and change "Virtual Reality Mode" to "Enabled". You'll have to save that setting and restart the game before you'll see a new entry on the game's main menu called "Activate Virtual Reality". Selecting "Activate Virtual Reality" should flip the game into VR mode and you're ready to play. (Might be best to use a gamepad, as WASD and mouselook don't go well with VR, the mouselook portion in particular.)
 
 
 ## Build Instructions
