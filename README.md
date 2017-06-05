@@ -16,7 +16,15 @@ Note that despite similar goals, the internal models of the two systems are not 
 ## Binary Usage Instructions
 If you'd just like to try this out with pre-compiled binaries on Windows, the link above contains a compressed file with the 32- and 64-bit builds in it. (Other platforms will have to build from source at this time.) This is not the only way to use the binaries, but it's the simplest way to use them with commercially-released SteamVR games.
 
-### Installation
+### Installation For Gamers
+
+1. [Download](http://osvr.github.io/using/) and install OSVR Runtime For Windows, OSVR HDK Windows Driver Pack and whatever plugins you need for your hardware.  Support for all OSVR HDK versions; among other vendors's hmd's, OSVR Config, Tracker Viewer and more osvr management tools and utilities are all bundled with the main download, no additional plugins required for all OSVR HDK users. This is for the OSVR Server, and is common to using any OSVR-enabled application.
+2. Install [Steam](http://steampowered.com) and optionally, a SteamVR-enabled game.
+3. Install SteamVR by hovering over the "Library" button in Steam, clicking on to "Tools" in the drop-down menu, then finding the "SteamVR" entry, right-clicking it, and clicking "Install Game". (You should not need any beta versions of Steam or SteamVR to use this.)
+4. [Download](https://bintray.com/osvr/SteamVR-OSVR/SteamVR-OSVR-Win/v0.1-209-g620517d-core-v0.6-1311-g69ba0bd) the binary snapshot, and extract it using 7-Zip.
+5. Now, you'll need to put the driver where SteamVR can find it.  Navigate to where you just saved the downloaded binaries and open the folder using 7-zip file manager and drill down to the osvr folder.   Extract that folder to C:\Program Files (x86)\Steam\steamapps\common\SteamVR\drivers\ (Adjust that path according to your own steam install location.)
+
+### Installation For Developers
 
 1. Download and extract an [OSVR Core snapshot build and whatever plugins you need](http://osvr.github.io/using/) for your hardware. (Support for the OSVR HDK, among others, is bundled with the main download, no additional plugins required.) This is for the OSVR Server, and is common to using any OSVR-enabled application.
 2. Install [Steam](http://steampowered.com) and optionally, a SteamVR-enabled game (Team Fortress 2 was tested).
@@ -26,7 +34,9 @@ If you'd just like to try this out with pre-compiled binaries on Windows, the li
 
 The default locations are as follows:
 
-- If you accepted defaults, Steam's nested SteamVR directory is installed in `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR"` - you can paste that into the Windows Run dialog and it should open the right folder.  You can also find SteamVR in the Library, Tools section of Steam, right-click it, choose Properties, then Local Files, then "Browse local files..."
+- If you accepted defaults, Steam's nested SteamVR directory is installed in 
+- `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR"` - 
+you can paste that into the Windows Run dialog and it should open the right folder.  You can also find SteamVR in the Library, Tools section of Steam, right-click it, choose Properties, then Local Files, then "Browse local files..."
 
 	- "The right folder" will contain, among other things, a directory called `drivers`.
 
@@ -36,7 +46,7 @@ You'll want to drag the `osvr` directory `drivers` directory you found previousl
 
 To know if you got it right, do the same Windows Run (or other way of opening a folder by its name) as above, with the path `"%ProgramFiles(x86)%\Steam\steamapps\common\SteamVR\drivers\osvr\bin\win32"` instead. (Make changes as appropriate to suit your Steam install location.) If you got it right, you should see a number of files, including one called `driver_osvr.dll`.
 
-### Usage
+## Usage
 
 In all cases, hook up your hardware and launch OSVR Server first.
 
