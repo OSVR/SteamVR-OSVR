@@ -222,7 +222,7 @@ void OSVRTrackedHMD::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* h
     const double overfill_factor = 1.0;
     const auto bounds = getWindowBounds(display_, scanoutOrigin_);
 
-    *width = static_cast<uint32_t>(bounds.width * overfill_factor);
+    *width = static_cast<uint32_t>(bounds.width * overfill_factor)/2;
     *height = static_cast<uint32_t>(bounds.height * overfill_factor);
     OSVR_LOG(trace) << "GetRecommendedRenderTargetSize(): width = " << *width << ", height = " << *height << ".";
 }
