@@ -97,7 +97,6 @@ public:
     vr::ETrackedDeviceClass getDeviceClass() const;
 
 private:
-    std::string GetStringTrackedDeviceProperty(vr::ETrackedDeviceProperty prop, vr::ETrackedPropertyError *error);
     static void TrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
 
     /**
