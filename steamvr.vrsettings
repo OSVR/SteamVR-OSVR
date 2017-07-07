@@ -1,27 +1,6 @@
 {
-    "jsonid" : "vrsettings",
-    "steamvr" : {
-        "activateMultipleDrivers": true
-    },
     "driver_osvr": {
-        "verbose": false,
-        "displayName": "OSVR",
-        "scanoutOrigin": "upper-left",
-        "cameraPath": "/org_osvr_filter_videoimufusion/HeadFusion/semantic/camera",
-        "cameraFOVLeftDegrees": 35.235,
-        "cameraFOVRightDegrees": 35.235,
-        "cameraFOVTopDegrees": 27.95,
-        "cameraFOVBottomDegrees": 27.95,
-        "minTrackingRangeMeters": 0.15,
-        "maxTrackingRangeMeters": 1.5,
-
-        "edidVendorId": 0xd24e,
-        "edidProductId": 0x1019,
-
-        "serverTimeout": 5,
-        "modelNumber": "OSVR HDK 1.4",
-        "serialNumber": "OSVR HDK 1.4",
-        "manufacturer": "OSVR"
+        "verbose": true
     }
 }
 
