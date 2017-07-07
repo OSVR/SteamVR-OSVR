@@ -188,3 +188,29 @@ OSVRRectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Di
     return viewport;
 }
 
+std::pair<int, int> getRecommendedRenderTargetSize(const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode)
+{
+    const auto bounds = getWindowBounds(display, scanout_origin);
+    const auto orientation = scanout_origin + display.rotation;
+
+    if (OSVRDisplayConfiguration::DisplayMode::FULL_SCREEN == display_mode) {
+        return { bounds.width, bounds.height };
+    } else if (OSVRDisplayConfiguration::DisplayMode::HORIZONTAL_SIDE_BY_SIDE == display_mode) {
+        using Orientation = osvr::display::DesktopOrientation;
+        if (Orientation::Portrait == orientation || Orientation::PortraitFlipped == orientation) {
+            return { bounds.width, bounds.height / 2 };
+        } else if (Orientation::Landscape == orientation || Orientation::LandscapeFlipped == orientation) {
+            return { bounds.width / 2, bounds.height };
+        } else {
+            OSVR_LOG(err) << "Unknown display orientation [" << static_cast<int>(orientation) << "]!";
+        }
+    } else if (OSVRDisplayConfiguration::DisplayMode::VERTICAL_SIDE_BY_SIDE == display_mode) {
+        // TODO
+        return { bounds.width, bounds.height / 2 };
+    } else {
+        OSVR_LOG(err) << "Unknown display mode [" << static_cast<int>(display_mode) << "]!";
+    }
+
+    return { bounds.width / 2, bounds.height };
+}
+

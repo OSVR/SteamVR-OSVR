@@ -71,5 +71,10 @@ OSVRRectangle getWindowBounds(const osvr::display::Display& display, osvr::displ
  */
 OSVRRectangle getEyeOutputViewport(const vr::EVREye eye, const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode);
 
+/**
+ * Returns the per-eye recommended render texture size.
+ */
+std::pair<int, int> getRecommendedRenderTargetSize(const osvr::display::Display& display, const osvr::display::ScanOutOrigin scanout_origin, const OSVRDisplayConfiguration::DisplayMode display_mode);
+
 #endif // INCLUDED_OSVRDisplay_h_GUID_FAE2B8A6_1225_4344_9FA0_919856E66E8E
 

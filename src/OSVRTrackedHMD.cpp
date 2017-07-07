@@ -218,12 +218,13 @@ bool OSVRTrackedHMD::IsDisplayRealDisplay()
 
 void OSVRTrackedHMD::GetRecommendedRenderTargetSize(uint32_t* width, uint32_t* height)
 {
-    //const double overfill_factor = renderManagerConfig_.getRenderOverfillFactor();
-    const double overfill_factor = 1.0;
-    const auto bounds = getWindowBounds(display_, scanoutOrigin_);
+    const double overfill_factor = renderManagerConfig_.getRenderOverfillFactor();
+    //const double overfill_factor = 1.0;
+    const auto display_mode = displayConfiguration_.getDisplayMode();
+    const auto target_size = getRecommendedRenderTargetSize(display_, scanoutOrigin_, display_mode);
 
-    *width = static_cast<uint32_t>(bounds.width * overfill_factor);
-    *height = static_cast<uint32_t>(bounds.height * overfill_factor);
+    *width = static_cast<uint32_t>(target_size.first * overfill_factor);
+    *height = static_cast<uint32_t>(target_size.second * overfill_factor);
     OSVR_LOG(trace) << "GetRecommendedRenderTargetSize(): width = " << *width << ", height = " << *height << ".";
 }
 
