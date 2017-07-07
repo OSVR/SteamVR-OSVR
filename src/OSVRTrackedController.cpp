@@ -48,14 +48,24 @@
 #include <iostream>
 #include <exception>
 
+
+
 // TODO:
 // Trackpad
 // OSVRButton(OSVR_BUTTON_TYPE_DIGITAL, FGamepadKeyNames::MotionController_Left_Thumbstick, "/controller/left/joystick/button"),
 // OSVRButton(OSVR_BUTTON_TYPE_DIGITAL, FGamepadKeyNames::MotionController_Left_Shoulder, "/controller/left/bumper"),
 // OSVRButton(OSVR_BUTTON_TYPE_DIGITAL, FGamepadKeyNames::SpecialLeft, "/controller/left/middle"),
 
-OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& context, vr::IServerDriverHost* driver_host, int controller_index) : OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_Controller), controllerIndex_(controller_index)
+// TODO:
+// use vr::VRServerDriverHost() insteead of vr::IServerDriverHost
+// Interface is IVRServerDriverHost
+OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& context, vr::IVRServerDriverHost* driver_host, int controller_index) : 
+    //OSVRTrackedDevice(context, driver_host, vr::TrackedDeviceClass_Controller), controllerIndex_(controller_index)
+    //OSVRTrackedDevice(context, driver_host, getDeviceClass()), controllerIndex_(controller_index)
+    OSVRTrackedDevice(context, getDeviceClass()), controllerIndex_(controller_index)
+    //OSVRTrackedDevice(osvr::clientkit::ClientContext& context, vr::ETrackedDeviceClass device_class, const std::string& name = "OSVR device");
 {
+    this->driver_host = driver_host;
     controllerName_ = "OSVRController" + std::to_string(controller_index);
 
     numAxis_ = 0;
@@ -277,7 +287,10 @@ void OSVRTrackedController::controllerTrackerCallback(void* userdata, const OSVR
 
     self->pose_ = pose;
 
-    self->driverHost_->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
+    //self->driver_host->TrackedDevicePoseUpdated(self->objectId_, self->pose_);
+    self->driver_host->TrackedDevicePoseUpdated(self->objectId_, self->pose_,sizeof(self->pose_));
+                     //TrackedDevicePoseUpdated( uint32_t unWhichDevice, const DriverPose_t & newPose, uint32_t unPoseStructSize ) 
+    //vr::IVRServerDriverHost::TrackedDevicePoseUpdated(uint32_t&, vr::DriverPose_t&)'
 }
 
 void OSVRTrackedController::controllerButtonCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report)
@@ -297,9 +310,9 @@ void OSVRTrackedController::controllerButtonCallback(void* userdata, const OSVR_
     }
 
     if (OSVR_BUTTON_PRESSED == report->state) {
-        self->driverHost_->TrackedDeviceButtonPressed(self->objectId_, button_id, 0);
+        self->driver_host->TrackedDeviceButtonPressed(self->objectId_, button_id, 0);
     } else {
-        self->driverHost_->TrackedDeviceButtonUnpressed(self->objectId_, button_id, 0);
+        self->driver_host->TrackedDeviceButtonUnpressed(self->objectId_, button_id, 0);
     }
 }
 
@@ -316,7 +329,7 @@ void OSVRTrackedController::controllerTriggerCallback(void* userdata, const OSVR
     vr::VRControllerAxis_t axis_state;
     axis_state.x = static_cast<float>(analog_interface->x);
 
-    self->driverHost_->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
+    self->driver_host->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
 }
 
 void OSVRTrackedController::controllerJoystickXCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
@@ -333,7 +346,7 @@ void OSVRTrackedController::controllerJoystickXCallback(void* userdata, const OS
     axis_state.x = static_cast<float>(analog_interface->x);
     axis_state.y = static_cast<float>(analog_interface->y);
 
-    self->driverHost_->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
+    self->driver_host->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
 }
 
 void OSVRTrackedController::controllerJoystickYCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
@@ -350,7 +363,7 @@ void OSVRTrackedController::controllerJoystickYCallback(void* userdata, const OS
     axis_state.x = static_cast<float>(analog_interface->x);
     axis_state.y = static_cast<float>(analog_interface->y);
 
-    self->driverHost_->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
+    self->driver_host->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
 }
 
 const char* OSVRTrackedController::GetId()
@@ -366,18 +379,40 @@ void OSVRTrackedController::configure()
 
 void OSVRTrackedController::configureProperties()
 {
-    properties_[vr::Prop_DeviceClass_Int32] = static_cast<int32_t>(deviceClass_);
-    properties_[vr::Prop_Axis0Type_Int32] = static_cast<int32_t>(analogInterface_[0].axisType);
-    properties_[vr::Prop_Axis1Type_Int32] = static_cast<int32_t>(analogInterface_[1].axisType);
-    properties_[vr::Prop_Axis2Type_Int32] = static_cast<int32_t>(analogInterface_[2].axisType);
-    properties_[vr::Prop_Axis3Type_Int32] = static_cast<int32_t>(analogInterface_[3].axisType);
-    properties_[vr::Prop_Axis4Type_Int32] = static_cast<int32_t>(analogInterface_[4].axisType);
 
-    properties_[vr::Prop_SupportedButtons_Uint64] = static_cast<int32_t>(NUM_BUTTONS);
+    propertyContainer_ = vr::VRProperties()->TrackedDeviceToPropertyContainer(this->objectId_);
 
-    properties_[vr::Prop_ModelNumber_String] = "OSVR Controller";
-    properties_[vr::Prop_SerialNumber_String] = controllerName_.c_str();
-    properties_[vr::Prop_RenderModelName_String] = "";
+    //vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_WillDriftInYaw_Bool, true);
+    //vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceIsWireless_Bool, false);
+	//ETrackedPropertyError SetBoolProperty( PropertyContainerHandle_t ulContainerHandle, ETrackedDeviceProperty prop, bool bNewValue );
+	//ETrackedPropertyError SetFloatProperty( PropertyContainerHandle_t ulContainerHandle, ETrackedDeviceProperty prop, float fNewValue );
+	//ETrackedPropertyError SetInt32Property( PropertyContainerHandle_t ulContainerHandle, ETrackedDeviceProperty prop, int32_t nNewValue );
+	//ETrackedPropertyError SetUint64Property( PropertyContainerHandle_t ulContainerHandle, ETrackedDeviceProperty prop, uint64_t ulNewValue );
+	//ETrackedPropertyError SetStringProperty( PropertyContainerHandle_t ulContainerHandle, ETrackedDeviceProperty prop, const char *pchNewValue );
+
+    vr::VRProperties()->SetInt32Property(propertyContainer_,  vr::Prop_DeviceClass_Int32,       static_cast<int32_t>(deviceClass_));
+    vr::VRProperties()->SetInt32Property(propertyContainer_,  vr::Prop_Axis0Type_Int32,         static_cast<int32_t>(analogInterface_[0].axisType));
+    vr::VRProperties()->SetInt32Property(propertyContainer_,  vr::Prop_Axis1Type_Int32,         static_cast<int32_t>(analogInterface_[1].axisType));
+    vr::VRProperties()->SetInt32Property(propertyContainer_,  vr::Prop_Axis2Type_Int32,         static_cast<int32_t>(analogInterface_[2].axisType));
+    vr::VRProperties()->SetInt32Property(propertyContainer_,  vr::Prop_Axis3Type_Int32,         static_cast<int32_t>(analogInterface_[3].axisType));
+    vr::VRProperties()->SetInt32Property(propertyContainer_,  vr::Prop_Axis4Type_Int32,         static_cast<int32_t>(analogInterface_[4].axisType));
+    vr::VRProperties()->SetUint64Property(propertyContainer_, vr::Prop_SupportedButtons_Uint64, static_cast<int32_t>(NUM_BUTTONS));
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ModelNumber_String,      "OSVR Controller");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_SerialNumber_String,     controllerName_.c_str());
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_RenderModelName_String,  "");
+
+    //properties_[vr::Prop_DeviceClass_Int32] = static_cast<int32_t>(deviceClass_);
+    //properties_[vr::Prop_Axis0Type_Int32] = static_cast<int32_t>(analogInterface_[0].axisType);
+    //properties_[vr::Prop_Axis1Type_Int32] = static_cast<int32_t>(analogInterface_[1].axisType);
+    //properties_[vr::Prop_Axis2Type_Int32] = static_cast<int32_t>(analogInterface_[2].axisType);
+    //properties_[vr::Prop_Axis3Type_Int32] = static_cast<int32_t>(analogInterface_[3].axisType);
+    //properties_[vr::Prop_Axis4Type_Int32] = static_cast<int32_t>(analogInterface_[4].axisType);
+
+    //properties_[vr::Prop_SupportedButtons_Uint64] = static_cast<int32_t>(NUM_BUTTONS);
+
+    //properties_[vr::Prop_ModelNumber_String] = "OSVR Controller";
+    //properties_[vr::Prop_SerialNumber_String] = controllerName_.c_str();
+    //properties_[vr::Prop_RenderModelName_String] = "";
 
     // Properties that are unique to TrackedDeviceClass_Controller
     //Prop_AttachedDeviceId_String				= 3000,
