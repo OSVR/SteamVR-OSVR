@@ -64,7 +64,8 @@ class OSVRTrackedController : public OSVRTrackedDevice, public vr::IVRController
     friend class ServerDriver_OSVR;
 
 public:
-    OSVRTrackedController(osvr::clientkit::ClientContext& context, vr::IVRServerDriverHost* driver_host, int controller_index);
+    OSVRTrackedController(osvr::clientkit::ClientContext& context, int controller_index);
+    //OSVRTrackedController(osvr::clientkit::ClientContext& context);
 
     virtual ~OSVRTrackedController();
 
@@ -128,7 +129,6 @@ private:
     osvr::clientkit::Interface buttonInterface_[NUM_BUTTONS];
     uint32_t numAxis_;
     AnalogInterface analogInterface_[NUM_AXIS];
-    vr::IVRServerDriverHost* driver_host;
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
