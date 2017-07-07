@@ -133,6 +133,12 @@ std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_ReportsTimeSinceVSync_Bool";
         case vr::Prop_SecondsFromVsyncToPhotons_Float:
             return "Prop_SecondsFromVsyncToPhotons_Float";
+        case vr::Prop_DriverDirectModeSendsVsyncEvents_Bool:
+            return "Prop_DriverDirectModeSendsVsyncEvents_Bool";
+        case vr::Prop_DisplayDebugMode_Bool:
+            return "Prop_DisplayDebugMode_Bool";
+        case vr::Prop_GraphicsAdapterLuid_Uint64:
+            return "Prop_GraphicsAdapterLuid_Uint64";
         case vr::Prop_DisplayFrequency_Float:
             return "Prop_DisplayFrequency_Float";
         case vr::Prop_UserIpdMeters_Float:
