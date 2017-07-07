@@ -46,6 +46,7 @@ function(_read_openvrpaths_file)
 		NAME
 		openvrpaths.vrpath
 		PATHS
+		"$ENV{HOME}/Library/Application Support/OpenVR/.openvr"
 		$ENV{HOME}/.openvr
 		$ENV{LOCALAPPDATA}/openvr
 	)
