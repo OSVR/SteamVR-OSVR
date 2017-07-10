@@ -101,7 +101,7 @@ Default: the name of the detected display or `OSVR HMD`
 
 ### `serverTimeout`
 
-The amount of time (in milliseconds) to wait for a connection to the OSVR server.
+The amount of time (in seconds) to wait for a connection to the OSVR server.
 
 Default: 5
 
