@@ -123,7 +123,6 @@ private:
     static void controllerJoystickXCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
     static void controllerJoystickYCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
 
-    std::string controllerName_;
     int controllerIndex_;
     osvr::clientkit::Interface trackerInterface_;
     osvr::clientkit::Interface buttonInterface_[NUM_BUTTONS];

@@ -87,7 +87,9 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
 
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedHMD>(*(context_.get())));
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get())));
+    OSVR_LOG(debug) << "ServerDriver_OSVR - before left hand\n";
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), 0)); // left hand
+    OSVR_LOG(debug) << "ServerDriver_OSVR - before right hand\n";
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), 1)); // right hand
 
     for (auto& tracked_device : trackedDevices_) {
