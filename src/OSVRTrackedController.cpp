@@ -202,6 +202,7 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
 
 void OSVRTrackedController::Deactivate()
 {
+    OSVR_LOG(trace) << "OSVRTrackedController::Deactivate";
     /// Have to force freeing here
     freeInterfaces();
 }
