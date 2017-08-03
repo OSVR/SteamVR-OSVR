@@ -285,8 +285,8 @@ std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_VendorSpecific_Reserved_Start";
         case vr::Prop_VendorSpecific_Reserved_End:
             return "Prop_VendorSpecific_Reserved_End";
-	case vr::Prop_UsesDriverDirectMode_Bool:
-	    return "Prop_UsesDriverDirectMode_Bool";
+	//case vr::Prop_UsesDriverDirectMode_Bool:
+	//    return "Prop_UsesDriverDirectMode_Bool";
         default:
             {
                 std::ostringstream oss;
