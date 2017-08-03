@@ -60,7 +60,7 @@
 // use vr::VRServerDriverHost() insteead of vr::IServerDriverHost
 // Interface is IVRServerDriverHost
 OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& context, int controller_index) : 
-    OSVRTrackedDevice(context, getDeviceClass(), "OSVR controller"+std::to_string(controller_index)), controllerIndex_(controller_index)
+    OSVRTrackedDevice(context, vr::TrackedDeviceClass_Controller, "OSVR controller"+std::to_string(controller_index)), controllerIndex_(controller_index)
 {
     OSVR_LOG(trace) << "OSVRTrackedController::constructor() called.  name = " << name_ <<"\n";
 
@@ -73,7 +73,9 @@ OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& con
 
 OSVRTrackedController::~OSVRTrackedController()
 {
-    // do nothing
+    // DO NOTHING
+    //vr::IDriverLog* logger_ = nullptr;
+    //vr::IServerDriverHost* driver_host = nullptr;
 }
 
 vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
@@ -195,6 +197,9 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
         if (somethingFound)
             numAxis_++;
     }
+
+    // added in for testing not sure if its correct or not.
+    configure();
 
     OSVR_LOG(trace) << "OSVRTrackedController::Activate() end of function.";
     return vr::VRInitError_None;
@@ -394,7 +399,28 @@ void OSVRTrackedController::configureProperties()
 {
 
     OSVR_LOG(trace) << "OSVRTrackedController::configureProperties().";
+    OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() NAME = "<<name_.c_str();
+    OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() NUM_BUTTONS = "<<NUM_BUTTONS;
+    OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() AXIS_TYPE_0 = "<<analogInterface_[0].axisType;
+    OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() AXIS_TYPE_1 = "<<analogInterface_[1].axisType;
+    OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() AXIS_TYPE_2 = "<<analogInterface_[2].axisType;
+    OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() AXIS_TYPE_3 = "<<analogInterface_[3].axisType;
+    OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() AXIS_TYPE_4 = "<<analogInterface_[4].axisType;
     propertyContainer_ = vr::VRProperties()->TrackedDeviceToPropertyContainer(this->objectId_);
+
+    // Additional properties from nolo's osvr tracked device
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_TrackingSystemName_String, "NoloVR");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ManufacturerName_String, "LYRobotix");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_TrackingFirmwareVersion_String, "0.1.0");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_HardwareRevision_String, "0.1.0");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_AllWirelessDongleDescriptions_String, "");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ConnectedWirelessDongle_String, "");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_Firmware_ManualUpdateURL_String, "");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_Firmware_ProgrammingTarget_String, "");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_DriverVersion_String, "0.1.0");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_AttachedDeviceId_String, "3000");
+    vr::VRProperties()->SetStringProperty(propertyContainer_, vr::Prop_ModeLabel_String, "");
+
 
     //vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_WillDriftInYaw_Bool, true);
     //vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceIsWireless_Bool, false);
@@ -439,4 +465,3 @@ void OSVRTrackedController::configureProperties()
 
     OSVR_LOG(trace) << "OSVRTrackedController::configureProperties() end of function.";
 }
-

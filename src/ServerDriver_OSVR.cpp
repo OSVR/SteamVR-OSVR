@@ -93,7 +93,9 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), 1)); // right hand
 
     for (auto& tracked_device : trackedDevices_) {
+        OSVR_LOG(debug) << "ServerDriver_OSVR - for loop - before TrackedDeviceAdded\n";
         vr::VRServerDriverHost()->TrackedDeviceAdded(tracked_device->getId(), tracked_device->getDeviceClass(), tracked_device.get());
+        OSVR_LOG(debug) << "ServerDriver_OSVR - for loop - after TrackedDeviceAdded\n";
     }
 
     client_update_thread_quit.store(false);
