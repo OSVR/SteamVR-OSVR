@@ -379,6 +379,7 @@ void OSVRTrackedController::controllerBatteryCallback(void* userdata, const OSVR
     if (!userdata)
         return;
 
+    OSVR_LOG(trace) << "OSVRTrackedController::controllerBatteryCallback() - data = "<<report->state;
     auto* batteryInterface      = static_cast<BatteryInterface*>(userdata);
     OSVRTrackedController* self = batteryInterface->parentController;
     vr::PropertyContainerHandle_t container = vr::VRProperties()->TrackedDeviceToPropertyContainer(self->objectId_);
@@ -594,6 +595,8 @@ void OSVRTrackedController::registerBattery(std::string path){
     if (batteryInterface.interface.notEmpty()) {
 	batteryInterface.parentController = this;
         batteryInterface.interface.registerCallback(&OSVRTrackedController::controllerBatteryCallback, &batteryInterface);
+        propertyContainer_                    = vr::VRProperties()->TrackedDeviceToPropertyContainer(this->objectId_);
+        vr::VRProperties()->SetBoolProperty(propertyContainer_, vr::Prop_DeviceProvidesBatteryStatus_Bool,true);
     } else {
         batteryInterface.interface.free();
     }
