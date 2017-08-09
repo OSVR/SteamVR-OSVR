@@ -125,6 +125,7 @@ private:
      */
     static void controllerTrackerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_PoseReport* report);
     static void controllerButtonCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report);
+    static void controllerButtonTouchCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report);
     static void controllerTriggerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
     static void controllerJoystickXCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
     static void controllerJoystickYCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
@@ -138,6 +139,7 @@ private:
     AnalogInterface analogInterface_[NUM_AXIS];
     ButtonInterface buttonInterface_[NUM_BUTTONS];
     void registerButton(int id, std::string path, vr::EVRButtonId button_id);
+    void registerButtonTouch(int id, std::string path, vr::EVRButtonId button_id);
     void registerTrigger(int id, std::string path);
     void registerTrackpad(int id, std::string path);
 };

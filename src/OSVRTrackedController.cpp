@@ -190,7 +190,7 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
     registerButton(button_id++, buttonPath+"menu", vr::k_EButton_ApplicationMenu);
     registerButton(button_id++, buttonPath+"grip",vr::k_EButton_Grip);
     registerButton(button_id++, buttonPath+"trackpad/button",vr::k_EButton_SteamVR_Touchpad);
-    //registerButton(button_id++, buttonPath+"trackpad/touch",vr::k_EButton_SteamVR_Touchpad);
+    registerButtonTouch(button_id++, buttonPath+"trackpad/touch",vr::k_EButton_SteamVR_Touchpad);
     //registerButton(button_id++, buttonPath+"trackpad/button", vr::k_EButton_A);
     registerButton(button_id++, buttonPath+"trigger/button", vr::k_EButton_SteamVR_Trigger);
 // defined
@@ -440,6 +440,32 @@ void OSVRTrackedController::controllerButtonCallback(void* userdata, const OSVR_
     }
 }
 
+void OSVRTrackedController::controllerButtonTouchCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_ButtonReport* report){
+    OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonTouchCallback().";
+    if (!userdata)
+        return;
+
+    auto* button_interface = static_cast<ButtonInterface*>(userdata);
+    OSVRTrackedController* self = button_interface->parentController;
+    if(!self){
+        OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonTouchCallback(). self isn't here :(";
+	return;
+    }
+
+    OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonTouchCallback(). report->sensor "<<report->sensor;
+    OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonTouchCallback(). button_id "<<button_interface->button_id;
+    OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonTouchCallback(). objectId "<<self->objectId_;
+    OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonTouchCallback(). report state "<<report->state;
+
+    // error checking
+    if((button_interface->button_id >=0 && button_interface->button_id <= 7) || (button_interface->button_id >= 31 && button_interface->button_id <= 36)){
+	if (OSVR_BUTTON_PRESSED == report->state) {
+	    vr::VRServerDriverHost()->TrackedDeviceButtonTouched(self->objectId_, button_interface->button_id, 0);
+	} else {
+	    vr::VRServerDriverHost()->TrackedDeviceButtonUntouched(self->objectId_, button_interface->button_id, 0);
+	}
+    }
+}
 void OSVRTrackedController::controllerTriggerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
 {
     OSVR_LOG(trace) << "OSVRTrackedController::controllerTriggerCallback().";
@@ -639,6 +665,26 @@ void OSVRTrackedController::registerButton(int id, std::string path, vr::EVRButt
 	buttonInterface_[id].buttonInterface.free();
     } 
     OSVR_LOG(trace) << "OSVRTrackedController::registerButton end of function.";
+}
+
+/**
+ * Registers a touch button based on the path and id.
+ * @param id the id of the button which is used for indexing an array.
+ * @param path the complete path to the button.
+ */
+void OSVRTrackedController::registerButtonTouch(int id, std::string path, vr::EVRButtonId button_id){
+    OSVR_LOG(trace) << "OSVRTrackedController::registerButtonTouch start of function.";
+    OSVR_LOG(trace) << "OSVRTrackedController::registerButtonTouch id = "<<id<<" path = "<<path<<" button_id = "<<button_id;
+    buttonInterface_[id].buttonInterface = context_.getInterface(path);
+    if (buttonInterface_[id].buttonInterface.notEmpty()) {
+	buttonInterface_[id].button_id        = button_id;
+	buttonInterface_[id].parentController = this;
+	buttonInterface_[id].buttonInterface.registerCallback( &OSVRTrackedController::controllerButtonTouchCallback, &buttonInterface_[id]);
+        OSVR_LOG(trace) << "OSVRTrackedController::registerButtonTouch making sure the ID is correct = "<<buttonInterface_[id].button_id;
+    }else{
+	buttonInterface_[id].buttonInterface.free();
+    } 
+    OSVR_LOG(trace) << "OSVRTrackedController::registerButtonTouch end of function.";
 }
 
 void OSVRTrackedController::registerTrigger(int id, std::string path){
