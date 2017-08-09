@@ -51,14 +51,11 @@
 
 
 // TODO:
-// Trackpad
+// Joystick support
 // OSVRButton(OSVR_BUTTON_TYPE_DIGITAL, FGamepadKeyNames::MotionController_Left_Thumbstick, "/controller/left/joystick/button"),
 // OSVRButton(OSVR_BUTTON_TYPE_DIGITAL, FGamepadKeyNames::MotionController_Left_Shoulder, "/controller/left/bumper"),
 // OSVRButton(OSVR_BUTTON_TYPE_DIGITAL, FGamepadKeyNames::SpecialLeft, "/controller/left/middle"),
 
-// TODO:
-// use vr::VRServerDriverHost() insteead of vr::IServerDriverHost
-// Interface is IVRServerDriverHost
 OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& context, int controller_index) : 
     OSVRTrackedDevice(context, vr::TrackedDeviceClass_Controller, "OSVR controller"+std::to_string(controller_index)), controllerIndex_(controller_index)
 {
@@ -68,8 +65,6 @@ OSVRTrackedController::OSVRTrackedController(osvr::clientkit::ClientContext& con
 OSVRTrackedController::~OSVRTrackedController()
 {
     // DO NOTHING
-    //vr::IDriverLog* logger_ = nullptr;
-    //vr::IServerDriverHost* driver_host = nullptr;
 }
 
 vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
@@ -81,7 +76,6 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
     const std::time_t wait_time = 5; // wait up to 5 seconds for init
 
     freeInterfaces();
-    numAxis_ = 0;
 
     // Ensure context is fully started up
     OSVR_LOG(info) << "Waiting for the context to fully start up...";
@@ -101,44 +95,26 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
     std::string triggerPath;
     std::string joystickPath;
     std::string trackpadPath;
+    std::string batteryPath;
     if (controllerIndex_ == 0) {
         trackerPath  = "/me/hands/left";
         buttonPath   = "/controller/left/";
         triggerPath  = "/controller/left/trigger";
         joystickPath = "/controller/left/joystick";
         trackpadPath = "/controller/left/trackpad";
+	batteryPath  = "/controller/left/battery";
     } else if (controllerIndex_ == 1) {
         trackerPath  = "/me/hands/right";
         buttonPath   = "/controller/right/";
         triggerPath  = "/controller/right/trigger";
         joystickPath = "/controller/right/joystick";
         trackpadPath = "/controller/right/trackpad";
+	batteryPath  = "/controller/right/battery";
     } else {
         buttonPath = "/controller" + std::to_string(controllerIndex_) + "/";
         triggerPath = "/controller" + std::to_string(controllerIndex_) + "/trigger";
         joystickPath = "/controller" + std::to_string(controllerIndex_) + "/joystick";
     }
-
-
-/*
-"controller": {
-      "left": {
-        "$target": "tracker/2",
-        "system": "button/3",
-        "menu": "button/2",
-        "grip": "button/4",
-        "trackpad": {
-          "x": "analog/0",
-          "y": "analog/1",
-          "touch": "button/5",
-          "button": "button/0"
-        },
-        "trigger": {
-          "button": "button/1"
-        },
-        "battery": "analog/2"
-      },
-*/
 
 // pathing
 
@@ -217,87 +193,12 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
     // register triggers
     registerTrigger(axis_id++, triggerPath);
 
-/*
-    for (int iter_button = 0; iter_button < NUM_BUTTONS; iter_button++) {
-        buttonInterface_[iter_button] = context_.getInterface(buttonPath + std::to_string(iter_button));
-        if (buttonInterface_[iter_button].notEmpty()) {
-            buttonInterface_[iter_button].registerCallback(&OSVRTrackedController::controllerButtonCallback, this);
-        } else {
-            buttonInterface_[iter_button].free();
-        }
-    }
-*/
-
-    OSVR_LOG(trace) << "OSVRTrackedController::Activate() before TODOtouchpad.";
-    // TODO: ADD TOUCHPAD PART HERE
-    numAxis_ = 0;
-
-/*
-    numAxis_ = 1;
-    for (int iter_trigger = 0; iter_trigger < NUM_TRIGGER; iter_trigger++) {
-        if (numAxis_ >= NUM_AXIS)
-            break;
-
-        if (iter_trigger == 0) {
-            analogInterface_[numAxis_].analogInterfaceX = context_.getInterface(triggerPath);
-        } else {
-            analogInterface_[numAxis_].analogInterfaceX = context_.getInterface(triggerPath + std::to_string(iter_trigger));
-        }
-
-        if (analogInterface_[numAxis_].analogInterfaceX.notEmpty()) {
-            analogInterface_[numAxis_].axisIndex = numAxis_;
-            analogInterface_[numAxis_].axisType = vr::EVRControllerAxisType::k_eControllerAxis_Trigger;
-            analogInterface_[numAxis_].analogInterfaceX.registerCallback(&OSVRTrackedController::controllerTriggerCallback, &analogInterface_[numAxis_]);
-            numAxis_++;
-        } else {
-            analogInterface_[numAxis_].analogInterfaceX.free();
-        }
-    }
-*/
-
-/*
-    numAxis_ = 2;
-    for (int iter_joystick = 0; iter_joystick < NUM_JOYSTICKS; iter_joystick++) {
-        if (numAxis_ >= NUM_AXIS)
-            break;
-
-        if (iter_joystick == 0) {
-            analogInterface_[numAxis_].analogInterfaceX = context_.getInterface(joystickPath + "/x");
-            analogInterface_[numAxis_].analogInterfaceY = context_.getInterface(joystickPath + "/y");
-        } else {
-            analogInterface_[numAxis_].analogInterfaceX = context_.getInterface(joystickPath + std::to_string(iter_joystick) + "/x");
-            analogInterface_[numAxis_].analogInterfaceY = context_.getInterface(joystickPath + std::to_string(iter_joystick) + "/y");
-        }
-
-        bool somethingFound = false;
-
-        if (analogInterface_[numAxis_].analogInterfaceX.notEmpty()) {
-            analogInterface_[numAxis_].axisIndex = numAxis_;
-            analogInterface_[numAxis_].axisType = vr::EVRControllerAxisType::k_eControllerAxis_Joystick;
-            analogInterface_[numAxis_].analogInterfaceX.registerCallback(&OSVRTrackedController::controllerJoystickXCallback, &analogInterface_[numAxis_]);
-            somethingFound = true;
-        } else {
-            analogInterface_[numAxis_].analogInterfaceX.free();
-        }
-
-        if (analogInterface_[numAxis_].analogInterfaceY.notEmpty()) {
-            analogInterface_[numAxis_].axisIndex = numAxis_;
-            analogInterface_[numAxis_].axisType = vr::EVRControllerAxisType::k_eControllerAxis_Joystick;
-            analogInterface_[numAxis_].analogInterfaceY.registerCallback(&OSVRTrackedController::controllerJoystickYCallback, &analogInterface_[numAxis_]);
-            somethingFound = true;
-        } else {
-            analogInterface_[numAxis_].analogInterfaceY.free();
-        }
-
-        if (somethingFound)
-            numAxis_++;
-    }
-*/
+    // register the battery
+    registerBattery(batteryPath);
 
     // added in for testing not sure if its correct or not.
     configure();
 
-    OSVR_LOG(trace) << "OSVRTrackedController::Activate() end of function.";
     return vr::VRInitError_None;
 }
 
@@ -325,12 +226,10 @@ bool OSVRTrackedController::TriggerHapticPulse(uint32_t axis_id, uint16_t pulse_
 
 void OSVRTrackedController::freeInterfaces()
 {
-    OSVR_LOG(trace) << "OSVRTrackedController::freeInterfaces().";
     if (trackerInterface_.notEmpty()) {
         trackerInterface_.free();
     }
 
-    OSVR_LOG(trace) << "OSVRTrackedController::freeInterfaces() before freeing axis.";
     for (int iter_axis = 0; iter_axis < NUM_AXIS; iter_axis++) {
         if (analogInterface_[iter_axis].analogInterfaceX.notEmpty())
             analogInterface_[iter_axis].analogInterfaceX.free();
@@ -338,12 +237,13 @@ void OSVRTrackedController::freeInterfaces()
             analogInterface_[iter_axis].analogInterfaceY.free();
     }
 
-    OSVR_LOG(trace) << "OSVRTrackedController::freeInterfaces() before freeing buttons.";
     for (int iter_button = 0; iter_button < NUM_BUTTONS; iter_button++) {
         if (buttonInterface_[iter_button].buttonInterface.notEmpty())
             buttonInterface_[iter_button].buttonInterface.free();
     }
-    OSVR_LOG(trace) << "OSVRTrackedController::freeInterfaces() end.";
+
+    if (batteryInterface.interface.notEmpty())
+	batteryInterface.interface.free();
 }
 
 inline vr::HmdQuaternion_t HmdQuaternion_Init(double w, double x, double y, double z)
@@ -421,15 +321,6 @@ void OSVRTrackedController::controllerButtonCallback(void* userdata, const OSVR_
     OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonCallback(). objectId "<<self->objectId_;
     OSVR_LOG(trace) << "OSVRTrackedController::controllerButtonCallback(). report state "<<report->state;
 
-    /*
-    if ((report->sensor >= 0 && report->sensor <= 7) || (report->sensor >= 32 && report->sensor <= 36)) {
-        button_id = static_cast<vr::EVRButtonId>(report->sensor);
-    } else if (report->sensor >= 8 && report->sensor <= 12) {
-        button_id = static_cast<vr::EVRButtonId>(report->sensor + 24);
-    } else {
-        return;
-    }
-    */
     // error checking
     if((button_interface->button_id >=0 && button_interface->button_id <= 7) || (button_interface->button_id >= 31 && button_interface->button_id <= 36)){
 	if (OSVR_BUTTON_PRESSED == report->state) {
@@ -468,24 +359,30 @@ void OSVRTrackedController::controllerButtonTouchCallback(void* userdata, const 
 }
 void OSVRTrackedController::controllerTriggerCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
 {
-    OSVR_LOG(trace) << "OSVRTrackedController::controllerTriggerCallback().";
     if (!userdata)
         return;
 
-    OSVR_LOG(trace) << "OSVRTrackedController::controllerTriggerCallback(). before cast";
     auto* analog_interface = static_cast<AnalogInterface*>(userdata);
     OSVRTrackedController* self = analog_interface->parentController;
 
-    OSVR_LOG(trace) << "OSVRTrackedController::controllerTriggerCallback(). before report";
     analog_interface->x = report->state;
 
-    OSVR_LOG(trace) << "OSVRTrackedController::controllerTriggerCallback(). before set state";
     vr::VRControllerAxis_t axis_state;
     axis_state.x = static_cast<float>(analog_interface->x);
     axis_state.y = 0;
 
-    OSVR_LOG(trace) << "OSVRTrackedController::controllerTriggerCallback(). before send to openvr";
     vr::VRServerDriverHost()->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
+}
+
+void OSVRTrackedController::controllerBatteryCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
+{
+    if (!userdata)
+        return;
+
+    auto* batteryInterface      = static_cast<BatteryInterface*>(userdata);
+    OSVRTrackedController* self = batteryInterface->parentController;
+    vr::PropertyContainerHandle_t container = vr::VRProperties()->TrackedDeviceToPropertyContainer(self->objectId_);
+    vr::VRProperties()->SetFloatProperty(container, vr::Prop_DeviceBatteryPercentage_Float, report->state);
 }
 
 void OSVRTrackedController::controllerJoystickXCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
@@ -690,6 +587,16 @@ void OSVRTrackedController::registerButtonTouch(int id, std::string path, vr::EV
 	buttonInterface_[id].buttonInterface.free();
     } 
     OSVR_LOG(trace) << "OSVRTrackedController::registerButtonTouch end of function.";
+}
+
+void OSVRTrackedController::registerBattery(std::string path){
+    batteryInterface.interface = context_.getInterface(path);
+    if (batteryInterface.interface.notEmpty()) {
+	batteryInterface.parentController = this;
+        batteryInterface.interface.registerCallback(&OSVRTrackedController::controllerBatteryCallback, &batteryInterface);
+    } else {
+        batteryInterface.interface.free();
+    }
 }
 
 void OSVRTrackedController::registerTrigger(int id, std::string path){

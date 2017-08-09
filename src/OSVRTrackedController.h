@@ -66,6 +66,11 @@ struct AnalogInterface {
     uint32_t axisIndex;
 };
 
+struct BatteryInterface {
+    osvr::clientkit::Interface interface;
+    OSVRTrackedController* parentController;
+};
+
 class OSVRTrackedController : public OSVRTrackedDevice, public vr::IVRControllerComponent {
     friend class ServerDriver_OSVR;
 
@@ -131,17 +136,19 @@ private:
     static void controllerJoystickYCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
     static void controllerXAxisCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
     static void controllerYAxisCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
+    static void controllerBatteryCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report);
 
     int controllerIndex_;
     osvr::clientkit::Interface trackerInterface_;
-    //osvr::clientkit::Interface buttonInterface_[NUM_BUTTONS];
     uint32_t numAxis_;
     AnalogInterface analogInterface_[NUM_AXIS];
     ButtonInterface buttonInterface_[NUM_BUTTONS];
+    BatteryInterface batteryInterface;
     void registerButton(int id, std::string path, vr::EVRButtonId button_id);
     void registerButtonTouch(int id, std::string path, vr::EVRButtonId button_id);
     void registerTrigger(int id, std::string path);
     void registerTrackpad(int id, std::string path);
+    void registerBattery(std::string path);
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645
