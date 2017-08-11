@@ -401,6 +401,11 @@ void OSVRTrackedController::configureProperties()
  * @param path the complete path to the button.
  */
 void OSVRTrackedController::registerButton(int id, const std::string& path, vr::EVRButtonId button_id){
+    // check bounds
+    if(id < 0 || id >= NUM_BUTTONS){
+	return;
+    }
+
     buttonInterface_[id].buttonInterface = context_.getInterface(path);
     if (buttonInterface_[id].buttonInterface.notEmpty()) {
 	buttonInterface_[id].button_id        = button_id;
@@ -417,6 +422,11 @@ void OSVRTrackedController::registerButton(int id, const std::string& path, vr::
  * @param path the complete path to the button.
  */
 void OSVRTrackedController::registerButtonTouch(int id, const std::string& path, vr::EVRButtonId button_id){
+    // check bounds
+    if(id < 0 || id >= NUM_BUTTONS){
+	return;
+    }
+
     buttonInterface_[id].buttonInterface = context_.getInterface(path);
     if (buttonInterface_[id].buttonInterface.notEmpty()) {
 	buttonInterface_[id].button_id        = button_id;
@@ -440,6 +450,10 @@ void OSVRTrackedController::registerBattery(const std::string& path){
 }
 
 void OSVRTrackedController::registerTrigger(int id, const std::string& path){
+    // check bounds
+    if(id < 0 || id >= NUM_AXIS){
+	return;
+    }
     analogInterface_[id].analogInterfaceX = context_.getInterface(path);
     if (analogInterface_[id].analogInterfaceX.notEmpty()) {
         analogInterface_[id].axisIndex        = id;
@@ -454,6 +468,10 @@ void OSVRTrackedController::registerTrigger(int id, const std::string& path){
 }
 
 void OSVRTrackedController::registerTrackpad(int id, const std::string& path){
+    // check bounds
+    if(id < 0 || id >= NUM_AXIS){
+	return;
+    }
     analogInterface_[id].analogInterfaceX = context_.getInterface(path + "/x");
     analogInterface_[id].analogInterfaceY = context_.getInterface(path + "/y");
 
