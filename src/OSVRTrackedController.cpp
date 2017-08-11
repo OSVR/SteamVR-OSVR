@@ -316,40 +316,6 @@ void OSVRTrackedController::controllerBatteryCallback(void* userdata, const OSVR
     vr::VRProperties()->SetFloatProperty(container, vr::Prop_DeviceBatteryPercentage_Float, report->state);
 }
 
-void OSVRTrackedController::controllerJoystickXCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
-{
-    if (!userdata)
-        return;
-
-    auto* analog_interface = static_cast<AnalogInterface*>(userdata);
-    OSVRTrackedController* self = analog_interface->parentController;
-
-    analog_interface->x = report->state;
-
-    vr::VRControllerAxis_t axis_state;
-    axis_state.x = static_cast<float>(analog_interface->x);
-    axis_state.y = static_cast<float>(analog_interface->y);
-
-    vr::VRServerDriverHost()->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
-}
-
-void OSVRTrackedController::controllerJoystickYCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
-{
-    if (!userdata)
-        return;
-
-    auto* analog_interface = static_cast<AnalogInterface*>(userdata);
-    OSVRTrackedController* self = analog_interface->parentController;
-
-    analog_interface->y = report->state;
-
-    vr::VRControllerAxis_t axis_state;
-    axis_state.x = static_cast<float>(analog_interface->x);
-    axis_state.y = static_cast<float>(analog_interface->y);
-
-    vr::VRServerDriverHost()->TrackedDeviceAxisUpdated(self->objectId_, analog_interface->axisIndex, axis_state);
-}
-
 void OSVRTrackedController::controllerXAxisCallback(void* userdata, const OSVR_TimeValue* timestamp, const OSVR_AnalogReport* report)
 {
     if (!userdata)
