@@ -127,8 +127,8 @@ std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_ViveSystemButtonFixRequired_Bool";
         case vr::Prop_ParentDriver_Uint64:
             return "Prop_ParentDriver_Uint64";
-        //case vr::Prop_ResourceRoot_String:
-        //    return "Prop_ResourceRoot_String";
+        case vr::Prop_ResourceRoot_String:
+            return "Prop_ResourceRoot_String";
         case vr::Prop_ReportsTimeSinceVSync_Bool:
             return "Prop_ReportsTimeSinceVSync_Bool";
         case vr::Prop_SecondsFromVsyncToPhotons_Float:
