@@ -90,14 +90,14 @@ vr::EVRInitError OSVRTrackedController::Activate(uint32_t object_id)
     std::string joystickPath;
     std::string trackpadPath;
     std::string batteryPath;
-    if (controllerIndex_ == 0) {
+    if (controllerIndex_ == vr::TrackedControllerRole_LeftHand) {
         trackerPath  = "/me/hands/left";
         buttonPath   = "/controller/left/";
         triggerPath  = "/controller/left/trigger";
         joystickPath = "/controller/left/joystick";
         trackpadPath = "/controller/left/trackpad";
 	batteryPath  = "/controller/left/battery";
-    } else if (controllerIndex_ == 1) {
+    } else if (controllerIndex_ == vr::TrackedControllerRole_RightHand) {
         trackerPath  = "/me/hands/right";
         buttonPath   = "/controller/right/";
         triggerPath  = "/controller/right/trigger";
