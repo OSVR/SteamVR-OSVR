@@ -144,11 +144,11 @@ private:
     AnalogInterface analogInterface_[NUM_AXIS];
     ButtonInterface buttonInterface_[NUM_BUTTONS];
     BatteryInterface batteryInterface;
-    void registerButton(int id, std::string path, vr::EVRButtonId button_id);
-    void registerButtonTouch(int id, std::string path, vr::EVRButtonId button_id);
-    void registerTrigger(int id, std::string path);
-    void registerTrackpad(int id, std::string path);
-    void registerBattery(std::string path);
+    void registerButton(int id, const std::string& path, vr::EVRButtonId button_id);
+    void registerButtonTouch(int id, const std::string& path, vr::EVRButtonId button_id);
+    void registerTrigger(int id, const std::string& path);
+    void registerTrackpad(int id, const std::string& path);
+    void registerBattery(const std::string& path );
 };
 
 #endif // INCLUDED_OSVRTrackedDevice_h_GUID_128E3B29_F5FC_4221_9B38_14E3F402E645

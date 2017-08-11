@@ -400,7 +400,7 @@ void OSVRTrackedController::configureProperties()
  * @param id the id of the button which is used for indexing an array.
  * @param path the complete path to the button.
  */
-void OSVRTrackedController::registerButton(int id, std::string path, vr::EVRButtonId button_id){
+void OSVRTrackedController::registerButton(int id, const std::string& path, vr::EVRButtonId button_id){
     buttonInterface_[id].buttonInterface = context_.getInterface(path);
     if (buttonInterface_[id].buttonInterface.notEmpty()) {
 	buttonInterface_[id].button_id        = button_id;
@@ -416,7 +416,7 @@ void OSVRTrackedController::registerButton(int id, std::string path, vr::EVRButt
  * @param id the id of the button which is used for indexing an array.
  * @param path the complete path to the button.
  */
-void OSVRTrackedController::registerButtonTouch(int id, std::string path, vr::EVRButtonId button_id){
+void OSVRTrackedController::registerButtonTouch(int id, const std::string& path, vr::EVRButtonId button_id){
     buttonInterface_[id].buttonInterface = context_.getInterface(path);
     if (buttonInterface_[id].buttonInterface.notEmpty()) {
 	buttonInterface_[id].button_id        = button_id;
@@ -427,7 +427,7 @@ void OSVRTrackedController::registerButtonTouch(int id, std::string path, vr::EV
     } 
 }
 
-void OSVRTrackedController::registerBattery(std::string path){
+void OSVRTrackedController::registerBattery(const std::string& path){
     batteryInterface.interface = context_.getInterface(path);
     if (batteryInterface.interface.notEmpty()) {
 	batteryInterface.parentController = this;
@@ -439,7 +439,7 @@ void OSVRTrackedController::registerBattery(std::string path){
     }
 }
 
-void OSVRTrackedController::registerTrigger(int id, std::string path){
+void OSVRTrackedController::registerTrigger(int id, const std::string& path){
     analogInterface_[id].analogInterfaceX = context_.getInterface(path);
     if (analogInterface_[id].analogInterfaceX.notEmpty()) {
         analogInterface_[id].axisIndex        = id;
@@ -453,7 +453,7 @@ void OSVRTrackedController::registerTrigger(int id, std::string path){
     }
 }
 
-void OSVRTrackedController::registerTrackpad(int id, std::string path){
+void OSVRTrackedController::registerTrackpad(int id, const std::string& path){
     analogInterface_[id].analogInterfaceX = context_.getInterface(path + "/x");
     analogInterface_[id].analogInterfaceY = context_.getInterface(path + "/y");
 
