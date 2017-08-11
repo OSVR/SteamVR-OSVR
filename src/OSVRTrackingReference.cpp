@@ -211,6 +211,9 @@ void OSVRTrackingReference::configure()
     fovBottom_ = settings_->getSetting<float>("cameraFOVBottomDegrees", fovBottom_);
     minTrackingRange_ = settings_->getSetting<float>("minTrackingRangeMeters", minTrackingRange_);
     maxTrackingRange_ = settings_->getSetting<float>("maxTrackingRangeMeters", maxTrackingRange_);
+
+    //configureProperties();
+    setProperties();
 }
 
 std::string OSVRTrackingReference::getTrackerPath() const

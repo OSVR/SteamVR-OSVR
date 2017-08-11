@@ -30,3 +30,5 @@
 # Build directory
 build
 
+nbproject
+CMakeFiles

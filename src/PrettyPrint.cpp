@@ -213,8 +213,8 @@ std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_DisplayMCImageNumChannels_Int32";
         case vr::Prop_DisplayMCImageData_Binary:
             return "Prop_DisplayMCImageData_Binary";
-        case vr::Prop_SecondsFromPhotonsToVblank_Float:
-            return "Prop_SecondsFromPhotonsToVblank_Float";
+        //case vr::Prop_SecondsFromPhotonsToVblank_Float:
+        //    return "Prop_SecondsFromPhotonsToVblank_Float";
         case vr::Prop_AttachedDeviceId_String:
             return "Prop_AttachedDeviceId_String";
         case vr::Prop_SupportedButtons_Uint64:
@@ -271,20 +271,22 @@ std::string to_string(const vr::ETrackedDeviceProperty& value)
             return "Prop_UserConfigPath_String";
         case vr::Prop_InstallPath_String:
             return "Prop_InstallPath_String";
-        case vr::Prop_HasDisplayComponent_Bool:
-            return "Prop_HasDisplayComponent_Bool";
-        case vr::Prop_HasControllerComponent_Bool:
-            return "Prop_HasControllerComponent_Bool";
-        case vr::Prop_HasCameraComponent_Bool:
-            return "Prop_HasCameraComponent_Bool";
-        case vr::Prop_HasDriverDirectModeComponent_Bool:
-            return "Prop_HasDriverDirectModeComponent_Bool";
-        case vr::Prop_HasVirtualDisplayComponent_Bool:
-            return "Prop_HasVirtualDisplayComponent_Bool";
+        //case vr::Prop_HasDisplayComponent_Bool:
+        //    return "Prop_HasDisplayComponent_Bool";
+        //case vr::Prop_HasControllerComponent_Bool:
+        //    return "Prop_HasControllerComponent_Bool";
+        //case vr::Prop_HasCameraComponent_Bool:
+        //    return "Prop_HasCameraComponent_Bool";
+        //case vr::Prop_HasDriverDirectModeComponent_Bool:
+        //    return "Prop_HasDriverDirectModeComponent_Bool";
+        //case vr::Prop_HasVirtualDisplayComponent_Bool:
+        //    return "Prop_HasVirtualDisplayComponent_Bool";
         case vr::Prop_VendorSpecific_Reserved_Start:
             return "Prop_VendorSpecific_Reserved_Start";
         case vr::Prop_VendorSpecific_Reserved_End:
             return "Prop_VendorSpecific_Reserved_End";
+	//case vr::Prop_UsesDriverDirectMode_Bool:
+	//    return "Prop_UsesDriverDirectMode_Bool";
         default:
             {
                 std::ostringstream oss;

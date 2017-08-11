@@ -27,6 +27,7 @@
 
 #include "OSVRTrackedHMD.h"         // for OSVRTrackedHMD
 #include "OSVRTrackingReference.h"  // for OSVRTrackingReference
+#include "OSVRTrackedController.h"  // for OSVRTrackingReference
 #include "platform_fixes.h"         // strcasecmp
 #include "make_unique.h"            // for std::make_unique
 #include "Logging.h"                // for OSVR_LOG, Logging
@@ -86,6 +87,8 @@ vr::EVRInitError ServerDriver_OSVR::Init(vr::IVRDriverContext* driver_context)
 
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackedHMD>(*(context_.get())));
     trackedDevices_.emplace_back(std::make_unique<OSVRTrackingReference>(*(context_.get())));
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), vr::TrackedControllerRole_LeftHand)); // left hand
+    trackedDevices_.emplace_back(std::make_unique<OSVRTrackedController>(*(context_.get()), vr::TrackedControllerRole_RightHand)); // right hand
 
     for (auto& tracked_device : trackedDevices_) {
         vr::VRServerDriverHost()->TrackedDeviceAdded(tracked_device->getId(), tracked_device->getDeviceClass(), tracked_device.get());
