@@ -299,12 +299,6 @@ vr::DistortionCoordinates_t OSVRTrackedHMD::ComputeDistortion(vr::EVREye eye, fl
     return coords;
 }
 
-vr::DriverPose_t OSVRTrackedHMD::GetPose()
-{
-    return pose_;
-}
-
-
 // ------------------------------------
 // Private Methods
 // ------------------------------------
@@ -404,11 +398,6 @@ const char* OSVRTrackedHMD::getId()
     }
 
     return display_.name.c_str();
-}
-
-vr::ETrackedDeviceClass OSVRTrackedHMD::getDeviceClass() const
-{
-    return deviceClass_;
 }
 
 void OSVRTrackedHMD::configure()

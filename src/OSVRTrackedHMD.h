@@ -142,10 +142,8 @@ public:
     // ------------------------------------
     // Tracking Methods
     // ------------------------------------
-    virtual vr::DriverPose_t GetPose() OSVR_OVERRIDE;
 
     const char* getId();
-    vr::ETrackedDeviceClass getDeviceClass() const;
 
 private:
     /**
